@@ -60,17 +60,17 @@ class AttendanceController extends Controller
         }
         else {
             $dateJunk= Carbon::createFromFormat('d/m/Y', $data['date']);
+            // Check if attendance for this combination already exists. `first()` returns a model or null.
             $exists = Attendance::select('id')
-            ->where('session',$data['session'])
-            ->where('department_id',$data['department_id'])
-            ->where('subject_id',$data['subject_id'])
-            ->where('date','=',$dateJunk->toDateString())
-            ->where('levelTerm',$data['levelTerm'])
-            ->first();
-            if(count($exists))
-            {
-                $notification= array('title' => 'Validation', 'body' => 'Attendance already exists!');
-                return Redirect::route('attendance.create')->with("error",$notification);
+                ->where('session', $data['session'])
+                ->where('department_id', $data['department_id'])
+                ->where('subject_id', $data['subject_id'])
+                ->where('date', '=', $dateJunk->toDateString())
+                ->where('levelTerm', $data['levelTerm'])
+                ->first();
+            if ($exists) {
+                $notification = ['title' => 'Validation', 'body' => 'Attendance already exists!'];
+                return Redirect::route('attendance.create')->with('error', $notification);
             }
 
             foreach ($data['ids'] as  $id){

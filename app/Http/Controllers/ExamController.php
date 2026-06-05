@@ -70,17 +70,17 @@ class ExamController extends Controller
     }
     else {
 
+      // Check if marks for this exam already exist. `first()` returns a model or null.
       $exists = Exam::select('id')
-      ->where('department_id',$data['department_id'])
-      ->where('session',$data['session'])
-      ->where('levelTerm',$data['levelTerm'])
-      ->where('subject_id',$data['subject_id'])
-      ->where('exam','=',$data['exam'])
-      ->first();
-      if(count($exists))
-      {
-        $notification= array('title' => 'Validation', 'body' => 'Exam marks already exists!');
-        return redirect()->back()->with("error",$notification);
+          ->where('department_id', $data['department_id'])
+          ->where('session', $data['session'])
+          ->where('levelTerm', $data['levelTerm'])
+          ->where('subject_id', $data['subject_id'])
+          ->where('exam', $data['exam'])
+          ->first();
+      if ($exists) {
+          $notification = ['title' => 'Validation', 'body' => 'Exam marks already exists!'];
+          return redirect()->back()->with('error', $notification);
       }
       $nowDateTime=Carbon::now()->toDateTimeString();
       foreach ($data['ids'] as  $id){

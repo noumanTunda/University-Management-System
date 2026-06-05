@@ -14,7 +14,11 @@
               <div class="col-md-12 col-sm-12 col-xs-12">
                 <div class="x_panel">
                   <div class="x_title">
-                    <h2>Subject<small> Subjects basic information.</small></h2>
+                      <h2>Subject<small> Subjects basic information.</small></h2>
+                      <!-- Bulk upload button -->
+                      <a href="{{ route('subject.upload.form') }}" class="btn btn-primary pull-right" style="margin-top: -30px;">
+                        <i class="fa fa-upload"></i> Bulk Upload
+                      </a>
 
                     <div class="clearfix"></div>
                   </div>
@@ -58,7 +62,7 @@
                         <label class="control-label col-md-3 col-sm-3 col-xs-12" for="credit">Credit <span class="required">*</span>
                         </label>
                         <div class="col-md-6 col-sm-6 col-xs-12">
-                          <input type="text" id="credit" name="credit" required="required" placeholder="120" value="{{old('credit')}}" class="form-control col-md-7 col-xs-12">
+                          <input type="text" id="credit" name="credit" required="required" placeholder="7.5" value="{{old('credit')}}" class="form-control col-md-7 col-xs-12">
                             <span class="text-danger">{{ $errors->first('credit') }}</span>
                         </div>
                       </div>

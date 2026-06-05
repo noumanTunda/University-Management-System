@@ -65,6 +65,11 @@ class DashboardController extends Controller {
 		    ->groupBy('month')
 		    ->get();
 
+		// Attendance data for teacher/dashboard charts (monthly attendance count)
+		$monthlyAttendance = Attendance::selectRaw('month(date) as month, count(*) as cnt')
+		    ->groupBy('month')
+		    ->get();
+
 		$incomeTotal = Account::with(['sector' => function ($query) {
 		        $query->where('type', 'Income');
 		    }])
@@ -83,7 +88,8 @@ class DashboardController extends Controller {
 		$incomes=$this->datahelper($monthlyIncome);
 		$expences=$this->datahelper($monthlyExpences);
 		$balance = $incomeTotal - $expenceTotal;
-		return view('dashboard',compact('error','success','total','incomes','expences','balance'));
+		$attendance = $this->datahelper($monthlyAttendance);
+		return view('dashboard',compact('error','success','total','incomes','expences','balance','attendance'));
 	}
 	function datahelper($data)
 	{

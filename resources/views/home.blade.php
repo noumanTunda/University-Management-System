@@ -21,57 +21,54 @@
   </head>
 
   <body class="login">
-    <div>
-
-
-      <div class="login_wrapper">
-        <div class="animate form login_form">
-          <section class="login_content">
-            <form name="login" method="post" action="{{URL::route('user.login')}}">
-							<input type="hidden" name="_token" value="{{ csrf_token() }}">
-              <h1>Login </h1>
-              <div>
-                <input type="text" class="form-control" name="login" placeholder="Username" required="" />
+    <div class="login_wrapper">
+      <div class="animate form login_form">
+        <section class="login_content">
+          <form name="login" method="post" action="{{URL::route('user.login')}}">
+            <input type="hidden" name="_token" value="{{ csrf_token() }}">
+            <!-- Logo -->
+            <div class="text-center mb-4">
+              <img src="{{ URL::asset('assets/images/logo.png') }}" alt="Logo" style="max-width:150px;">
+            </div>
+            <h4 class="text-center">Welcome to Student Record Management System (SRMS)</h4>
+            <p class="text-center">Please sign‑in to your account and start the session</p>
+            <div class="form-group">
+              <input type="text" class="form-control" name="login" placeholder="Enter your registration number" required />
+            </div>
+            <div class="form-group">
+              <input type="password" class="form-control" name="password" placeholder="Enter your password" required />
+            </div>
+            <div class="form-group">
+              <div class="checkbox">
+                <label>
+                  <input type="checkbox" onclick="this.closest('form').password.type = this.checked ? 'text' : 'password'"> Show Password
+                </label>
               </div>
-              <div>
-                <input type="password" class="form-control" name="password" placeholder="Password" required="" />
+            </div>
+            <div class="form-group">
+              <button type="submit" class="btn btn-primary btn-block btn-lg">Sign in</button>
+            </div>
+            <div class="text-center">
+              <a href="https://sr2.udom.ac.tz/site/forgot_password" target="_blank">Forgot Password Click Here ?</a>
+            </div>
+            <div class="clearfix"></div>
+            <div class="separator mt-4">
+              @if (Session::has('success'))
+                <div class="alert alert-success">{{ Session::get('success') }}</div>
+              @endif
+              @if (Session::has('error'))
+                <div class="alert alert-danger">{{ Session::get('error') }}</div>
+              @endif
+              @if (Session::has('warning'))
+                <div class="alert alert-warning">{{ Session::get('warning') }}</div>
+              @endif
+              <div class="text-center mt-3">
+                <h2 style="font-size:16px;"><i class="fa fa-bank"></i> {{$institute->name}}</h2>
+                <p>©{{date('Y')}} All Rights Reserved.</p>
               </div>
-              <div>
-								<button type="submit" class="btn btn-primary btn-lg">Login <i class="fa fa-2x fa-sign-in"></i></button>
-              </div>
-
-              <div class="clearfix"></div>
-
-              <div class="separator">
-	              @if (Session::has('success'))
-	                <div class="alert alert-success">
-	                    {{ Session::get('success') }}
-	                </div>
-	              @endif
-	              @if (Session::has('error'))
-	                <div class="alert alert-danger">
-	                    {{ Session::get('error') }}
-	                </div>
-	              @endif
-	              @if (Session::has('warning'))
-	              <div class="alert alert-warning">
-	                  {{ Session::get('warning') }}
-	              </div>
-	              @endif
-
-                <div class="clearfix"></div>
-                <br />
-
-                <div>
-                  <h2 style="font-size:16px;"><i class="fa fa-bank"></i> {{$institute->name}}</h2>
-                  <p>©{{date('Y')}} All Rights Reserved.</p>
-                </div>
-              </div>
-            </form>
-          </section>
-        </div>
-
-
+            </div>
+          </form>
+        </section>
       </div>
     </div>
   </body>

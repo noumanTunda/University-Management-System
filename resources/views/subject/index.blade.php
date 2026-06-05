@@ -20,6 +20,10 @@
                 <div class="x_panel">
                   <div class="x_title">
                     <h2>Subject<small> All Subjects information.</small></h2>
+                    <!-- Bulk upload button -->
+                    <a href="{{ route('subject.upload.form') }}" class="btn btn-primary pull-right" style="margin-top: -30px;">
+                      <i class="fa fa-upload"></i> Bulk Upload
+                    </a>
 
                     <div class="clearfix"></div>
                   </div>
