@@ -103,15 +103,16 @@ h3{
     <div class="row">
       <div class="col-md-12">
         <table id="feeList" class="grid">
-          <thead>
+            <thead>
             <tr>
               <th>Bill No</th>
               <th>Payable Amount</th>
               <th>Paid Amount</th>
               <th>Due Amount</th>
               <th>Pay Date</th>
+              <th>Action</th>
             </tr>
-          </thead>
+            </thead>
           <tbody>
             @foreach($fees as $fee)
             <tr>
@@ -120,6 +121,7 @@ h3{
               <td>{{$fee->paidAmount}}</td>
               <td>{{$fee->dueAmount}}</td>
               <td>{{$fee->payDate->format('F j,Y')}}</td>
+              <td><a href="{{ route('fees.payForm', $fee->id) }}" class="btn btn-sm btn-success">Pay</a></td>
             </tr>
               @endforeach
             </tbody>

@@ -72,6 +72,11 @@ Route::group(['middleware' => 'auth'], function()
   Route::post('/fees-collection',[ 'as' => 'fees.collection.store','uses'=>'FeesController@cStore']);
   //Route::post('/fees-collection/{id}',[ 'as' => 'fees.collection.destroy','uses'=>'FeesController@cDestroy']);
   Route::get('/fees-getdue/{stdId}',[ 'as' => 'fees.getdue','uses'=>'FeesController@getDue']);
+  // Payment routes for individual fee entries
+  // Display payment form for a specific fee (GET)
+  Route::get('/fees/pay/{id}', [ 'as' => 'fees.payForm', 'uses' => 'FeesController@payForm' ]);
+  // Process payment submission for a specific fee (POST)
+  Route::post('/fees/pay/{id}', [ 'as' => 'fees.pay', 'uses' => 'FeesController@pay' ]);
 
   //accounting routes
   Route::get('/accounting/sector',[ 'as' => 'accounting.sector.index','uses'=>'AccountingController@secIndex']);

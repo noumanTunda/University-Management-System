@@ -41,7 +41,7 @@ class UserController extends Controller {
 				}
 				else {
 					$institute=new Institute;
-					$institute->name="ShanixLab";
+					$institute->name="TundasLab";
 					Session::put('inName', $institute->name);
 					$notification= array('title' => 'Information Missing', 'body' => 'Please provide institute information.');
 					return Redirect::to('/institute')->with('warning',$notification);

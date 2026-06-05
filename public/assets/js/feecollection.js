@@ -1,4 +1,10 @@
 $(document).ready(function() {
+      // Initialize Switchery toggle for "Select All Students"
+      var selectAllElem = document.querySelector('#selectAllStudents');
+      if (selectAllElem) {
+         // Use the same color scheme as other switches in the app
+         new Switchery(selectAllElem, { size: 'small', color: '#64bd63' });
+      }
    $('#btnsave').hide();
    $('#collectionDate').daterangepicker({
       singleDatePicker: true,
@@ -104,21 +110,43 @@ $(document).ready(function() {
             }
          });
       });
-      //get due amount
+      //get due amount (only when a single student is selected)
       $('#students_id').on('change',function(){
-         var stdId = $(this).val();
+         var stdIds = $(this).val();
+         // If multiple students are selected, we cannot fetch a single due amount.
+         if (Array.isArray(stdIds) && stdIds.length !== 1) {
+            $('#previousdue').val(0);
+            return;
+         }
+         var stdId = Array.isArray(stdIds) ? stdIds[0] : stdIds;
          $.ajax({
             url:'/fees-getdue/'+stdId,
             type: 'get',
             dataType: 'json',
             success: function(data) {
-               //console.log(data);
                $('#previousdue').val(data.due);
             },
             error: function(data){
                errorManager(data);
             }
          });
+      });
+
+      // Clean "Select All" and "Clear" button handling
+      $('#btnSelectAllStudents').on('click', function(){
+         // Gather all non‑empty option values (skip placeholder "" value)
+         var allVals = [];
+         $('#students_id option').each(function(){
+            var val = $(this).val();
+            if(val !== "") {
+               allVals.push(val);
+            }
+         });
+         $('#students_id').val(allVals).trigger('change');
+      });
+
+      $('#btnClearStudents').on('click', function(){
+         $('#students_id').val([]).trigger('change');
       });
       //get fee amount
       $('#feeNames').on('change',function(){

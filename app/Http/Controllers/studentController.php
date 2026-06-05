@@ -255,11 +255,15 @@ class studentController extends Controller {
 				{
 
 					$directory = public_path() . "/assets/images/students/";
-					unlink($directory.$student->photo);
+					// Only attempt to delete the old photo if it exists and is not the default placeholder.
+					$oldPhotoPath = $directory . $student->photo;
+					if ($student->photo && $student->photo !== 'default.png' && file_exists($oldPhotoPath)) {
+						@unlink($oldPhotoPath);
+					}
 					$fextention = $data['photo']->getClientOriginalExtension();
-					$fileName=str_replace(' ','_',$student->idNo).'.'.$fextention;
-					$data['photo']->move($directory,$fileName);
-					$data['photo']=$fileName;
+					$fileName = str_replace(' ', '_', $student->idNo) . '.' . $fextention;
+					$data['photo']->move($directory, $fileName);
+					$data['photo'] = $fileName;
 				}
 				else{
 					$data['photo']=$student->photo;

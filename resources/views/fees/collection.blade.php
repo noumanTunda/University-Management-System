@@ -94,8 +94,20 @@ th { text-align:center; }
                            <div class="item form-group">
                               <label class="control-label" for="students_id">Student <span class="required">*</span>
                               </label>
-                              {!!Form::select('students_id',$students, null, ['placeholder' => 'Pick a Student','class'=>'select2_single student form-control has-feedback-left','required'=>'required' ,'id'=>'students_id'])!!}
-                              <i class="fa fa-user form-control-feedback left" aria-hidden="true"></i>
+                              {{-- Allow selecting multiple students for batch fee assignment --}}
+                              <!-- Clean "Select All" button placed next to the student selector -->
+                              <div class="form-group" style="margin-bottom:10px;">
+                                 <button type="button" id="btnSelectAllStudents" class="btn btn-sm btn-primary">
+                                    <i class="glyphicon glyphicon-check"></i> Select All
+                                 </button>
+                                 <button type="button" id="btnClearStudents" class="btn btn-sm btn-default" style="margin-left:5px;">
+                                    <i class="glyphicon glyphicon-remove"></i> Clear
+                                 </button>
+                              </div>
+                              <div class="input-group">
+                                 <span class="input-group-addon"><i class="fa fa-user" aria-hidden="true"></i></span>
+                                 {!!Form::select('students_id[]',$students, null, ['placeholder' => 'Pick Students','class'=>'select2_multiple student form-control','required'=>'required' ,'id'=>'students_id','multiple'=>true])!!}
+                              </div>
                               <span class="text-danger">{{ $errors->first('students_id') }}</span>
 
                            </div>

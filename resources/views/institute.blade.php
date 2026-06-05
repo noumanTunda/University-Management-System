@@ -26,7 +26,7 @@
                         <label class="control-label col-md-3 col-sm-3 col-xs-12" for="name">Name <span class="required">*</span>
                         </label>
                         <div class="col-md-6 col-sm-6 col-xs-12">
-                          <input id="name" class="form-control col-md-7 col-xs-12" data-validate-length-range="6" name="name" value="{{$institute->name}}" placeholder="Shanix Institute" required="required" type="text">
+                          <input id="name" class="form-control col-md-7 col-xs-12" data-validate-length-range="6" name="name" value="{{$institute->name}}" placeholder="Tundas Institute" required="required" type="text">
                             <span class="text-danger">{{ $errors->first('name') }}</span>
                         </div>
                       </div>
@@ -42,7 +42,7 @@
                         <label class="control-label col-md-3 col-sm-3 col-xs-12" for="email">Web <span class="required">*</span>
                         </label>
                         <div class="col-md-6 col-sm-6 col-xs-12">
-                          <input type="url" id="web" name="web" required="required" placeholder="http://shanixlab.com" value="{{$institute->web}}" class="form-control col-md-7 col-xs-12">
+                          <input type="url" id="web" name="web" required="required" placeholder="https://www.linkedin.com/in/nouman-tunda/" value="{{$institute->web}}" class="form-control col-md-7 col-xs-12">
                           <span class="text-danger">{{ $errors->first('web') }}</span>
                         </div>
                       </div>

@@ -51,7 +51,7 @@
                                     </div>
                                     <div class="col-md-2">
                                         <div class="item form-group">
-                                            <label class="control-label" for="amount">Amount(৳) <span class="required">*</span>
+                                            <label class="control-label" for="amount">Amount(Tshs.) <span class="required">*</span>
                                             </label>
                                             <input type="number" name="amount" required class="form-control">
 
@@ -79,7 +79,7 @@
                                         <tr>
                                             <th>Department</th>
                                             <th>Title</th>
-                                            <th>Amount(৳)</th>
+                                            <th>Amount(Tshs.)</th>
                                             <th>Description</th>
                                             <th>Actions</th>
                                         </tr>
