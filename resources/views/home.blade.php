@@ -28,12 +28,12 @@
             <input type="hidden" name="_token" value="{{ csrf_token() }}">
             <!-- Logo -->
             <div class="text-center mb-4">
-              <img src="{{ URL::asset('assets/images/logo.png') }}" alt="Logo" style="max-width:150px;">
+              <img src="{{ URL::asset('assets/images/logo.jpg') }}" alt="Logo" style="max-width:150px;">
             </div>
-            <h4 class="text-center">Welcome to Student Record Management System (SRMS)</h4>
-            <p class="text-center">Please sign‑in to your account and start the session</p>
+            <h4 class="text-center">Welcome to University Management System (UMS)</h4>
+            <p class="text-center">Sign‑in to your account to Continue</p>
             <div class="form-group">
-              <input type="text" class="form-control" name="login" placeholder="Enter your registration number" required />
+              <input type="text" class="form-control" name="login" placeholder="Enter your Username" required />
             </div>
             <div class="form-group">
               <input type="password" class="form-control" name="password" placeholder="Enter your password" required />
@@ -49,7 +49,7 @@
               <button type="submit" class="btn btn-primary btn-block btn-lg">Sign in</button>
             </div>
             <div class="text-center">
-              <a href="https://sr2.udom.ac.tz/site/forgot_password" target="_blank">Forgot Password Click Here ?</a>
+              <a href="https://localhost" target="_blank">Forgot Password Click Here ?</a>
             </div>
             <div class="clearfix"></div>
             <div class="separator mt-4">
