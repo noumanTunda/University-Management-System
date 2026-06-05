@@ -101,6 +101,8 @@
                     <ul class="nav child_menu">
                       <li><a href="{{URL::route('fees.index')}}">Fee List </a></li>
                       <li><a href="{{URL::route('fees.collection.create')}}">Fee Collection </a></li>
+                      <!-- New link to view student payments (installments) -->
+                      <li><a href="{{ URL::route('fees.student.payments', ['stdId' => 0]) }}">Student Payments</a></li>
                     </ul>
                   </li>
                   <li><a><i class="fa fa-print"></i> Reports <span class="fa fa-chevron-down"></span></a>

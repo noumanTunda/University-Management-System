@@ -242,5 +242,17 @@ class FeesController extends Controller
         }
     }
 
+    /**
+     * Display all fee collections (payments) for a given student.
+     * This page lists each fee collection with its payable amount, paid amount,
+     * due amount and provides a link to add an installment payment.
+     */
+    public function studentPayments($stdId)
+    {
+        $student = Student::findOrFail($stdId);
+        $feeCollections = FeeCollection::where('students_id', $stdId)->get();
+        return view('fees.payments', compact('student', 'feeCollections'));
+    }
+
 
 }

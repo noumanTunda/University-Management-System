@@ -97,6 +97,8 @@ Route::group(['middleware' => 'auth'], function()
   Route::post('/fees-collection/report',[ 'as' => 'fees.collection.report','uses'=>'ReportController@report']);
   Route::get('/fees-collection',[ 'as' => 'fees.collection.index','uses'=>'ReportController@cIndex']);
   Route::get('/fees-student/{stdId}',[ 'as' => 'fees.collection.studentfees','uses'=>'ReportController@studentFees']);
+  // New page to view all payments for a specific student (installment view)
+  Route::get('/fees/student/{stdId}/payments', [ 'as' => 'fees.student.payments', 'uses' => 'FeesController@studentPayments' ]);
 
   //library routes
   Route::get('/library/addbook','libraryController@getAddbook');
