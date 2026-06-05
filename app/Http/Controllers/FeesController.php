@@ -240,6 +240,62 @@ class FeesController extends Controller
     }
 
     /**
+     * Show a form that displays payment information for a student in a given session.
+     * The admin can select the fee type (from fees assigned to the student's department),
+     * enter the payable amount, payment date and then save the payment.
+     */
+    public function paymentInfoForm($studentId)
+    {
+        $student = Student::findOrFail($studentId);
+        $sessions = Student::select('session','session')->distinct()->lists('session','session');
+        // Fees assigned to the student's department (could be filtered further by session if needed)
+        $fees = Fee::where('department_id', $student->department_id)->select('id','title','amount')->get();
+        return view('fees.payment_info', compact('student','sessions','fees'));
+    }
+
+    /**
+     * Return a partial view with payment information for AJAX loading.
+     * This view is intended to be injected into the add‑payment page.
+     */
+    public function paymentInfoPartial($studentId)
+    {
+        $student = Student::findOrFail($studentId);
+        $sessions = Student::select('session','session')->distinct()->lists('session','session');
+        $fees = Fee::where('department_id', $student->department_id)->select('id','title','amount')->get();
+        // Return a view without the master layout (partial)
+        return view('fees.payment_info_partial', compact('student','sessions','fees'));
+    }
+
+    /**
+     * Store the payment information entered on the paymentInfoForm.
+     */
+    public function paymentInfoStore(Request $request, $studentId)
+    {
+        $data = $request->all();
+        $rules = [
+            'session' => 'required',
+            'fee_id' => 'required|exists:fees,id',
+            'payableAmount' => 'required|numeric',
+            'payDate' => 'required|date',
+        ];
+        $validator = Validator::make($data, $rules);
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator);
+        }
+        // Create a fee collection record for this student and fee
+        FeeCollection::create([
+            'students_id' => $studentId,
+            'payableAmount' => $data['payableAmount'],
+            'paidAmount' => 0,
+            'dueAmount' => $data['payableAmount'],
+            'payDate' => $data['payDate'],
+        ]);
+        // Optionally, you could store the fee_id in a separate pivot table if needed.
+        $notification = ['title' => 'Payment', 'body' => 'Payment recorded successfully.'];
+        return redirect()->route('fees.collection.index')->with('success', $notification);
+    }
+
+    /**
      * Process a payment for a fee collection.
      * It updates the paidAmount field and creates an accounting entry
      * if a fee sector exists.

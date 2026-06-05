@@ -65,8 +65,7 @@ Route::group(['middleware' => 'auth'], function()
   Route::get('result-student',[ 'as' => 'result.individual','uses'=>'ResultController@getStudent']);
   Route::post('result-student',[ 'as' => 'result.individual.post','uses'=>'ResultController@postStudent']);
 
-  //fees collection
-  Route::resource('fees','FeesController');
+  //fees collection (custom routes placed before resource to avoid conflicts)
   Route::get('/fees-list/{dId}',[ 'as' => 'fees.list','uses'=>'FeesController@lists']);
   Route::get('/fees-collection/create',[ 'as' => 'fees.collection.create','uses'=>'FeesController@cCreate']);
   Route::post('/fees-collection',[ 'as' => 'fees.collection.store','uses'=>'FeesController@cStore']);
@@ -77,6 +76,19 @@ Route::group(['middleware' => 'auth'], function()
   Route::get('/fees/pay/{id}', [ 'as' => 'fees.payForm', 'uses' => 'FeesController@payForm' ]);
   // Process payment submission for a specific fee (POST)
   Route::post('/fees/pay/{id}', [ 'as' => 'fees.pay', 'uses' => 'FeesController@pay' ]);
+
+  // Custom routes for adding payments (must be before the resource route)
+  Route::get('/fees/add-payment', [ 'as' => 'fees.addPaymentForm', 'uses' => 'FeesController@addPaymentForm' ]);
+  Route::post('/fees/add-payment', [ 'as' => 'fees.addPaymentStore', 'uses' => 'FeesController@addPaymentStore' ]);
+
+  // Routes for detailed payment information per student
+  Route::get('/fees/payment-info/{studentId}', [ 'as' => 'fees.paymentInfoForm', 'uses' => 'FeesController@paymentInfoForm' ]);
+  Route::post('/fees/payment-info/{studentId}', [ 'as' => 'fees.paymentInfoStore', 'uses' => 'FeesController@paymentInfoStore' ]);
+  // AJAX partial for displaying payment info on the same add‑payment page
+  Route::get('/fees/payment-info-partial/{studentId}', [ 'as' => 'fees.paymentInfoPartial', 'uses' => 'FeesController@paymentInfoPartial' ]);
+
+  // Resource routes for FeesController (standard CRUD)
+  Route::resource('fees','FeesController');
 
   //accounting routes
   Route::get('/accounting/sector',[ 'as' => 'accounting.sector.index','uses'=>'AccountingController@secIndex']);
