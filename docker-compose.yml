@@ -12,17 +12,17 @@ services:
     environment:
       APP_ENV: local
       APP_DEBUG: "true"
-      APP_KEY: "base64:8jMJVmFmwHQnnj63uBR6xfa/qk251M7NIX36V/Ry0+k="
+      APP_KEY: ${APP_KEY}
   # MySQL database service
   mysql:
     image: mysql:8.0
     container_name: osums_mysql
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: 2010
+      MYSQL_ROOT_PASSWORD: securepassword
       MYSQL_DATABASE: homestead
       MYSQL_USER: root
-      MYSQL_PASSWORD: 2010
+      MYSQL_PASSWORD: securepassword
     ports:
       - "3306:3306"
     volumes:

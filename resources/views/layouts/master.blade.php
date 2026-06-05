@@ -101,9 +101,7 @@
                     <ul class="nav child_menu">
                       <li><a href="{{URL::route('fees.index')}}">Fee List </a></li>
                       <li><a href="{{URL::route('fees.collection.create')}}">Fee Collection </a></li>
-                      <!-- Direct link to payment page for a selected fee collection -->
-                      <li><a href="{{URL::route('fees.collection.index')}}">Pay Fee</a></li>
-                      </ul>
+                    </ul>
                   </li>
                   <li><a><i class="fa fa-print"></i> Reports <span class="fa fa-chevron-down"></span></a>
                     <ul class="nav child_menu">

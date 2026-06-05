@@ -110,7 +110,6 @@ h3{
               <th>Paid Amount</th>
               <th>Due Amount</th>
               <th>Pay Date</th>
-              <th>Action</th>
             </tr>
             </thead>
           <tbody>
@@ -121,7 +120,7 @@ h3{
               <td>{{$fee->paidAmount}}</td>
               <td>{{$fee->dueAmount}}</td>
               <td>{{$fee->payDate->format('F j,Y')}}</td>
-              <td><a href="{{ route('fees.payForm', $fee->id) }}" class="btn btn-sm btn-success">Pay</a></td>
+              <!-- Action column removed – reports are read‑only -->
             </tr>
               @endforeach
             </tbody>

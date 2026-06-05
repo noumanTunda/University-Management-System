@@ -194,7 +194,9 @@ class FeesController extends Controller
     public function payForm($id)
     {
         $feeCol = FeeCollection::findOrFail($id);
-        return view('fees.pay', compact('feeCol'));
+        // Load the related student to display name and registration number
+        $student = \App\Student::find($feeCol->students_id);
+        return view('fees.pay', compact('feeCol', 'student'));
     }
 
     /**
@@ -229,7 +231,10 @@ class FeesController extends Controller
             }
             DB::commit();
             $notification = ['title'=>'Payment','body'=>'Payment recorded successfully.'];
-            return redirect()->route('fees.collection.index')->with('success',$notification);
+            // After payment, return to the student's fee report page
+            // After recording a payment, return to the fee collection overview (Fees section)
+            return redirect()->route('fees.collection.index')
+                ->with('success',$notification);
         } catch (\Exception $e) {
             DB::rollback();
             $notification = ['title'=>'Payment','body'=>'Failed to record payment.'];

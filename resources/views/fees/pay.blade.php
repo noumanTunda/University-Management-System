@@ -10,14 +10,29 @@
     <div class="x_panel">
         <div class="x_title">
             <h2>Pay Fee for Student <small>#{{ $feeCol->students_id }}</small></h2>
+            @if(isset($student))
+                <p><strong>Name:</strong> {{ $student->firstName }} {{ $student->middleName }} {{ $student->lastName }}</p>
+                <p><strong>Registration No:</strong> {{ $student->bncReg ?? $student->idNo }}</p>
+            @endif
             <div class="clearfix"></div>
         </div>
         <div class="x_content">
+            {{-- Flash messages may be stored as simple strings or as an array with title/body --}}
             @if (session('error'))
-                <div class="alert alert-danger">{{ session('error') }}</div>
+                @php $err = session('error'); @endphp
+                @if(is_array($err))
+                    <div class="alert alert-danger"><strong>{{ $err['title'] ?? 'Error' }}:</strong> {{ $err['body'] ?? '' }}</div>
+                @else
+                    <div class="alert alert-danger">{{ $err }}</div>
+                @endif
             @endif
             @if (session('success'))
-                <div class="alert alert-success">{{ session('success') }}</div>
+                @php $suc = session('success'); @endphp
+                @if(is_array($suc))
+                    <div class="alert alert-success"><strong>{{ $suc['title'] ?? 'Success' }}:</strong> {{ $suc['body'] ?? '' }}</div>
+                @else
+                    <div class="alert alert-success">{{ $suc }}</div>
+                @endif
             @endif
             <form method="POST" action="{{ route('fees.pay', $feeCol->id) }}">
                 {{ csrf_field() }}
