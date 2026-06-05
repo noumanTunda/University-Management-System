@@ -99,6 +99,9 @@ Route::group(['middleware' => 'auth'], function()
   Route::get('/fees-student/{stdId}',[ 'as' => 'fees.collection.studentfees','uses'=>'ReportController@studentFees']);
   // New page to view all payments for a specific student (installment view)
   Route::get('/fees/student/{stdId}/payments', [ 'as' => 'fees.student.payments', 'uses' => 'FeesController@studentPayments' ]);
+  // New routes to add a payment (installment) for any student
+  Route::get('/fees/add-payment', [ 'as' => 'fees.addPaymentForm', 'uses' => 'FeesController@addPaymentForm' ]);
+  Route::post('/fees/add-payment', [ 'as' => 'fees.addPaymentStore', 'uses' => 'FeesController@addPaymentStore' ]);
 
   //library routes
   Route::get('/library/addbook','libraryController@getAddbook');

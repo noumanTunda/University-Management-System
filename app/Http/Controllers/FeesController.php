@@ -200,6 +200,46 @@ class FeesController extends Controller
     }
 
     /**
+     * Show a form to add a new payment (installment) for an existing student.
+     * The admin selects department, session and student, then enters the
+     * payable amount and payment date. The form mirrors the exam entry UI.
+     */
+    public function addPaymentForm()
+    {
+        $departments = Department::select('id','name')->orderby('name','asc')->lists('name', 'id');
+        $sessions = Student::select('session','session')->distinct()->lists('session','session');
+        $students = Student::select('id','firstName','middleName','lastName','idNo')->orderBy('firstName','asc')->get();
+        return view('fees.add_payment', compact('departments','sessions','students'));
+    }
+
+    /**
+     * Store a new payment record for the selected student.
+     */
+    public function addPaymentStore(Request $request)
+    {
+        $data = $request->all();
+        $rules = [
+            'student_id' => 'required|exists:students,id',
+            'payableAmount' => 'required|numeric',
+            'payDate' => 'required|date',
+        ];
+        $validator = Validator::make($data, $rules);
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator);
+        }
+        // Create a fee collection entry with full payment (installment)
+        FeeCollection::create([
+            'students_id' => $data['student_id'],
+            'payableAmount' => $data['payableAmount'],
+            'paidAmount' => $data['payableAmount'],
+            'dueAmount' => 0,
+            'payDate' => $data['payDate'],
+        ]);
+        $notification = ['title' => 'Payment', 'body' => 'Payment recorded successfully.'];
+        return redirect()->route('fees.collection.index')->with('success', $notification);
+    }
+
+    /**
      * Process a payment for a fee collection.
      * It updates the paidAmount field and creates an accounting entry
      * if a fee sector exists.
