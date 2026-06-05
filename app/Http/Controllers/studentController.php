@@ -299,6 +299,95 @@ class studentController extends Controller {
 	}
 
 	/**
+	 * Show the form for uploading a CSV/Excel file to create multiple students.
+	 *
+	 * @return \Illuminate\Http\Response
+	 */
+	public function uploadForm()
+	{
+		$departments = Department::select('id','name')->orderby('name','asc')->lists('name', 'id');
+		return view('student.upload',compact('departments'));
+	}
+
+	/**
+	 * Download a CSV template for bulk student import.
+	 *
+	 * @return \Symfony\Component\HttpFoundation\StreamedResponse
+	 */
+	public function downloadTemplate()
+	{
+		$headers = [
+			'Content-Type' => 'text/csv',
+			'Content-Disposition' => 'attachment; filename="students_template.csv"',
+		];
+		$columns = [
+			'idNo','session','department_id','bncReg','batchNo','firstName','middleName','lastName','mobileNo','gender','religion','bloodgroup','nationality','dob','fatherName','fatherMobileNo','motherName','motherMobileNo','presentAddress','parmanentAddress','isActive'
+		];
+		$callback = function() use ($columns) {
+			$file = fopen('php://output', 'w');
+			fputcsv($file, $columns);
+			// add an example row (optional)
+			fputcsv($file, ['2021001','2021',1,'BN001','B001','John','A.','Doe','0123456789','Male','Christian','O+','American','01/01/2000','Father Name','0123456789','Mother Name','0123456789','Address 1','Address 2',1]);
+			fclose($file);
+		};
+		return response()->stream($callback, 200, $headers);
+	}
+
+	/**
+	 * Process the uploaded CSV/Excel file and create students in bulk.
+	 *
+	 * @param \Illuminate\Http\Request $request
+	 * @return \Illuminate\Http\Response
+	 */
+	public function uploadStore(Request $request)
+	{
+		// Laravel 5.2 does not have the Request::validate helper, use the Validator facade instead
+		$validator = Validator::make($request->all(), [
+			'students_file' => 'required|file|mimes:csv,txt',
+		]);
+		if ($validator->fails()) {
+			return back()->withErrors($validator);
+		}
+
+		$file = $request->file('students_file');
+		$handle = fopen($file->getRealPath(), 'r');
+		$header = fgetcsv($handle, 1000, ',');
+		$required = ['idNo','session','department_id','bncReg','batchNo','firstName','middleName','lastName','mobileNo','gender','religion','bloodgroup','nationality','dob','fatherName','fatherMobileNo','motherName','motherMobileNo','presentAddress','parmanentAddress','isActive'];
+		// simple validation of header
+		if (array_diff($required, $header)) {
+			fclose($handle);
+			return back()->withErrors(['students_file' => 'Invalid CSV header. Please use the provided template.']);
+		}
+		$created = 0;
+		while (($row = fgetcsv($handle, 1000, ',')) !== false) {
+			$data = array_combine($header, $row);
+			// basic validation for required fields
+			if (empty($data['idNo'])) {
+				continue; // skip invalid rows
+			}
+			// check duplicate idNo
+			if (Student::where('idNo', $data['idNo'])->exists()) {
+				continue;
+			}
+			// set default photo placeholder
+			$data['photo'] = 'default.png';
+			// convert dob to proper format if needed
+			if (!empty($data['dob'])) {
+				try {
+					$data['dob'] = Carbon::createFromFormat('d/m/Y', $data['dob'])->format('Y-m-d');
+				} catch (\Exception $e) {
+					$data['dob'] = null;
+				}
+			}
+			Student::create($data);
+			$created++;
+		}
+		fclose($handle);
+		$notification = ['title' => 'Bulk Upload', 'body' => "$created students imported successfully."];
+		return Redirect::route('student.index')->with('success', $notification);
+	}
+
+	/**
 	*These below code is responsible for
 	*student registration
 	*

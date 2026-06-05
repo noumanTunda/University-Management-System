@@ -45,9 +45,39 @@ class Student extends Model {
       $student->feeCollections()->delete();
     });
   }
+  /**
+   * Mutator for the `dob` attribute.
+   *
+   * The original implementation expected the date in the format
+   * `d/m/Y` (e.g., 31/12/1999). When importing students via CSV we store
+   * the date already formatted as `Y-m-d` (e.g., 1999-12-31). To keep the
+   * existing form behaviour while supporting the CSV import, the mutator
+   * now attempts to parse both formats. If the value matches the ISO
+   * format (`Y-m-d`) it is stored directly; otherwise we fall back to the
+   * original `d/m/Y` format. Invalid dates are ignored so the model does
+   * not throw an exception.
+   */
   function setDobAttribute($value)
   {
-    $this->attributes['dob'] = Carbon::createFromFormat('d/m/Y', $value);
+    if (empty($value)) {
+        $this->attributes['dob'] = null;
+        return;
+    }
+    // Try ISO format first (Y-m-d)
+    try {
+        $date = Carbon::createFromFormat('Y-m-d', $value);
+        $this->attributes['dob'] = $date;
+        return;
+    } catch (\Exception $e) {
+        // fall back to original format
+    }
+    try {
+        $date = Carbon::createFromFormat('d/m/Y', $value);
+        $this->attributes['dob'] = $date;
+    } catch (\Exception $e) {
+        // If parsing fails, store null to avoid breaking the model
+        $this->attributes['dob'] = null;
+    }
   }
   public function department() {
     return $this->belongsTo('App\Department');

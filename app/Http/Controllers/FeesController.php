@@ -105,7 +105,8 @@ class FeesController extends Controller
         $departments = Department::select('id','name')->orderby('name','asc')->lists('name', 'id');
         $sessions=Student::select('session','session')->distinct()->lists('session','session');
 
-        if(!count($isFeeSector)){
+        // $isFeeSector is a single model (or null). Use null check instead of count().
+        if(!$isFeeSector){
             $notification= array('title' => 'Data Missing', 'body' => '"Fees" income sector missiong in accounting! Without it fee collection not possible.');
             session::flash('error',$notification);
         }
@@ -113,7 +114,8 @@ class FeesController extends Controller
     }
     public function cStore(Request $request){
         $isFeeSector= Sector::where('name','Fees')->where('type','Income')->first();
-        if(!count($isFeeSector)){
+        // Same null‑check for the store method
+        if(!$isFeeSector){
             $notification= array('title' => 'Data Missing', 'body' => '"Fees" income sector missiong in accounting! Without it fee collection not possible.');
             return redirect()->back()->with('error',$notification);
         }

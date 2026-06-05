@@ -31,9 +31,19 @@ Route::group(['middleware' => 'auth'], function()
 
   Route::resource('department','DepartmentController');
 
+  // Bulk subject upload routes (must be defined before the subject resource route to avoid conflict with /subject/{id})
+  Route::get('subjects/upload',[ 'as' => 'subject.upload.form','uses'=>'SubjectController@uploadForm']);
+  Route::post('subjects/upload',[ 'as' => 'subject.upload.store','uses'=>'SubjectController@uploadStore']);
+  Route::get('subjects/template',[ 'as' => 'subject.upload.template','uses'=>'SubjectController@downloadTemplate']);
+
   Route::resource('subject','SubjectController');
   Route::get('subject/{deparment}/{semester}',[ 'as' => 'subject.DeptAndSem','uses'=>'SubjectController@subjetsByDptSem']);
 
+
+  // Bulk student upload routes (use a distinct prefix to avoid conflict with the resource routes)
+  Route::get('students/upload',[ 'as' => 'student.upload.form','uses'=>'studentController@uploadForm']);
+  Route::post('students/upload',[ 'as' => 'student.upload.store','uses'=>'studentController@uploadStore']);
+  Route::get('students/template',[ 'as' => 'student.upload.template','uses'=>'studentController@downloadTemplate']);
 
   Route::resource('student','studentController');
   Route::post('student/departmment',[ 'as' => 'student.department','uses'=>'studentController@index2']);

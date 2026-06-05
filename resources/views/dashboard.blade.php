@@ -74,7 +74,8 @@
     var lineChart = new Chart(ctx, {
       type: 'line',
       data: {
-        labels: ["<?php echo join($incomes['key'], '","')?>"],
+        // Use correct join order: glue first, then array (PHP 8+ deprecation fix)
+        labels: ["<?php echo join('","', $incomes['key'])?>"],
         datasets: [{
           label: "Income",
           backgroundColor: "rgba(38, 185, 154, 0.31)",
@@ -84,7 +85,7 @@
           pointHoverBackgroundColor: "#fff",
           pointHoverBorderColor: "rgba(220,220,220,1)",
           pointBorderWidth: 1,
-          data: [<?php echo join($incomes['value'], ',')?>]
+          data: [<?php echo join(',', $incomes['value'])?>]
         }, {
           label: "Expence",
           backgroundColor: "rgba(3, 88, 106, 0.3)",
@@ -94,7 +95,7 @@
           pointHoverBackgroundColor: "#fff",
           pointHoverBorderColor: "rgba(151,187,205,1)",
           pointBorderWidth: 1,
-          data: [<?php echo join($expences['value'], ',')?>]
+          data: [<?php echo join(',', $expences['value'])?>]
         }]
       },
     });

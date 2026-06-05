@@ -110,7 +110,7 @@ left:0;
 
 <center>
 <h1>
- <strong>Total Fine: {{$rdata['total']}} tk.</strong></h1>
+ <strong>Total Fine: {{$rdata['total']}} Tshs.</strong></h1>
 
 </center>
 <div id="footer">

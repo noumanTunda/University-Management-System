@@ -171,6 +171,69 @@ class SubjectController extends Controller
         return Redirect::route('subject.index')->with("success", $notification);
 
     }
+
+    /**
+     * Show the bulk upload form for subjects.
+     */
+    public function uploadForm()
+    {
+        $departments = Department::select('id','name')->orderby('name','asc')->lists('name','id');
+        $semesters = $this->semesters;
+        return view('subject.upload',compact('departments','semesters'));
+    }
+
+    /**
+     * Download a CSV template for bulk subject import.
+     */
+    public function downloadTemplate()
+    {
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="subjects_template.csv"',
+        ];
+        $columns = ['name','code','credit','department_id','description','levelTerm'];
+        $callback = function() use ($columns) {
+            $file = fopen('php://output','w');
+            fputcsv($file,$columns);
+            // example row
+            fputcsv($file,['Biology','BIO101',3,1,'Basic Biology','L1T1']);
+            fclose($file);
+        };
+        return response()->stream($callback,200,$headers);
+    }
+
+    /**
+     * Process uploaded CSV and create subjects in bulk.
+     */
+    public function uploadStore(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'subjects_file' => 'required|file|mimes:csv,txt',
+        ]);
+        if ($validator->fails()) {
+            return back()->withErrors($validator);
+        }
+        $file = $request->file('subjects_file');
+        $handle = fopen($file->getRealPath(),'r');
+        $header = fgetcsv($handle,1000,',');
+        $required = ['name','code','credit','department_id','description','levelTerm'];
+        if (array_diff($required,$header)) {
+            fclose($handle);
+            return back()->withErrors(['subjects_file'=>'Invalid CSV header. Use the provided template.']);
+        }
+        $created = 0;
+        while (($row = fgetcsv($handle,1000,',')) !== false) {
+            $data = array_combine($header,$row);
+            if (empty($data['code'])) continue;
+            // avoid duplicate code
+            if (Subject::where('code',$data['code'])->exists()) continue;
+            Subject::create($data);
+            $created++;
+        }
+        fclose($handle);
+        $notification = ['title'=>'Bulk Upload','body'=>"$created subjects imported successfully."];
+        return Redirect::route('subject.index')->with('success',$notification);
+    }
     public function subjetsByDptSem($department,$semester)
     {
         $subs = Subject::where('department_id', $department)

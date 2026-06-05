@@ -123,7 +123,7 @@
 
 												<div id="board" class="alert alert-info text-center">
 													<h3 >Monthly Fees</h3>
-													<strong><h2  class="yellow" id='mfee'>0.00 TK.</h2></strong>
+													<strong><h2  class="yellow" id='mfee'>0.00 Tshs.</h2></strong>
 													<h3 id="status" class="green">Status: Paid</h3>
 												</div>
 											</div>

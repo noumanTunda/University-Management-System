@@ -183,7 +183,7 @@
                         </div>
                         <div class="col-md-6 col-sm-6 col-xs-12">
                             <label for="mobileNo">Mobile No *:</label>
-                            <input type="text" id="mobileNo" class="form-control has-feedback-left" data-inputmask="'mask': '880 9999999999'" name="mobileNo" required />
+                            <input type="text" id="mobileNo" class="form-control has-feedback-left" data-inputmask="'mask': '+255 9999999999'" name="mobileNo" required />
                             <i class="fa fa-phone form-control-feedback left" aria-hidden="true"></i>
                             <span id="msg_mobileNo" class="text-danger" ></span>
 
@@ -203,7 +203,7 @@
 
                       <div class="col-md-6 col-sm-6 col-xs-12">
                           <label for="fatherMobileNo">Father Mobile No *:</label>
-                          <input type="text" id="fatherMobileNo" class="form-control has-feedback-left" data-inputmask="'mask': '880 9999999999'" name="fatherMobileNo" required />
+                          <input type="text" id="fatherMobileNo" class="form-control has-feedback-left" data-inputmask="'mask': '+255 9999999999'" name="fatherMobileNo" required />
                           <i class="fa fa-phone form-control-feedback left" aria-hidden="true"></i>
                           <span id="msg_fatherMobileNo" class="text-danger" ></span>
 
@@ -220,7 +220,7 @@
 
                       <div class="col-md-6 col-sm-6 col-xs-12">
                           <label for="motherMobileNo">Mother Mobile No *:</label>
-                          <input type="text" id="motherMobileNo" class="form-control has-feedback-left" data-inputmask="'mask': '880 9999999999'" name="motherMobileNo" required />
+                          <input type="text" id="motherMobileNo" class="form-control has-feedback-left" data-inputmask="'mask': '+255 9999999999'" name="motherMobileNo" required />
                           <i class="fa fa-phone form-control-feedback left" aria-hidden="true"></i>
                           <span id="msg_motherMobileNo" class="text-danger" ></span>
                       </div>
@@ -235,7 +235,7 @@
 
                       <div class="col-md-6 col-sm-6 col-xs-12">
                           <label for="localGuardianMobileNo">Local Guardian Mobile No :</label>
-                          <input type="text" id="localGuardianMobileNo" class="form-control has-feedback-left" data-inputmask="'mask': '880 9999999999'" name="localGuardianMobileNo"  />
+                          <input type="text" id="localGuardianMobileNo" class="form-control has-feedback-left" data-inputmask="'mask': '+255 9999999999'" name="localGuardianMobileNo"  />
                           <i class="fa fa-phone form-control-feedback left" aria-hidden="true"></i>
 
                       </div>

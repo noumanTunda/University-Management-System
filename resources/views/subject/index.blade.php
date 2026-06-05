@@ -43,7 +43,8 @@
                           <td>{{$subject->code}}</td>
                           <td>{{$subject->credit}}</td>
                           <td>{{$subject->department->name}}</td>
-                          <td>{{$semesters[$subject->levelTerm]}}</td>
+                          <!-- Safely display semester name; fallback to empty string if key missing -->
+                          <td>{{ $semesters[$subject->levelTerm] ?? '' }}</td>
                           <td>{{$subject->description}}</td>
                           <td>
                          <a title='Update' class='btn btn-info btn-xs btnUpdate' id='{{$subject->id}}' href='{{URL::route('subject.edit',$subject->id)}}'> <i class="glyphicon glyphicon-check icon-white"></i></a>

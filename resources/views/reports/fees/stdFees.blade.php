@@ -133,9 +133,9 @@ h3{
             <tbody>
               <tr>
                 <td></td>
-                <td>Total Payable: <strong><i class="blue">{{$totals->payTotal}}</i></strong> tk.</td>
-                <td>Total Paid: <strong><i class="blue">{{$totals->paiTotal}}</i></strong> tk.</td>
-                <td>Total Due: <strong><i class="blue">{{$totals->dueamount}}</i></strong> tk.</td>
+                <td>Total Payable: <strong><i class="blue">{{$totals->payTotal}}</i></strong> Tshs.</td>
+                <td>Total Paid: <strong><i class="blue">{{$totals->paiTotal}}</i></strong> Tshs.</td>
+                <td>Total Due: <strong><i class="blue">{{$totals->dueamount}}</i></strong> Tshs.</td>
                 <td></td>
                 <td>
                 </td>

@@ -18,6 +18,10 @@
 					<div class="x_title">
 						<h2>Student Admission<small class="text-danger"> * Feilds are required.
 						</small></h2>
+						<!-- Upload CSV button -->
+						<a href="{{ route('student.upload.form') }}" class="btn btn-primary pull-right" style="margin-top: -30px;">
+							<i class="fa fa-upload"></i> Bulk Upload
+						</a>
 						<div class="clearfix"></div>
 					</div>
 					<div class="x_content">
@@ -135,7 +139,7 @@
 										</div>
 										<div class="col-md-6 col-sm-6 col-xs-12">
 											<label for="nationality">Nationality: <span class="text-danger">*</span></label>
-											<input type="text" id="nationality" value="Bangladeshi" class="form-control has-feedback-left" name="nationality" required />
+											<input type="text" id="nationality" value="Tanzanian" class="form-control has-feedback-left" name="nationality" required />
 											<i class="fa fa-info form-control-feedback left" aria-hidden="true"></i>
 											<span id="msg_nationality" class="text-danger" >{{ $errors->first('nationality') }}</span>
 										</div>
@@ -151,7 +155,7 @@
 										</div>
 										<div class="col-md-6 col-sm-6 col-xs-12">
 											<label for="mobileNo">Mobile No: <span class="text-danger">*</span></label>
-											<input type="text" id="mobileNo" class="form-control has-feedback-left" data-inputmask="'mask': '880 9999999999'" name="mobileNo" required />
+											<input type="text" id="mobileNo" class="form-control has-feedback-left" data-inputmask="'mask': '+255 9999999999'" name="mobileNo" required />
 											<i class="fa fa-phone form-control-feedback left" aria-hidden="true"></i>
 											<span id="msg_mobileNo" class="text-danger" >{{ $errors->first('mobileNo') }}</span>
 
@@ -184,7 +188,7 @@
 
 										<div class="col-md-6 col-sm-6 col-xs-12">
 											<label for="fatherMobileNo">Father Mobile No: <span class="text-danger">*</span></label>
-											<input type="text" id="fatherMobileNo" class="form-control has-feedback-left" data-inputmask="'mask': '880 9999999999'" name="fatherMobileNo" required />
+											<input type="text" id="fatherMobileNo" class="form-control has-feedback-left" data-inputmask="'mask': '+255 9999999999'" name="fatherMobileNo" required />
 											<i class="fa fa-phone form-control-feedback left" aria-hidden="true"></i>
 											<span id="msg_fatherMobileNo" class="text-danger" >{{ $errors->first('fatherMobileNo') }}</span>
 
@@ -201,7 +205,7 @@
 
 										<div class="col-md-6 col-sm-6 col-xs-12">
 											<label for="motherMobileNo">Mother Mobile No: <span class="text-danger">*</span></label>
-											<input type="text" id="motherMobileNo" class="form-control has-feedback-left" data-inputmask="'mask': '880 9999999999'" name="motherMobileNo" required />
+											<input type="text" id="motherMobileNo" class="form-control has-feedback-left" data-inputmask="'mask': '+255 9999999999'" name="motherMobileNo" required />
 											<i class="fa fa-phone form-control-feedback left" aria-hidden="true"></i>
 											<span id="msg_motherMobileNo" class="text-danger" >{{ $errors->first('motherMobileNo') }}</span>
 										</div>
@@ -216,7 +220,7 @@
 
 										<div class="col-md-6 col-sm-6 col-xs-12">
 											<label for="localGuardianMobileNo">Local Guardian Mobile No :</label>
-											<input type="text" id="localGuardianMobileNo" class="form-control has-feedback-left" data-inputmask="'mask': '880 9999999999'" name="localGuardianMobileNo"  />
+											<input type="text" id="localGuardianMobileNo" class="form-control has-feedback-left" data-inputmask="'mask': '+255 9999999999'" name="localGuardianMobileNo"  />
 											<i class="fa fa-phone form-control-feedback left" aria-hidden="true"></i>
 
 										</div>

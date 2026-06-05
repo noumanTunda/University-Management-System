@@ -11,7 +11,18 @@ class UserTableSeeder extends Seeder
      */
     public function run()
     {
+        // Remove existing users to avoid duplicates during seeding
         DB::table('users')->delete();
-        User::create(array('firstname'=>'Mr.','lastname'=>'Admin','login'=>'admin','email' => 'admin@university.test','group'=>'Admin',"password"=> "demo123"));
+        // Create the admin user with the required credentials
+        User::create([
+            'firstname' => 'Mr.',
+            'lastname'  => 'Admin',
+            'login'     => 'admin',
+            'email'     => 'admin@test.com',
+            // Use the exact group name expected by the authorization gates
+            'group'     => 'Admin',
+            // The User model hashes the password via setPasswordAttribute
+            'password'  => '!Password',
+        ]);
     }
 }

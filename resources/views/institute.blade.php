@@ -59,7 +59,7 @@
                         <label class="control-label col-md-3 col-sm-3 col-xs-12" for="telephone">Phone Number <span class="required">*</span>
                         </label>
                         <div class="col-md-6 col-sm-6 col-xs-12">
-                          <input type="tel" id="telephone" name="phoneNo" required="required" value="{{$institute->phoneNo}}" placeholder="+8801xxxxxxxxx or 01xxxxxxxxx" data-validate-length-range="11,20" class="form-control col-md-7 col-xs-12">
+                          <input type="tel" id="telephone" name="phoneNo" required="required" value="{{$institute->phoneNo}}" placeholder="+2551xxxxxxxxx or 07xxxxxxxxx" data-validate-length-range="11,20" class="form-control col-md-7 col-xs-12">
                           <span class="text-danger">{{ $errors->first('phoneNo') }}</span>
                         </div>
                       </div>

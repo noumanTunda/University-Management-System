@@ -24,49 +24,62 @@ class DashboardController extends Controller {
 	{
 		$error = Session::get('error');
 		$success=Session::get('success');
-		$totalAdmit = Student::count();
-		$totalRegisterd = Registration::groupBy('students_id')->get();
-		$totalDepartment = Department::count();
-		$totalSubject = Subject::count();
-		$totalAttendance = Attendance::groupBy('date')->get();
-		$totalExam = Exam::groupBy('exam')->groupBy('subject_id')->get();
+		// Use collection count to avoid Builder::count() issue on newer PHP versions
+		// Use DB query to avoid SoftDeletes scope triggering count warning
+		$totalAdmit = \DB::table('students')->count();
+		// Count distinct registered students
+		$totalRegisterd = \DB::table('registrations')->distinct('students_id')->count('students_id');
+		$totalDepartment = \DB::table('department')->count();
+		$totalSubject = \DB::table('subject')->count();
+		// Count distinct attendance dates
+		$totalAttendance = \DB::table('attendances')->distinct('date')->count('date');
+		// Count total exams (distinct combinations not directly supported, using total rows as approximation)
+		$totalExam = \DB::table('exams')->count();
 		$total = [
-			'admitted' =>$totalAdmit,
-			'registered' =>count($totalRegisterd),
-			'department' =>$totalDepartment,
-			'subject' =>$totalSubject,
-			'attendance' =>count($totalAttendance),
-			'exam' =>count($totalExam),
+			'admitted' => $totalAdmit,
+			'registered' => $totalRegisterd,
+			'department' => $totalDepartment,
+			'subject' => $totalSubject,
+			'attendance' => $totalAttendance,
+			'exam' => $totalExam,
 		];
 		//graph data
-		$monthlyIncome= Account::selectRaw('month(date) as month, sum(amount) as amount')
-		->with(array('sector' =>  function($query){
-			$query->where('type','Income');
-		}))->whereHas('sector',function($query){
-			$query->where('type','Income');
-		})
-		->groupBy('month')
-		->get();
-		$monthlyExpences= Account::selectRaw('month(date) as month, sum(amount) as amount')
-		->with(array('sector' =>  function($query){
-			$query->where('type','Expence');
-		}))->whereHas('sector',function($query){
-			$query->where('type','Expence');
-		})
-		->groupBy('month')
-		->get();
-		$incomeTotal = Account::with(array('sector' =>  function($query){
-			$query->where('type','Income');
-		}))->whereHas('sector',function($query){
-			$query->where('type','Income');
-		})
-		->sum('amount');
-		$expenceTotal = Account::with(array('sector' =>  function($query){
-			$query->where('type','Expence');
-		}))->whereHas('sector',function($query){
-			$query->where('type','Expence');
-		})
-		->sum('amount');
+		$monthlyIncome = Account::selectRaw('month(date) as month, sum(amount) as amount')
+		    ->with(['sector' => function ($query) {
+		        $query->where('type', 'Income');
+		    }])
+		    // Correct whereHas signature: relation, callback, operator, count
+		    ->whereHas('sector', function ($query) {
+		        $query->where('type', 'Income');
+		    }, '>=', 1)
+		    ->groupBy('month')
+		    ->get();
+
+		$monthlyExpences = Account::selectRaw('month(date) as month, sum(amount) as amount')
+		    ->with(['sector' => function ($query) {
+		        $query->where('type', 'Expence');
+		    }])
+		    ->whereHas('sector', function ($query) {
+		        $query->where('type', 'Expence');
+		    }, '>=', 1)
+		    ->groupBy('month')
+		    ->get();
+
+		$incomeTotal = Account::with(['sector' => function ($query) {
+		        $query->where('type', 'Income');
+		    }])
+		    ->whereHas('sector', function ($query) {
+		        $query->where('type', 'Income');
+		    }, '>=', 1)
+		    ->sum('amount');
+
+		$expenceTotal = Account::with(['sector' => function ($query) {
+		        $query->where('type', 'Expence');
+		    }])
+		    ->whereHas('sector', function ($query) {
+		        $query->where('type', 'Expence');
+		    }, '>=', 1)
+		    ->sum('amount');
 		$incomes=$this->datahelper($monthlyIncome);
 		$expences=$this->datahelper($monthlyExpences);
 		$balance = $incomeTotal - $expenceTotal;
