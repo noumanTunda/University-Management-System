@@ -81,11 +81,12 @@ Route::group(['middleware' => 'auth'], function()
   Route::get('/fees/add-payment', [ 'as' => 'fees.addPaymentForm', 'uses' => 'FeesController@addPaymentForm' ]);
   Route::post('/fees/add-payment', [ 'as' => 'fees.addPaymentStore', 'uses' => 'FeesController@addPaymentStore' ]);
 
+  // AJAX endpoint to fetch payment info (due amount and fee types) for a student
+  Route::get('/fees/payment-info-data/{studentId}', [ 'as' => 'fees.paymentInfoData', 'uses' => 'FeesController@paymentInfoData' ]);
+
   // Routes for detailed payment information per student
   Route::get('/fees/payment-info/{studentId}', [ 'as' => 'fees.paymentInfoForm', 'uses' => 'FeesController@paymentInfoForm' ]);
   Route::post('/fees/payment-info/{studentId}', [ 'as' => 'fees.paymentInfoStore', 'uses' => 'FeesController@paymentInfoStore' ]);
-  // AJAX partial for displaying payment info on the same add‑payment page
-  Route::get('/fees/payment-info-partial/{studentId}', [ 'as' => 'fees.paymentInfoPartial', 'uses' => 'FeesController@paymentInfoPartial' ]);
 
   // Resource routes for FeesController (standard CRUD)
   Route::resource('fees','FeesController');

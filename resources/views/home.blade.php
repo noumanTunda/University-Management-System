@@ -340,11 +340,11 @@
             
             <!-- Custom Dynamic Tall-Font Input Fields -->
             <div class="form-group-custom">
-              <input type="text" class="form-control" name="login" placeholder="Username or Registration Number" required autocomplete="username" />
+              <input type="text" class="form-control" name="login" placeholder="Enter your Username" required autocomplete="username" />
             </div>
             
             <div class="form-group-custom">
-              <input type="password" class="form-control" name="password" placeholder="Password" required autocomplete="current-password" />
+              <input type="password" class="form-control" name="password" placeholder="Enter your Password" required autocomplete="current-password" />
             </div>
             
             <div class="form-group-custom d-flex justify-content-between align-items-center" style="margin-bottom: 25px;">

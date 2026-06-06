@@ -60,6 +60,7 @@
                                     </div>
                                 </div>
                             </div>
+                            <!-- Payable amount, Pay Date and action buttons -->
                             <div class="row">
                                 <div class="col-md-4">
                                     <div class="item form-group">
@@ -75,13 +76,46 @@
                                         <span class="text-danger">{{ $errors->first('payDate') }}</span>
                                     </div>
                                 </div>
-                                <div class="col-md-4">
-                                    <button id="btnsave" type="submit" class="btn btn-success" style="margin-top: 25px;">
+                                <div class="col-md-4" style="margin-top:25px;">
+                                    <button id="btnsave" type="submit" class="btn btn-success">
                                         <i class="fa fa-check"></i> Save Payment
                                     </button>
-                                    <button type="button" id="btnGetInfo" class="btn btn-info" style="margin-top: 25px; margin-left:10px;">
+                                    <button type="button" id="btnGetInfo" class="btn btn-info" style="margin-left:10px;">
                                         Get Payment Info
                                     </button>
+                                </div>
+                            </div>
+                            <!-- Section to display fetched payment info -->
+                            <div id="paymentInfo" class="row" style="margin-top:20px; display:none;">
+                                <div class="col-md-12">
+                                    <div class="alert alert-info">
+                                        <strong>Total Due Amount:</strong> <span id="dueAmount">0</span>
+                                    </div>
+                                    <div class="item form-group">
+                                        <label class="control-label" for="fee_type">Fee Type <span class="required">*</span></label>
+                                        <select name="fee_type" id="fee_type" class="form-control" required>
+                                            <option value="" disabled selected>Pick a fee type</option>
+                                        </select>
+                                    </div>
+                                    <!-- Table showing due amount per category -->
+                                    <div id="dueBreakdown" style="margin-top:15px;">
+                                        <h5>Due by Category</h5>
+                                        <table class="table table-bordered" id="dueTable">
+                                            <thead>
+                                                <tr>
+                                                    <th>Category</th>
+                                                    <th>Due Amount</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody></tbody>
+                                            <tfoot>
+                                                <tr>
+                                                    <th>Total Due</th>
+                                                    <th id="totalDueFooter">0</th>
+                                                </tr>
+                                            </tfoot>
+                                        </table>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -101,19 +135,48 @@ $(document).ready(function(){
     $('.select2_single').select2({allowClear:true});
     $('#btnGetInfo').on('click', function(){
         var studentId = $('#student_id').val();
+        var session = $('#session').val();
         if(!studentId){
             alert('Please select a student first');
             return;
         }
-        // Load partial via AJAX and inject into the page
-        var url = '{{ route('fees.paymentInfoPartial', ['studentId' => '__ID__']) }}';
+        var url = '{{ route('fees.paymentInfoData', ['studentId' => '__ID__']) }}';
         url = url.replace('__ID__', studentId);
-        $.get(url, function(html){
-            $('#paymentInfoContainer').html(html);
-            // Re‑initialize select2 inside the loaded partial
-            $('.select2_single').select2({allowClear:true});
-        }).fail(function(){
-            alert('Failed to load payment information.');
+        if(session){
+            url += '?session=' + encodeURIComponent(session);
+        }
+        // Fetch payment info via AJAX
+        $.ajax({
+            url: url,
+            type: 'GET',
+            dataType: 'json',
+            success: function(data){
+                // Show total due amount
+                $('#dueAmount').text(data.due);
+                // Populate fee type dropdown
+                var $feeSelect = $('#fee_type');
+                $feeSelect.empty();
+                $feeSelect.append('<option value="" disabled selected>Pick a fee type</option>');
+                $.each(data.fees, function(i, fee){
+                    var amt = Number(fee.amount).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+                    $feeSelect.append('<option value="' + fee.id + '">' + fee.title + ' (' + amt + ')</option>');
+                });
+                // Populate due‑by‑category table
+                var $tbody = $('#dueTable tbody');
+                $tbody.empty();
+                var total = 0;
+                $.each(data.dueDetails, function(i, item){
+                    var dueAmt = Number(item.due).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+                    $tbody.append('<tr><td>' + item.title + '</td><td>' + dueAmt + '</td></tr>');
+                    total += parseFloat(item.due) || 0;
+                });
+                var totalFormatted = Number(total).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+                $('#totalDueFooter').text(totalFormatted);
+                $('#paymentInfo').show();
+            },
+            error: function(){
+                alert('Unable to fetch payment information.');
+            }
         });
     });
     $('form').on('submit', function(e){

@@ -213,6 +213,46 @@ class FeesController extends Controller
     }
 
     /**
+     * Return payment related information for a student as JSON.
+     * This is used by the add payment page via AJAX to display the
+     * current due amount and the list of fees applicable to the
+     * student's department without leaving the page.
+     */
+    public function paymentInfoData($studentId)
+    {
+        // Fetch student and compute due amount
+        $student = Student::findOrFail($studentId);
+        $due = FeeCollection::select(DB::RAW('IFNULL(sum(payableAmount),0)- IFNULL(sum(paidAmount),0) as dueamount'))
+            ->where('students_id', $studentId)
+            ->first();
+
+        // Fees assigned to the student's department
+        $fees = Fee::where('department_id', $student->department_id)
+            ->select('id', 'title', 'amount')
+            ->get();
+
+        // Build a simple breakdown of each fee category with its amount.
+        // Since the current schema does not store a relation between a fee
+        // collection and a specific fee, we present the fee amount as the
+        // placeholder due for that category. The overall total due is still
+        // provided in the 'due' field.
+        $dueDetails = $fees->map(function($fee) {
+            return [
+                'fee_id' => $fee->id,
+                'title' => $fee->title,
+                // Placeholder: assume full fee amount is due.
+                'due' => $fee->amount,
+            ];
+        })->values();
+
+        return response()->json([
+            'due' => $due ? $due->dueamount : 0,
+            'fees' => $fees,
+            'dueDetails' => $dueDetails,
+        ]);
+    }
+
+    /**
      * Store a new payment record for the selected student.
      */
     public function addPaymentStore(Request $request)
@@ -251,19 +291,6 @@ class FeesController extends Controller
         // Fees assigned to the student's department (could be filtered further by session if needed)
         $fees = Fee::where('department_id', $student->department_id)->select('id','title','amount')->get();
         return view('fees.payment_info', compact('student','sessions','fees'));
-    }
-
-    /**
-     * Return a partial view with payment information for AJAX loading.
-     * This view is intended to be injected into the add‑payment page.
-     */
-    public function paymentInfoPartial($studentId)
-    {
-        $student = Student::findOrFail($studentId);
-        $sessions = Student::select('session','session')->distinct()->lists('session','session');
-        $fees = Fee::where('department_id', $student->department_id)->select('id','title','amount')->get();
-        // Return a view without the master layout (partial)
-        return view('fees.payment_info_partial', compact('student','sessions','fees'));
     }
 
     /**
@@ -313,7 +340,10 @@ class FeesController extends Controller
         }
         DB::beginTransaction();
         try {
+            // Update paid amount
             $feeCol->paidAmount = $feeCol->paidAmount + $data['payAmount'];
+            // Recalculate due amount. If the payment exceeds the current due, the result will be negative.
+            $feeCol->dueAmount = $feeCol->dueAmount - $data['payAmount'];
             $feeCol->save();
             // create accounting entry if fee sector exists
             $isFeeSector = Sector::where('name','Fees')->where('type','Income')->first();
