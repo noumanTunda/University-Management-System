@@ -15,8 +15,24 @@ class FeeCollection extends Model
         'lateFee',
         'paidAmount',
         'dueAmount',
-        'payDate'
+        'payDate',
+        // New column to hold the running balance (can be negative when over‑paid)
+        'balance',
     ];
+
+    // Ensure the balance attribute is always present when the model is serialized
+    protected $appends = ['balance'];
+
+    /**
+     * Accessor for the balance attribute.
+     * If the column exists in the database it will be used directly;
+     * otherwise we fall back to the dueAmount which already reflects
+     * the remaining amount (negative when over‑paid).
+     */
+    public function getBalanceAttribute()
+    {
+        return $this->attributes['balance'] ?? $this->dueAmount;
+    }
     protected $dates = ['created_at','payDate'];
     /**
      * Mutator for the payDate attribute.
@@ -42,6 +58,22 @@ class FeeCollection extends Model
             $date = Carbon::parse($value);
         }
         $this->attributes['payDate'] = $date;
+    }
+
+    /**
+     * Boot the model and ensure the balance column is always kept in sync.
+     * Balance is calculated as: dueAmount + (lateFee ?? 0).
+     * This runs on both creating and updating events so any change to
+     * paidAmount, dueAmount or lateFee will automatically update the balance.
+     */
+    protected static function boot()
+    {
+        parent::boot();
+        static::saving(function ($model) {
+            $late = $model->lateFee ?? 0;
+            $due  = $model->dueAmount ?? 0;
+            $model->balance = $due + $late;
+        });
     }
 
 }

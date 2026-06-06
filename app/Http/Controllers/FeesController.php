@@ -273,6 +273,7 @@ class FeesController extends Controller
             'payableAmount' => $data['payableAmount'],
             'paidAmount' => $data['payableAmount'],
             'dueAmount' => 0,
+            // balance will be calculated automatically by the model
             'payDate' => $data['payDate'],
         ]);
         $notification = ['title' => 'Payment', 'body' => 'Payment recorded successfully.'];
@@ -315,6 +316,7 @@ class FeesController extends Controller
             'payableAmount' => $data['payableAmount'],
             'paidAmount' => 0,
             'dueAmount' => $data['payableAmount'],
+            // balance will be calculated automatically by the model
             'payDate' => $data['payDate'],
         ]);
         // Optionally, you could store the fee_id in a separate pivot table if needed.
@@ -344,6 +346,8 @@ class FeesController extends Controller
             $feeCol->paidAmount = $feeCol->paidAmount + $data['payAmount'];
             // Recalculate due amount. If the payment exceeds the current due, the result will be negative.
             $feeCol->dueAmount = $feeCol->dueAmount - $data['payAmount'];
+            // Update balance to reflect the new due amount (negative when over‑paid)
+            $feeCol->balance = $feeCol->dueAmount;
             $feeCol->save();
             // create accounting entry if fee sector exists
             $isFeeSector = Sector::where('name','Fees')->where('type','Income')->first();

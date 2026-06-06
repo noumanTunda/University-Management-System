@@ -5,14 +5,15 @@
     <h2>Payments for {{ $student->firstName }} {{ $student->lastName }}</h2>
     <table class="table table-bordered">
         <thead>
-            <tr>
-                <th>#</th>
-                <th>Payable Amount</th>
-                <th>Paid Amount</th>
-                <th>Due Amount</th>
-                <th>Pay Date</th>
-                <th>Actions</th>
-            </tr>
+                <tr>
+                    <th>#</th>
+                    <th>Payable Amount</th>
+                    <th>Paid Amount</th>
+                    <th>Due Amount</th>
+                    <th>Balance</th>
+                    <th>Pay Date</th>
+                    <th>Actions</th>
+                </tr>
         </thead>
         <tbody>
             @foreach($feeCollections as $index => $fee)
@@ -21,6 +22,7 @@
                     <td>{{ $fee->payableAmount }}</td>
                     <td>{{ $fee->paidAmount }}</td>
                     <td>{{ $fee->dueAmount }}</td>
+                    <td>{{ $fee->balance }}</td>
                     <td>{{ $fee->payDate }}</td>
                     <td>
                         <a href="{{ route('fees.payForm', $fee->id) }}" class="btn btn-sm btn-primary">Add Installment</a>
