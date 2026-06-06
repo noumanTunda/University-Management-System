@@ -90,7 +90,7 @@
                   <label class="control-label col-md-3 col-sm-3 col-xs-12" for="duration_years">Duration (Years) <span class="required">*</span>
                   </label>
                   <div class="col-md-6 col-sm-6 col-xs-12">
-                    <input type="number" id="duration_years" name="duration_years" value="{{old("duration_years")}} diligence="1" min="1" required="required" class="form-control col-md-7 col-xs-12">
+                    <input type="number" id="duration_years" name="duration_years" value="{{ old('duration_years', 4) }}" min="1" max="4" required="required" class="form-control col-md-7 col-xs-12">
                     @if ($errors->has("duration_years"))
                       <span class="invalid-feedback" role="alert">
                                         <strong>{{ $errors->first("duration_years") }}</strong>
@@ -99,33 +99,7 @@
                   </div>
                 </div>
 
-                <div class="form-group">
-                  <label class="control-label col-md-3 col-sm-3 col-xs-12">Subjects</label>
-                  <div class="col-md-6 col-sm-6 col-xs-12">
-                    <div id="subjects_container">
-                      @if(old('subjects'))
-                        @foreach(old('subjects') as $key => $subject)
-                          <div class="subject-entry form-inline" style="margin-bottom: 5px;">
-                            {{ Form::select('subjects['.$key.'][id]', $subjects, $subject['id'], ['class' => 'form-control', 'placeholder' => 'Select Subject', 'required' => 'required']) }}
-                            <input type="number" name="subjects[{{$key}}][semester]" value="{{ $subject['semester'] }}" class="form-control" placeholder="Semester (1 or 2)" min="1" max="2" required="required" style="width: 150px;">
-                            <button type="button" class="btn btn-danger btn-sm remove-subject">Remove</button>
-                            @if ($errors->has('subjects.'.$key.'.id'))
-                              <span class="invalid-feedback" role="alert">
-                                <strong>{{ $errors->first('subjects.'.$key.'.id') }}</strong>
-                              </span>
-                            @endif
-                            @if ($errors->has('subjects.'.$key.'.semester'))
-                              <span class="invalid-feedback" role="alert">
-                                <strong>{{ $errors->first('subjects.'.$key.'.semester') }}</strong>
-                              </span>
-                            @endif
-                          </div>
-                        @endforeach
-                      @endif
-                    </div>
-                    <button type="button" id="add_subject" class="btn btn-success btn-sm">Add Subject</button>
-                  </div>
-                </div>
+                @include('course._subject_builder')
 
                 <div class="ln_solid"></div>
                 <div class="form-group">
@@ -146,24 +120,5 @@
 @endsection
 
 @section('extrascript')
-  <script>
-    $(document).ready(function() {
-      var subjectIndex = {{ count(old('subjects', [])) }};
-      $('#add_subject').on('click', function() {
-        var newSubjectEntry = `
-          <div class="subject-entry form-inline" style="margin-bottom: 5px;">
-            {{ Form::select('subjects[` + subjectIndex + `][id]', $subjects, null, ['class' => 'form-control', 'placeholder' => 'Select Subject', 'required' => 'required']) }}
-            <input type="number" name="subjects[` + subjectIndex + `][semester]" class="form-control" placeholder="Semester (1 or 2)" min="1" max="2" required="required" style="width: 150px;">
-            <button type="button" class="btn btn-danger btn-sm remove-subject">Remove</button>
-          </div>
-        `;
-        $('#subjects_container').append(newSubjectEntry);
-        subjectIndex++;
-      });
-
-      $(document).on('click', '.remove-subject', function() {
-        $(this).closest('.subject-entry').remove();
-      });
-    });
-  </script>
+  @include('course._subject_builder_script')
 @endsection

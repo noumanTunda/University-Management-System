@@ -42,6 +42,7 @@ class Course extends Model
     {
         return $this->belongsToMany('App\Subject', 'course_subject')
                     ->withPivot('semester')
+                    ->orderBy('course_subject.semester')
                     ->withTimestamps();
     }
 

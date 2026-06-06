@@ -67,7 +67,7 @@
                     <td>{{$course->id}}</td>
                     <td>{{$course->name}}</td>
                     <td>{{$course->code}}</td>
-                    <td>{{$course->department->name}}</td>
+                    <td>{{ $course->department ? $course->department->name : 'Unassigned' }}</td>
                     <td>{{$course->duration_years}}</td>
                     <td>{{$course->min_credits}}</td>
                     <td>

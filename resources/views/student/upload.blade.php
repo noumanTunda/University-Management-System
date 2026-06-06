@@ -17,6 +17,7 @@
                         <div class="clearfix"></div>
                     </div>
                     <div class="x_content">
+                        <p class="text-muted">CSV uploads must include <strong>course_id</strong> so each student is assigned a course during admission.</p>
                         <form class="form-horizontal form-label-left" method="POST" enctype="multipart/form-data" action="{{ route('student.upload.store') }}">
                             {{ csrf_field() }}
                             <div class="item form-group">

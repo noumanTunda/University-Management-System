@@ -91,7 +91,7 @@
                   <label class="control-label col-md-3 col-sm-3 col-xs-12" for="duration_years">Duration (Years) <span class="required">*</span>
                   </label>
                   <div class="col-md-6 col-sm-6 col-xs-12">
-                    <input type="number" id="duration_years" name="duration_years" value="{{old("duration_years", $course->duration_years)}}" min="1" required="required" class="form-control col-md-7 col-xs-12">
+                    <input type="number" id="duration_years" name="duration_years" value="{{ old('duration_years', $course->duration_years) }}" min="1" max="4" required="required" class="form-control col-md-7 col-xs-12">
                     @if ($errors->has("duration_years"))
                       <span class="invalid-feedback" role="alert">
                                         <strong>{{ $errors->first("duration_years") }}</strong>
@@ -100,35 +100,7 @@
                   </div>
                 </div>
 
-                <div class="form-group">
-                  <label class="control-label col-md-3 col-sm-3 col-xs-12">Subjects</label>
-                  <div class="col-md-6 col-sm-6 col-xs-12">
-                    <div id="subjects_container">
-                      @php $subjectIndex = 0; @endphp
-                      @foreach($course->subjects as $subject)
-                        <div class="subject-entry form-inline" style="margin-bottom: 5px;">
-                          {{ Form::select("subjects[".$subjectIndex."][id]", $allSubjects, old("subjects.".$subjectIndex.".id", $subject->id), ["class" => "form-control", "placeholder" => "Select Subject", "required" => "required"]) }}
-                          <input type="number" name="subjects[{{$subjectIndex}}][semester]" value="{{ old("subjects.".$subjectIndex.".semester", $subject->pivot->semester) }}" class="form-control" placeholder="Semester (1 or 2)" min="1" max="2" required="required" style="width: 150px;">
-                          <button type="button" class="btn btn-danger btn-sm remove-subject">Remove</button>
-                        </div>
-                        @php $subjectIndex++; @endphp
-                      @endforeach
-                      @if(old("subjects"))
-                        @foreach(old("subjects") as $key => $subjectData)
-                          @if(!array_key_exists($key, $course->subjects->toArray())) {{-- Only add if not already in $course->subjects --}}
-                            <div class="subject-entry form-inline" style="margin-bottom: 5px;">
-                              {{ Form::select("subjects[".$key."][id]", $allSubjects, $subjectData["id"], ["class" => "form-control", "placeholder" => "Select Subject", "required" => "required"]) }}
-                              <input type="number" name="subjects[{{$key}}][semester]" value="{{ $subjectData["semester"] }}" class="form-control" placeholder="Semester (1 or 2)" min="1" max="2" required="required" style="width: 150px;">
-                              <button type="button" class="btn btn-danger btn-sm remove-subject">Remove</button>
-                            </div>
-                            @php $subjectIndex++; @endphp
-                          @endif
-                        @endforeach
-                      @endif
-                    </div>
-                    <button type="button" id="add_subject" class="btn btn-success btn-sm">Add Subject</button>
-                  </div>
-                </div>
+                @include('course._subject_builder')
 
                 <div class="ln_solid"></div>
                 <div class="form-group">
@@ -149,24 +121,5 @@
 @endsection
 
 @section("extrascript")
-  <script>
-    $(document).ready(function() {
-      var subjectIndex = {{ count(old("subjects", $course->subjects)) }};
-      $("#add_subject").on("click", function() {
-        var newSubjectEntry = `
-          <div class="subject-entry form-inline" style="margin-bottom: 5px;">
-            {{ Form::select("subjects[` + subjectIndex + `][id]", $allSubjects, null, ["class" => "form-control", "placeholder" => "Select Subject", "required" => "required"]) }}
-            <input type="number" name="subjects[` + subjectIndex + `][semester]" class="form-control" placeholder="Semester (1 or 2)" min="1" max="2" required="required" style="width: 150px;">
-            <button type="button" class="btn btn-danger btn-sm remove-subject">Remove</button>
-          </div>
-        `;
-        $("#subjects_container").append(newSubjectEntry);
-        subjectIndex++;
-      });
-
-      $(document).on("click", ".remove-subject", function() {
-        $(this).closest(".subject-entry").remove();
-      });
-    });
-  </script>
+  @include('course._subject_builder_script')
 @endsection

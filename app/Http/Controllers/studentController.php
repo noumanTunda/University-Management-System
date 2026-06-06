@@ -121,8 +121,8 @@ class studentController extends Controller {
 		$rules=[
 			'idNo' => 'required|unique:students',
 			'session' => 'required',
-            'course_id' => 'required|exists:courses,id',
-			'department_id' => 'required',
+			'course_id' => 'required|exists:courses,id',
+			'department_id' => 'required|exists:department,id',
 			'bncReg' => 'required',
 			'batchNo' => 'required',
 			'firstName' => 'required',
@@ -231,6 +231,7 @@ class studentController extends Controller {
 		$data=$request->all();
 		$rules=[
 			'course_id' => 'required|exists:courses,id',
+			'department_id' => 'required|exists:department,id',
 			'bncReg' => 'required',
 			'batchNo' => 'required',
 			'firstName' => 'required',
@@ -340,13 +341,13 @@ class studentController extends Controller {
 			'Content-Disposition' => 'attachment; filename="students_template.csv"',
 		];
 		$columns = [
-			'idNo','session','department_id','bncReg','batchNo','firstName','middleName','lastName','mobileNo','gender','religion','bloodgroup','nationality','dob','fatherName','fatherMobileNo','motherName','motherMobileNo','presentAddress','parmanentAddress','isActive'
+			'idNo','session','department_id','course_id','bncReg','batchNo','firstName','middleName','lastName','mobileNo','gender','religion','bloodgroup','nationality','dob','fatherName','fatherMobileNo','motherName','motherMobileNo','presentAddress','parmanentAddress','isActive'
 		];
 		$callback = function() use ($columns) {
 			$file = fopen('php://output', 'w');
 			fputcsv($file, $columns);
 			// add an example row (optional)
-			fputcsv($file, ['2021001','2021',1,'BN001','B001','John','A.','Doe','0123456789','Male','Christian','O+','American','01/01/2000','Father Name','0123456789','Mother Name','0123456789','Address 1','Address 2',1]);
+			fputcsv($file, ['2021001','2021',1,1,'BN001','B001','John','A.','Doe','0123456789','Male','Christian','O+','American','01/01/2000','Father Name','0123456789','Mother Name','0123456789','Address 1','Address 2',1]);
 			fclose($file);
 		};
 		return response()->stream($callback, 200, $headers);
@@ -371,7 +372,7 @@ class studentController extends Controller {
 		$file = $request->file('students_file');
 		$handle = fopen($file->getRealPath(), 'r');
 		$header = fgetcsv($handle, 1000, ',');
-		$required = ['idNo','session','department_id','bncReg','batchNo','firstName','middleName','lastName','mobileNo','gender','religion','bloodgroup','nationality','dob','fatherName','fatherMobileNo','motherName','motherMobileNo','presentAddress','parmanentAddress','isActive'];
+		$required = ['idNo','session','department_id','course_id','bncReg','batchNo','firstName','middleName','lastName','mobileNo','gender','religion','bloodgroup','nationality','dob','fatherName','fatherMobileNo','motherName','motherMobileNo','presentAddress','parmanentAddress','isActive'];
 		// simple validation of header
 		if (array_diff($required, $header)) {
 			fclose($handle);
@@ -381,11 +382,14 @@ class studentController extends Controller {
 		while (($row = fgetcsv($handle, 1000, ',')) !== false) {
 			$data = array_combine($header, $row);
 			// basic validation for required fields
-			if (empty($data['idNo'])) {
+			if (empty($data['idNo']) || empty($data['course_id'])) {
 				continue; // skip invalid rows
 			}
 			// check duplicate idNo
 			if (Student::where('idNo', $data['idNo'])->exists()) {
+				continue;
+			}
+			if (!Course::where('id', $data['course_id'])->where('department_id', $data['department_id'])->exists()) {
 				continue;
 			}
 			// set default photo placeholder

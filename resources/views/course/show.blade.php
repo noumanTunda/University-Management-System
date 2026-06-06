@@ -50,7 +50,7 @@
                 <h3>{{ $course->name }}</h3>
 
                 <ul class="list-unstyled user_data">
-                  <li><i class="fa fa-briefcase user-profile-icon"></i> {{ $course->department->name }}
+                  <li><i class="fa fa-briefcase user-profile-icon"></i> {{ $course->department ? $course->department->name : 'Unassigned' }}
                   </li>
                   <li>
                     <i class="fa fa-clock-o user-profile-icon"></i> Duration: {{ $course->duration_years }} Years
@@ -91,7 +91,12 @@
                           <td>{{ $subject->code }}</td>
                           <td>{{ $subject->name }}</td>
                           <td>{{ $subject->credit }}</td>
-                          <td>{{ $subject->pivot->semester }}</td>
+                          <td>
+                            @php
+                              $semesterLabels = [1=>'1st Year 1st Semester',2=>'1st Year 2nd Semester',3=>'2nd Year 1st Semester',4=>'2nd Year 2nd Semester',5=>'3rd Year 1st Semester',6=>'3rd Year 2nd Semester',7=>'4th Year 1st Semester',8=>'4th Year 2nd Semester'];
+                            @endphp
+                            {{ isset($semesterLabels[$subject->pivot->semester]) ? $semesterLabels[$subject->pivot->semester] : $subject->pivot->semester }}
+                          </td>
                         </tr>
                       @endforeach
                     </tbody>
