@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 use App\Http\Controllers\Controller;
 use App\Student;
+use App\Course;
 use App\Department;
 use Validator;
 use Session;
@@ -43,7 +44,7 @@ class studentController extends Controller {
 		{
 			$departments = Department::select('id','name')->orderby('name','asc')->lists('name', 'id');
 			$selectDep=Session::get('deptId');
-			$students =Student::where('department_id',$selectDep)->get();
+			$students =Student::with('course')->where('department_id',$selectDep)->get();
 			return view('student.index',compact('students','departments','selectDep'));
 		}
 		$departments = Department::select('id','name')->orderby('name','asc')->lists('name', 'id');
@@ -56,7 +57,7 @@ class studentController extends Controller {
 		Session::put('deptId',$request->department_id);
 		$departments = Department::select('id','name')->orderby('name','asc')->lists('name', 'id');
 		$selectDep=$request->department_id;
-		$students =Student::where('department_id',$selectDep)->get();
+		$students =Student::with('course')->where('department_id',$selectDep)->get();
 
 		return view('student.index',compact('students','departments','selectDep'));
 	}
@@ -67,6 +68,7 @@ class studentController extends Controller {
 		$students =Student::select('id','idNo','firstName','lastName','middleName')
 		->where('department_id',$dID)
 		->where('session',$session)
+		->whereNotNull('course_id')
 		->get();
 		return Response()->json([
 			'success' => true,
@@ -102,8 +104,9 @@ class studentController extends Controller {
 	*/
 	public function create()
 	{
-		$departments = Department::select('id','name')->orderby('name','asc')->lists('name', 'id');
-		return view('student.create',compact('departments'));
+		$departments = Department::select("id","name")->orderby("name","asc")->lists("name", "id");
+		$courses = $this->courseOptions();
+		return view("student.create",compact("departments", "courses"));
 	}
 
 
@@ -118,6 +121,7 @@ class studentController extends Controller {
 		$rules=[
 			'idNo' => 'required|unique:students',
 			'session' => 'required',
+            'course_id' => 'required|exists:courses,id',
 			'department_id' => 'required',
 			'bncReg' => 'required',
 			'batchNo' => 'required',
@@ -149,6 +153,11 @@ class studentController extends Controller {
 			// ], 400);
 		}
 
+		if (!Course::where('id', $data['course_id'])->where('department_id', $data['department_id'])->exists()) {
+			$validator->errors()->add('course_id', 'Selected course must belong to the selected department.');
+			return Redirect::route('student.create')->withInput()->withErrors($validator);
+		}
+
 		$directory = public_path() . "/assets/images/students/";
 		$fextention = $data['photo']->getClientOriginalExtension();
 		$fileName=str_replace(' ','_',$data['idNo']).'.'.$fextention;
@@ -177,10 +186,10 @@ class studentController extends Controller {
 		try
 		{
 
-			$student = Student::with('department')->where('id',$id)->first();
+			$student = Student::with(['department', 'course'])->where('id',$id)->first();
 			return view('student.show',compact('student'));
 		}
-		catch (Exception $e)
+		catch (\Exception $e)
 		{
 			$notification= array('title' => 'Data Edit', 'body' => "There is no record.");
 			return Redirect::route('student.index')->with("error",$notification);
@@ -199,10 +208,11 @@ class studentController extends Controller {
 		try
 		{
 			$departments =Department::select('id','name')->orderby('name','asc')->lists('name', 'id');
+			$courses = $this->courseOptions();
 			$student = Student::findOrFail($id);
-			return view('student.edit',compact('departments','student'));
+			return view('student.edit',compact('departments','courses','student'));
 		}
-		catch (Exception $e)
+		catch (\Exception $e)
 		{
 			$notification= array('title' => 'Data Edit', 'body' => "There is no record.");
 			return Redirect::route('student.index')->with("error",$notification);
@@ -220,6 +230,7 @@ class studentController extends Controller {
 	{
 		$data=$request->all();
 		$rules=[
+			'course_id' => 'required|exists:courses,id',
 			'bncReg' => 'required',
 			'batchNo' => 'required',
 			'firstName' => 'required',
@@ -248,9 +259,13 @@ class studentController extends Controller {
 			// 	'message' => $errors
 			// ], 400);
 		}
+		$student = Student::findOrFail($id);
+		if (!Course::where('id', $data['course_id'])->where('department_id', $student->department_id)->exists()) {
+			$validator->errors()->add('course_id', 'Selected course must belong to the student department.');
+			return Redirect::route('student.edit', [$id])->withInput()->withErrors($validator);
+		}
 		else {
 			try {
-				$student = Student::findOrFail($id);
 				if($request->exists('photo'))
 				{
 
@@ -279,7 +294,7 @@ class studentController extends Controller {
 				$notification= array('title' => 'Data Update', 'body' => "Student Information Updated Succesfully.");
 				return Redirect::route('student.index')->with("success",$notification);
 			}
-			catch (Exception $e)
+			catch (\Exception $e)
 			{
 				$notification= array('title' => 'Data Update', 'body' => "There is no record.");
 				return Redirect::route('student.index')->with("error",$notification);
@@ -529,5 +544,45 @@ class studentController extends Controller {
 
 	}
 
+	public function assignCourse(Request $request, $id)
+	{
+		$data = $request->all();
+		$validator = Validator::make($data, [
+			'course_id' => 'required|exists:courses,id',
+		]);
 
+		if ($validator->fails()) {
+			return redirect()->back()->withErrors($validator);
+		}
+
+		$student = Student::findOrFail($id);
+		if (!Registration::where('students_id', $id)->exists()) {
+			$notification = ['title' => 'Assignment Error', 'body' => 'Student must be registered before assigning a course.'];
+			return redirect()->back()->with('error', $notification);
+		}
+
+		if (!Course::where('id', $data['course_id'])->where('department_id', $student->department_id)->exists()) {
+			$validator->errors()->add('course_id', 'Selected course must belong to the student department.');
+			return redirect()->back()->withErrors($validator);
+		}
+
+		$student->course_id = $data['course_id'];
+		$student->save();
+		$notification = ['title' => 'Course Assigned', 'body' => 'Course assigned successfully.'];
+		return redirect()->back()->with('success', $notification);
+	}
+
+	protected function courseOptions()
+	{
+		$courses = [];
+		foreach (Course::with('department')->orderBy('name', 'asc')->get() as $course) {
+			$departmentName = $course->department ? $course->department->name : 'Unassigned';
+			if (!isset($courses[$departmentName])) {
+				$courses[$departmentName] = [];
+			}
+			$courses[$departmentName][$course->id] = $course->name;
+		}
+
+		return $courses;
+	}
 }

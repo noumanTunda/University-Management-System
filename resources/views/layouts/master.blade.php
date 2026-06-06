@@ -60,6 +60,12 @@
                       <li><a href="{{URL::route('subject.index')}}">All Subjects</a></li>
                     </ul>
                   </li>
+                  <li><a><i class="fa fa-graduation-cap"></i> Courses <span class="fa fa-chevron-down"></span></a>
+                    <ul class="nav child_menu">
+                      <li><a href="{{URL::route('course.create')}}">Add New</a></li>
+                      <li><a href="{{URL::route('course.index')}}">All Courses</a></li>
+                    </ul>
+                  </li>
                   <li><a><i class="fa fa-users"></i> Students <span class="fa fa-chevron-down"></span></a>
                     <ul class="nav child_menu">
                       <li><a href="{{URL::route('student.create')}}">New Admission</a></li>

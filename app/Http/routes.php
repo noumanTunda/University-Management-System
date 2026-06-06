@@ -39,6 +39,8 @@ Route::group(['middleware' => 'auth'], function()
   Route::resource('subject','SubjectController');
   Route::get('subject/{deparment}/{semester}',[ 'as' => 'subject.DeptAndSem','uses'=>'SubjectController@subjetsByDptSem']);
 
+  Route::resource('course','CourseController');
+
 
   // Bulk student upload routes (use a distinct prefix to avoid conflict with the resource routes)
   Route::get('students/upload',[ 'as' => 'student.upload.form','uses'=>'studentController@uploadForm']);
@@ -54,6 +56,8 @@ Route::group(['middleware' => 'auth'], function()
   Route::get('student-registration/{id}/delete',[ 'as' => 'student.registration.destroy','uses'=>'studentController@regDestroy']);
   Route::get('registered-students',[ 'as' => 'student.registration.index','uses'=>'studentController@regIndex']);
   Route::post('registered-students',[ 'as' => 'student.registration.list','uses'=>'studentController@regList']);
+  // Assign a course to a registered student (POST)
+  Route::post('students/{id}/assign-course',[ 'as' => 'student.assignCourse','uses'=>'studentController@assignCourse']);
 
   Route::resource('attendance','AttendanceController');
   Route::post('attendance/by-subject',[ 'as' => 'attendance.index2','uses'=>'AttendanceController@index2']);

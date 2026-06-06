@@ -13,6 +13,7 @@ class Student extends Model {
     'idNo',
     'session',
     'department_id',
+    'course_id',
     'bncReg',
     'batchNo',
     'firstName',
@@ -81,6 +82,14 @@ class Student extends Model {
   }
   public function department() {
     return $this->belongsTo('App\Department');
+  }
+
+  /**
+   * The course the student is currently enrolled in.
+   */
+  public function course()
+  {
+      return $this->belongsTo('App\Course');
   }
   public function registered() {
     return $this->hasMany('App\Registration','students_id');

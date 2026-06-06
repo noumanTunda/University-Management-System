@@ -51,6 +51,7 @@
                         <tr>
                           <th>Photo</th>
                           <th>Name</th>
+                          <th>Course</th>
                           <th>ID No</th>
                           <th>Session</th>
                           <th>BNC Reg.</th>
@@ -67,6 +68,7 @@
 
                         </td>
                           <td>{{$student->firstName}} {{$student->middleName}} {{$student->lastName}}</td>
+                          <td>{{ $student->course ? $student->course->name : 'Unassigned' }}</td>
                           <td>{{$student->idNo}}</td>
                           <td>{{$student->session}}</td>
                           <td>{{$student->bncReg}}</td>

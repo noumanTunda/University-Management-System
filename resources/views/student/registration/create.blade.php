@@ -20,6 +20,7 @@
 				<div class="x_panel">
 					<div class="x_title">
 						<h2>Registration<small> Student semester registration</small></h2>
+						<p class="text-muted" style="margin-top: 8px;">Only students with an assigned course are listed here.</p>
 
 						<div class="clearfix"></div>
 					</div>

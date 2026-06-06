@@ -72,6 +72,9 @@
                                  <i class="fa fa-2x fa-clock-o"></i> <strong>Session: </strong>  {{$student->session}}
                                </li>
                                <li>
+                                 <i class="fa fa-2x fa-graduation-cap"></i> <strong>Course: </strong>  {{ $student->course ? $student->course->name : 'Unassigned' }}
+                               </li>
+                               <li>
                                  <i class="fa fa-2x fa-home"></i> <strong>BNC Reg: </strong>  {{$student->bncReg}}
                                </li>
                                <li>
