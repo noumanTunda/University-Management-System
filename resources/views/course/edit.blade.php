@@ -1,7 +1,6 @@
 @extends("layouts.master")
 @section("title","Edit Course")
 @section("content")
-  <!-- page content -->
   <div class="right_col" role="main">
     <div class="">
       <div class="page-title">
@@ -46,6 +45,11 @@
               <div class="clearfix"></div>
             </div>
             <div class="x_content">
+              @if ($errors->any())
+                <div class="alert alert-danger">
+                  Please fix the highlighted fields and try again.
+                </div>
+              @endif
               <br />
               <form id="demo-form2" data-parsley-validate class="form-horizontal form-label-left" action="{{URL::route("course.update", $course->id)}}" method="post">
                 <input type="hidden" name="_method" value="PUT">
@@ -117,7 +121,6 @@
       </div>
     </div>
   </div>
-  <!-- /page content -->
 @endsection
 
 @section("extrascript")

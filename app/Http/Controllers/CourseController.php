@@ -7,7 +7,6 @@ use App\Http\Controllers\Controller;
 use App\Course;
 use App\Department;
 use App\Subject;
-use Illuminate\Support\Facades\DB;
 use Validator;
 use Session;
 use Redirect;
@@ -37,7 +36,7 @@ class CourseController extends Controller
      */
     public function create()
     {
-        $departments = DB::table('departments')->orderBy('name', 'asc')->pluck('name', 'id');
+        $departments = Department::orderBy('name', 'asc')->pluck('name', 'id');
         $subjectCatalog = $this->subjectPool();
         $initialAssignments = old('subjects', []);
 
@@ -57,11 +56,9 @@ class CourseController extends Controller
         $rules = [
             'name' => 'required|unique:courses',
             'code' => 'required|unique:courses',
-            'department_id' => 'required|exists:departments,id',
+            'department_id' => 'required|exists:department,id',
             'duration_years' => 'required|integer|min:1|max:4',
-            'subjects' => 'array',
-            'subjects.*.id' => 'required|exists:subject,id|distinct',
-            'subjects.*.semester' => 'required|integer|min:1|max:' . $maxSemester,
+            'subjects' => 'required|array',
         ];
         $validator = Validator::make($data, $rules);
 
@@ -70,7 +67,7 @@ class CourseController extends Controller
         }
 
         $course = Course::create(array_only($data, ['name', 'code', 'department_id', 'duration_years']));
-        $this->syncSubjects($course, isset($data['subjects']) ? $data['subjects'] : array());
+        $this->syncSubjects($course, isset($data['subjects']) ? $data['subjects'] : array(), (int) $data['duration_years']);
 
         $notification = array('title' => 'Data Store', 'body' => 'Course created successfully.');
         return Redirect::route('course.index')->with('success', $notification);
@@ -97,7 +94,7 @@ class CourseController extends Controller
     public function edit($id)
     {
         $course = Course::with('subjects')->findOrFail($id);
-        $departments = DB::table('departments')->orderBy('name', 'asc')->pluck('name', 'id');
+        $departments = Department::orderBy('name', 'asc')->pluck('name', 'id');
         $subjectCatalog = $this->subjectPool();
         $initialAssignments = old('subjects', $this->selectedSubjects($course));
 
@@ -115,14 +112,13 @@ class CourseController extends Controller
     {
         $data = $request->all();
         $maxSemester = max(2, ((int) $request->input('duration_years', 4)) * 2);
+        $course = Course::with('subjects')->findOrFail($id);
         $rules = [
             'name' => 'required|unique:courses,name,' . $id,
             'code' => 'required|unique:courses,code,' . $id,
-            'department_id' => 'required|exists:departments,id',
+            'department_id' => 'required|exists:department,id',
             'duration_years' => 'required|integer|min:1|max:4',
             'subjects' => 'array',
-            'subjects.*.id' => 'required|exists:subject,id|distinct',
-            'subjects.*.semester' => 'required|integer|min:1|max:' . $maxSemester,
         ];
         $validator = Validator::make($data, $rules);
 
@@ -130,9 +126,10 @@ class CourseController extends Controller
             return Redirect::route('course.edit', [$id])->withInput()->withErrors($validator);
         }
 
-        $course = Course::findOrFail($id);
         $course->fill(array_only($data, ['name', 'code', 'department_id', 'duration_years']))->save();
-        $this->syncSubjects($course, isset($data['subjects']) ? $data['subjects'] : array());
+        if (isset($data['subjects']) && is_array($data['subjects'])) {
+            $this->syncSubjects($course, $data['subjects'], (int) $data['duration_years']);
+        }
 
         $notification = array('title' => 'Data Update', 'body' => 'Course updated successfully.');
         return Redirect::route('course.index')->with('success', $notification);
@@ -172,30 +169,46 @@ class CourseController extends Controller
     {
         $subjects = array();
         foreach ($course->subjects as $subject) {
-            $subjects[] = array(
-                'id' => $subject->id,
-                'semester' => (int) $subject->pivot->semester,
-                'name' => $subject->name,
-                'code' => $subject->code,
-                'credit' => (float) $subject->credit,
-                'department' => $subject->department ? $subject->department->name : 'No Department',
-            );
+            $semester = (int) $subject->pivot->semester;
+            $year = (int) ceil($semester / 2);
+            $semesterInYear = $semester % 2 === 0 ? 2 : 1;
+            if (!isset($subjects[$year])) {
+                $subjects[$year] = array();
+            }
+            if (!isset($subjects[$year][$semesterInYear])) {
+                $subjects[$year][$semesterInYear] = array();
+            }
+            $subjects[$year][$semesterInYear][$subject->id] = array('selected' => 1);
         }
 
         return $subjects;
     }
 
-    protected function syncSubjects(Course $course, array $subjects)
+    protected function syncSubjects(Course $course, array $subjects, $durationYears)
     {
         $syncData = [];
         $subjectIds = [];
-        foreach ($subjects as $subjectData) {
-            if (empty($subjectData['id']) || empty($subjectData['semester'])) {
+        foreach ($subjects as $year => $semesters) {
+            if (!is_array($semesters)) {
                 continue;
             }
-            $subjectId = (int) $subjectData['id'];
-            $syncData[$subjectId] = ['semester' => (int) $subjectData['semester']];
-            $subjectIds[] = $subjectId;
+            if ((int) $year > (int) $durationYears) {
+                continue;
+            }
+            foreach ($semesters as $semesterInYear => $subjectList) {
+                if (!is_array($subjectList)) {
+                    continue;
+                }
+                $semester = ((int) $year - 1) * 2 + (int) $semesterInYear;
+                foreach ($subjectList as $subjectId => $subjectData) {
+                    if (empty($subjectData['selected'])) {
+                        continue;
+                    }
+                    $subjectId = (int) $subjectId;
+                    $syncData[$subjectId] = array('semester' => $semester);
+                    $subjectIds[] = $subjectId;
+                }
+            }
         }
         $course->subjects()->sync($syncData);
         $course->min_credits = empty($subjectIds) ? 0 : (float) Subject::whereIn('id', $subjectIds)->sum('credit');
