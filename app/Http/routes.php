@@ -62,6 +62,7 @@ Route::group(['middleware' => 'auth'], function()
   Route::resource('student','studentController');
   Route::post('student/departmment',[ 'as' => 'student.department','uses'=>'studentController@index2']);
   Route::get('students/{dID}/{session}',[ 'as' => 'students.departmentAndsession','uses'=>'studentController@studentList']);
+  Route::get('students-batch/{dID}/{batch}',[ 'as' => 'students.batch','uses'=>'studentController@studentListByBatch']);
   Route::get('students/{dID}/{session}/{semester}',[ 'as' => 'students.registered','uses'=>'studentController@registeredStudentList']);
   Route::get('student-registration',[ 'as' => 'student.registration.create','uses'=>'studentController@regCreate']);
   Route::post('student-registration',[ 'as' => 'student.registration.store','uses'=>'studentController@regStore']);

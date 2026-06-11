@@ -36,12 +36,12 @@ class studentController extends Controller {
 	{
 		if(Session::has('deptId'))
 		{
-			$departments = Department::select('id','name')->orderby('name','asc')->lists('name', 'id');
+			$departments = Department::select('id','name')->orderby('name','asc')->lists('name', 'name');
 			$selectDep=Session::get('deptId');
 			$students =Student::with('course')->where('department_id',$selectDep)->get();
 			return view('student.index',compact('students','departments','selectDep'));
 		}
-		$departments = Department::select('id','name')->orderby('name','asc')->lists('name', 'id');
+		$departments = Department::select('id','name')->orderby('name','asc')->lists('name', 'name');
 		$selectDep="";
 		$students =array();
 		return view('student.index',compact('students','departments','selectDep'));
@@ -49,7 +49,7 @@ class studentController extends Controller {
 	public function index2(Request $request)
 	{
 		Session::put('deptId',$request->department_id);
-		$departments = Department::select('id','name')->orderby('name','asc')->lists('name', 'id');
+		$departments = Department::select('id','name')->orderby('name','asc')->lists('name', 'name');
 		$selectDep=$request->department_id;
 		$students =Student::with('course')->where('department_id',$selectDep)->get();
 
@@ -77,6 +77,17 @@ class studentController extends Controller {
 				return ['id' => $s->id, 'idNo' => $s->idNo, 'firstName' => $s->firstName, 'lastName' => $s->lastName, 'middleName' => $s->middleName];
 			});
 
+		return response()->json(['success' => true, 'students' => $students], 200);
+	}
+	public function studentListByBatch($dID, $batch)
+	{
+		$students = \App\Student::select('id','idNo','firstName','lastName','middleName')
+			->where('department_id', $dID)
+			->where('session', $batch)
+			->whereNotNull('course_id')
+			->whereNull('deleted_at')
+			->orderBy('firstName')
+			->get();
 		return response()->json(['success' => true, 'students' => $students], 200);
 	}
 	public function registeredStudentList($dID,$session,$semester)
@@ -308,7 +319,7 @@ class studentController extends Controller {
 	 */
 	public function uploadForm()
 	{
-		$departments = Department::select('id','name')->orderby('name','asc')->lists('name', 'id');
+		$departments = Department::select('id','name')->orderby('name','asc')->lists('name', 'name');
 		return view('student.upload',compact('departments'));
 	}
 
@@ -407,9 +418,10 @@ class studentController extends Controller {
 	{
 		$students=[];
 		$semesters= $this->semesters;
-		$departments = Department::select('id','name')->orderby('name','asc')->lists('name', 'id');
-		$sessions = \App\AcademicYear::orderBy('name', 'desc')->lists('name', 'id');
-		return view('student.registration.create',compact('departments','students','semesters','sessions'));
+		$departments = Department::select('id','name')->orderby('name','asc')->lists('name', 'name');
+		$sessions = \App\AcademicYear::orderBy('name', 'desc')->lists('name', 'name');
+		$batches = \App\Student::select('session','session')->distinct()->orderBy('session','desc')->lists('session','session');
+		return view('student.registration.create',compact('departments','students','semesters','sessions','batches'));
 	}
 	public function regStore(Request $request){
 		$data=$request->all();
@@ -487,7 +499,8 @@ class studentController extends Controller {
 		// 	], 400);
 		// }
 			if (!empty($errors)) {
-				return back()->withErrors(['academic_year' => implode('<br>', $errors)]);
+				$errMsg = implode('<br>', $errors);
+				return back()->with('error', ['title' => 'Registration Failed', 'body' => $errMsg]);
 			}
 		Registration::insert($toBeRegisterStudents);
 		$notification= array('title' => 'Data Store', 'body' => $newRegistration.' students registered.');
@@ -513,8 +526,8 @@ class studentController extends Controller {
 	}
 
 	public function regIndex(){
-		$departments = Department::select('id','name')->orderby('name','asc')->lists('name', 'id');
-		$sessions = \App\AcademicYear::orderBy('name', 'desc')->lists('name', 'id');
+		$departments = Department::select('id','name')->orderby('name','asc')->lists('name', 'name');
+		$sessions = \App\AcademicYear::orderBy('name', 'desc')->lists('name', 'name');
 		$selectDep="";
 		$students =array();
 		$semesters= $this->semesters;
@@ -532,8 +545,8 @@ class studentController extends Controller {
 		->where('levelTerm',$request->input('levelTerm'))
 		->get();
 
-		$departments = Department::select('id','name')->orderby('name','asc')->lists('name', 'id');
-		$sessions = \App\AcademicYear::orderBy('name', 'desc')->lists('name', 'id');
+		$departments = Department::select('id','name')->orderby('name','asc')->lists('name', 'name');
+		$sessions = \App\AcademicYear::orderBy('name', 'desc')->lists('name', 'name');
 		$selectDep=$request->input('department_id');
 		$semesters= $this->semesters;
 		$selectSem=$request->input('levelTerm');
