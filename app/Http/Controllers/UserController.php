@@ -52,6 +52,10 @@ class UserController extends Controller {
 				Session::put('inName', $institute->name);
 				Session::put('inNameShort', AppHelper::getShortName($institute->name));
 				$notification= array('title' => 'Login', 'body' => 'You are now logged in.');
+					// Redirect students to their portal
+					if (Auth::user()->group == 'Student') {
+					    return Redirect::to('/student/dashboard')->with('success',$notification);
+					}
 				return Redirect::to('/dashboard')->with('success',$notification);
 			}
 

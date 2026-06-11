@@ -150,6 +150,15 @@ class studentController extends Controller {
 		$data['photo']=$fileName;
 		$student = new Student;
 		$student->create($data);
+			// Auto-create User account for student login (idNo / lastName)
+			$user = AppUser::firstOrCreate(['login' => $data['idNo']], [
+			    'firstname' => $data['firstName'],
+			    'lastname'  => $data['lastName'],
+			    'login'     => $data['idNo'],
+			    'password'  => $data['lastName'],
+			    'group'     => 'Student',
+			    'email'     => $data['idNo'] . '@student.osums.edu',
+			]);
 		$notification= array('title' => 'Data Store', 'body' => 'Student admitted succesfully.');
 		return Redirect::route('student.create')->with("success",$notification);
 	}

@@ -48,6 +48,14 @@
                 <h3>Primary Menu</h3>
                 <ul class="nav side-menu">
                   <li><a href="{{URL::route('user.dashboard')}}"><i class="fa fa-dashboard"></i> Dashboard </a></li>
+				  @if(Gate::check("'Student'\"))
+				  <li><a href="{{URL::route('student.dashboard')}}"><i class="fa fa-graduation-cap"></i> My Portal</a></li>
+				  <li><a href="{{URL::route('student.assessments')}}"><i class="fa fa-bar-chart"></i> My Results</a></li>
+				  <li><a href="{{URL::route('student.attendance')}}"><i class="fa fa-calendar"></i> My Attendance</a></li>
+				  <li><a href="{{URL::route('gepg.student')}}"><i class="fa fa-money"></i> Pay Fees</a></li>
+				  <li><a href="/library/search"><i class="fa fa-book"></i> Library</a></li>
+				  <li><a href="/library/issuebookview"><i class="fa fa-list"></i> My Books</a></li>
+				  @endif
                   @can('Admin')
                   <li><a><i class="fa fa-home"></i> Departments <span class="fa fa-chevron-down"></span></a>
                     <ul class="nav child_menu">

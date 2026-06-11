@@ -22,6 +22,10 @@ Route::get('/user/logout',[ 'as' => 'user.logout','uses'=>'UserController@logout
 Route::group(['middleware' => 'auth'], function()
 {
   Route::get('/dashboard',[ 'as' => 'user.dashboard','uses'=>'DashboardController@index']);
+  // Student Portal
+  Route::get('/student/dashboard',[ 'as' => 'student.dashboard','uses'=>'StudentDashboardController@index']);
+  Route::get('/student/assessments',[ 'as' => 'student.assessments','uses'=>'StudentDashboardController@assessments']);
+  Route::get('/student/attendance',[ 'as' => 'student.attendance','uses'=>'StudentDashboardController@attendance']);
   Route::get('/institute',[ 'as' => 'institute.index','uses'=>'InstituteController@index']);
   Route::post('/institute',[ 'as' => 'institute','uses'=>'InstituteController@save']);
 

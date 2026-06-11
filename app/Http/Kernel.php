@@ -52,6 +52,7 @@ class Kernel extends HttpKernel
         'teacher' => \App\Http\Middleware\Teacher::class,
         'hod' => \App\Http\Middleware\HeadOfDepartment::class,
         'account' => \App\Http\Middleware\Account::class,
+	'student' => \App\Http\Middleware\Student::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
     ];
 }

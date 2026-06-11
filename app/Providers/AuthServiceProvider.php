@@ -37,6 +37,10 @@ class AuthServiceProvider extends ServiceProvider
             return $user->group == 'HeadOfDepartment';
         });
 
+        $gate->define('Student', function($user){
+            return $user->group == 'Student';
+        });
+
         $gate->define('Account', function($user){
             return $user->group == 'Account';
         });
