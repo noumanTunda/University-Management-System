@@ -5,7 +5,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\GePGBill;
 use App\GePGPaymentReceipt;
-use App\Fees;
+use App\Fee;
 use App\Student;
 use App\FeeCollection;
 use Validator;
@@ -23,7 +23,7 @@ class GePGController extends Controller
     {
         $student = Student::where('idNo', auth()->user()->login)->first();
         $bills = $student ? GePGBill::where('student_id', $student->id)->orderBy('created_at', 'desc')->get() : [];
-        $fees = Fees::all();
+        $fees = Fee::all();
         return view('gepg.student', compact('student', 'bills', 'fees'));
     }
 
@@ -37,7 +37,7 @@ class GePGController extends Controller
         ]);
         if ($v->fails()) return redirect()->back()->withErrors($v);
 
-        $fee = Fees::findOrFail($request->fee_id);
+        $fee = Fee::findOrFail($request->fee_id);
         $controlNo = $this->generateControlNumber();
 
         $bill = GePGBill::create([
@@ -61,17 +61,28 @@ class GePGController extends Controller
     // Accountant: mark as paid manually
     public function markPaid(Request $request, $id)
     {
-        $bill = GePGBill::findOrFail($id);
+        $bill = GePGBill::with('student')->findOrFail($id);
         $bill->update(['status' => 'Paid']);
-        // Also create a receipt entry
+        // Create receipt
+        $trxId = 'MANUAL-' . strtoupper(str_random(12));
         GePGPaymentReceipt::create([
             'control_number' => $bill->control_number,
-            'transaction_id' => 'MANUAL-' . strtoupper(str_random(12)),
+            'transaction_id' => $trxId,
             'amount_paid' => $bill->amount,
             'payment_provider' => 'Manual',
             'paid_at' => now(),
         ]);
-        return redirect()->back()->with('success', ['title'=>'Paid', 'body'=>'Bill marked as paid.']);
+        // Also create a fee_collection record to link with accounting
+        if ($bill->student) {
+            FeeCollection::create([
+                'students_id' => $bill->student_id,
+                'payableAmount' => $bill->amount,
+                'lateFee' => 0,
+                'paidAmount' => $bill->amount,
+                'payDate' => now()->format('Y-m-d'),
+            ]);
+        }
+        return redirect()->back()->with('success', ['title'=>'Paid', 'body'=>'Bill marked as paid. Fee collection updated.']);
     }
 
     // Accountant: edit bill details

@@ -48,7 +48,7 @@
                 <h3>Primary Menu</h3>
                 <ul class="nav side-menu">
                   <li><a href="{{URL::route('user.dashboard')}}"><i class="fa fa-dashboard"></i> Dashboard </a></li>
-				  @if(Gate::check("'Student'\"))
+				  @if(Gate::check('Student'))
 				  <li><a href="{{URL::route('student.dashboard')}}"><i class="fa fa-graduation-cap"></i> My Portal</a></li>
 				  <li><a href="{{URL::route('student.assessments')}}"><i class="fa fa-bar-chart"></i> My Results</a></li>
 				  <li><a href="{{URL::route('student.attendance')}}"><i class="fa fa-calendar"></i> My Attendance</a></li>

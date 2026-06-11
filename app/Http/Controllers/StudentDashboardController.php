@@ -39,8 +39,15 @@ class StudentDashboardController extends Controller
     public function assessments()
     {
         $student = Student::where('idNo', Auth::user()->login)->first();
-        $courseRegs = CourseRegistration::where('student_id', $student->id)->with('subject', 'semester.academicYear')->get();
-        return view('student_portal.assessments', compact('courseRegs'));
+        $courseRegs = CourseRegistration::where('student_id', $student->id)
+            ->with('subject', 'semester.academicYear')->get();
+        $grouped = [];
+        foreach ($courseRegs as $cr) {
+            $year = $cr->semester->academicYear->name ?? 'Unknown';
+            $sem = $cr->semester->semester_number ?? '0';
+            $grouped[$year . '|' . $sem][] = $cr;
+        }
+        return view('student_portal.assessments', compact('grouped'));
     }
 
     public function attendance()
