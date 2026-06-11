@@ -102,6 +102,7 @@ Route::group(['middleware' => 'auth'], function()
   Route::get('exam-marks/entry/{subjectId}/{semesterId}',[ 'as' => 'exam.marks.entry','uses'=>'ExamMarksController@getMarkEntry']);
   Route::get('exam-marks/upload',[ 'as' => 'exam.marks.upload.form','uses'=>'ExamMarksController@uploadForm']);
   Route::post('exam-marks/upload',[ 'as' => 'exam.marks.upload.store','uses'=>'ExamMarksController@uploadStore']);
+  Route::get('exam-marks/template',[ 'as' => 'exam.marks.template','uses'=>'ExamMarksController@downloadTemplate']);
 
   // Exam Types
   Route::get('exam-type',[ 'as' => 'exam_type.index','uses'=>'ExamTypeController@index']);

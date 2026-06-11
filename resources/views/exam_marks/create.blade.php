@@ -1,7 +1,6 @@
 @extends('layouts.master')
 
 @section('title', 'Exam Marks Entry')
-              </div>
 
 @section('content')
 <div class="right_col" role="main">
@@ -12,6 +11,7 @@
         <div class="x_panel">
           <div class="x_title">
             <h2><i class="fa fa-pencil"></i> Exam Marks Entry</h2>
+            <a href="{{URL::route('exam.marks.upload.form')}}" class="btn btn-info btn-sm pull-right"><i class="fa fa-upload"></i> Bulk Upload CSV</a>
             <div class="clearfix"></div>
           </div>
           <div class="x_content">
@@ -26,6 +26,7 @@
                     @endforeach
                   </select>
                 </div>
+              </div>
               <div class="col-md-3">
                 <div class="form-group">
                   <label>Academic Year <span class="required">*</span></label>
@@ -52,11 +53,6 @@
                     <option value="">Select Dept first</option>
                   </select>
                 </div>
-              </div>
-            </div>
-            <div class="row">
-              <div class="col-md-12">
-                <a href="{{URL::route('exam.marks.upload.form')}}" class="btn btn-info btn-sm"><i class="fa fa-upload"></i> Bulk Upload CSV</a>
               </div>
             </div>
             <hr>

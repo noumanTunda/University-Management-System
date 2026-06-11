@@ -165,6 +165,22 @@ class ExamMarksController extends Controller
         return view('exam_marks.upload');
     }
 
+    public function downloadTemplate()
+    {
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="marks_template.csv"',
+        ];
+        $callback = function() {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, ['idNo', 'ca_score', 'ue_score']);
+            fputcsv($file, ['T24-03-00000', '28', '45']);
+            fputcsv($file, ['T22-03-10001', '30', '50']);
+            fclose($file);
+        };
+        return response()->stream($callback, 200, $headers);
+    }
+
     public function uploadStore(Request $request)
     {
         $v = Validator::make($request->all(), [
