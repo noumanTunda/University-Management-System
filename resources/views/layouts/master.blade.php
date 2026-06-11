@@ -108,6 +108,7 @@
                   <li><a><i class="fa fa-tasks"></i> Assessments <span class="fa fa-chevron-down"></span></a>
                     <ul class="nav child_menu">
                       <li><a href="{{URL::route('assessment.index')}}">Plans & Marks</a></li>
+					  <li><a href="{{URL::route('assessment.template.index')}}">Templates</a></li>
                       <li><a href="{{URL::route('assessment.create')}}">New Plan</a></li>
                     </ul>
                   </li>

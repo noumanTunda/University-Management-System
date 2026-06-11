@@ -81,6 +81,14 @@ Route::group(['middleware' => 'auth'], function()
   Route::post('assessments',[ 'as' => 'assessment.store','uses'=>'AssessmentController@store']);
   Route::get('assessments/{id}/components',[ 'as' => 'assessment.components','uses'=>'AssessmentController@components']);
   Route::post('assessments/{id}/components',[ 'as' => 'assessment.component.store','uses'=>'AssessmentController@storeComponent']);
+
+  // Assessment Templates (HOD/Admin only)
+  Route::get('assessment-templates',[ 'as' => 'assessment.template.index','uses'=>'AssessmentTemplateController@index']);
+  Route::get('assessment-templates/create',[ 'as' => 'assessment.template.create','uses'=>'AssessmentTemplateController@create']);
+  Route::post('assessment-templates',[ 'as' => 'assessment.template.store','uses'=>'AssessmentTemplateController@store']);
+  Route::get('assessment-templates/{id}/edit',[ 'as' => 'assessment.template.edit','uses'=>'AssessmentTemplateController@edit']);
+  Route::post('assessment-templates/{id}',[ 'as' => 'assessment.template.update','uses'=>'AssessmentTemplateController@update']);
+  Route::post('assessment-templates/{id}/delete',[ 'as' => 'assessment.template.destroy','uses'=>'AssessmentTemplateController@destroy']);
   Route::delete('assessments/component/{id}',[ 'as' => 'assessment.component.destroy','uses'=>'AssessmentController@destroyComponent']);
   Route::get('assessments/{id}/compute',[ 'as' => 'assessment.compute','uses'=>'AssessmentController@compute']);
   Route::get('assessments/marks/{componentId}',[ 'as' => 'assessment.marks','uses'=>'AssessmentController@marks']);

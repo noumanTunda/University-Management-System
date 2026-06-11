@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\AssessmentPlan;
 use App\AssessmentComponent;
 use App\AssessmentMark;
+use App\AssessmentTemplate;
 use App\CourseRegistration;
 use App\Subject;
 use App\Semester;
@@ -31,7 +32,8 @@ class AssessmentController extends Controller
     {
         $subjects = Subject::select('id','name','code','department_id')->with('department')->orderBy('name')->get();
         $semesters = Semester::with('academicYear')->orderBy('id')->get();
-        return view('assessment.create', compact('subjects', 'semesters'));
+        $templates = AssessmentTemplate::with('components')->orderBy('name')->get();
+        return view('assessment.create', compact('subjects', 'semesters', 'templates'));
     }
 
     public function store(Request $request)
@@ -46,6 +48,16 @@ class AssessmentController extends Controller
             'subject_id' => $data['subject_id'],
             'semester_id' => $data['semester_id'],
         ]);
+        // If a template is selected, copy its components
+        if (!empty($data['template_id'])) {
+            $template = AssessmentTemplate::with('components')->find($data['template_id']);
+            if ($template) {
+                foreach ($template->components as $comp) {
+                    $plan->components()->create($comp->toArray());
+                }
+                return redirect()->route('assessment.index')->with('success', ['title'=>'Created','body'=>'Plan created from template "'.$template->name.'".']);
+            }
+        }
         return redirect()->route('assessment.components', $plan->id)->with('success', ['title'=>'Created','body'=>'Plan created. Add components.']);
     }
 

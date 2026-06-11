@@ -34,9 +34,18 @@
                   @endforeach
                 </select>
               </div>
+              <div class="form-group">
+                <label>Use Template <small>(optional — pre-fills components)</small></label>
+                <select class="form-control" name="template_id">
+                  <option value="">No template (manual setup)</option>
+                  @foreach($templates as $t)
+                    <option value="{{$t->id}}">{{$t->name}} — CA {{$t->ca_weight}}% / UE {{$t->ue_weight}}%</option>
+                  @endforeach
+                </select>
+              </div>
               <hr>
-              <p class="text-muted">After creating the plan, you'll define CA components (Quiz, Assignment, etc. totaling 40%) and a UE component (Exam, 60%).</p>
-              <button type="submit" class="btn btn-primary pull-right"><i class="fa fa-save"></i> Create & Configure Components</button>
+              <p class="text-muted">If you select a template, components will be pre-filled automatically.</p>
+              <button type="submit" class="btn btn-primary pull-right"><i class="fa fa-save"></i> Create Plan</button>
               <a href="{{URL::route('assessment.index')}}" class="btn btn-default">Cancel</a>
             </form>
           </div>
