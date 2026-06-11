@@ -75,7 +75,7 @@
               <div class="form-group">
                 <div class="col-md-6 col-md-offset-3">
                   <button type="submit" class="btn btn-success"><i class="fa fa-upload"></i> Upload</button>
-                  <a href="{{ route('exam.marks.template') }}" class="btn btn-primary"><i class="fa fa-download"></i> Download Template</a>
+                  <button type="button" class="btn btn-primary" id="downloadTemplateBtn"><i class="fa fa-download"></i> Download Template</button>
                 </div>
               </div>
             </form>
@@ -92,6 +92,16 @@
 <script>
 $(document).ready(function() {
   $('#deptSelect, #yearSelect').select2({ width: '100%' });
+
+  $('#downloadTemplateBtn').on('click', function() {
+    var subjectId = $('#subjSelect').val();
+    var semId = $('#semSelect').val();
+    if (!subjectId || !semId) {
+      new PNotify({ title: 'Notice', text: 'Please select Academic Year, Semester, and Subject first.', type: 'warning', styling: 'bootstrap3' });
+      return;
+    }
+    window.location.href = '/exam-marks/template?subject_id=' + subjectId + '&semester_id=' + semId;
+  });
 
   $('#yearSelect').on('change', function() {
     var yearId = $(this).val();

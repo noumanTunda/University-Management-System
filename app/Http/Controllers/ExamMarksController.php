@@ -165,17 +165,38 @@ class ExamMarksController extends Controller
         return view('exam_marks.upload');
     }
 
-    public function downloadTemplate()
+    public function downloadTemplate(Request $request)
     {
+        $subjectId = $request->input('subject_id');
+        $semesterId = $request->input('semester_id');
+
         $headers = [
             'Content-Type' => 'text/csv',
             'Content-Disposition' => 'attachment; filename="marks_template.csv"',
         ];
-        $callback = function() {
+        $callback = function() use ($subjectId, $semesterId) {
             $file = fopen('php://output', 'w');
-            fputcsv($file, ['idNo', 'ca_score', 'ue_score']);
-            fputcsv($file, ['T24-03-00000', '28', '45']);
-            fputcsv($file, ['T22-03-10001', '30', '50']);
+            fputcsv($file, ['idNo', 'firstName', 'lastName', 'ca_score', 'ue_score']);
+
+            if ($subjectId && $semesterId) {
+                $sem = Semester::with('academicYear')->find($semesterId);
+                $session = $sem->academicYear->name ?? '';
+                $levelTerm = 'Semester ' . ($sem->semester_number ?? '1');
+
+                $students = Student::whereHas('registered', function($q) use ($session, $levelTerm) {
+                        $q->where('session', $session)->where('levelTerm', $levelTerm);
+                    })
+                    ->orderBy('firstName')
+                    ->get(['idNo', 'firstName', 'lastName']);
+
+                foreach ($students as $s) {
+                    fputcsv($file, [$s->idNo, $s->firstName, $s->lastName, '', '']);
+                }
+            } else {
+                // No subject/semester selected — provide generic example
+                fputcsv($file, ['T24-03-00000', 'Nouman', 'Tunda', '', '']);
+                fputcsv($file, ['T22-03-10001', 'Chebet', 'Mbowe', '', '']);
+            }
             fclose($file);
         };
         return response()->stream($callback, 200, $headers);
