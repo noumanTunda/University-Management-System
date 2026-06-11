@@ -169,7 +169,7 @@ class libraryController extends Controller
 		$departments = Department::select('id','name')->orderby('name','asc')->lists('name', 'id');
 		$sessions=Student::select('session','session')->distinct()->lists('session','session');
 		$books = Book::select(DB::raw("CONCAT(title,'[',author,']#',code) as name,id"))->lists('name','id');
-		return view('library.bookissue',compact('students','semesters','departments','sessions','','books'));
+		return view('library.bookissue',compact('students','semesters','departments','sessions','books'));
 	}
 
 	public function postissueBook(Request $request)

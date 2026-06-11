@@ -54,7 +54,7 @@
                           <td>{{$user->group}}</td>
                           <td>{{$user->email}}</td>
                           <td>{{$user->description}}</td>
-                          <td>{{$user->created_at->format('F j, Y h:m A')}}</td>
+                          <td>{{$user->created_at ? $user->created_at->format('F j, Y h:m A') : '-'}}</td>
                           <td>
                          <a href="{{URL::route('user.edit',$user->id)}}" class='btn btn-warning btn-xs'> <i class="glyphicon glyphicon-edit icon-white"></i></a>
                          <form class="deleteForm" method="POST" action="{{URL::route('user.destroy',$user->id)}}">
@@ -67,6 +67,7 @@
                       @endforeach
                       </tbody>
                     </table>
+                    <div class="text-center">{!! $users->render() !!}</div>
                   </div>
                 </div>
               <!-- row end -->
