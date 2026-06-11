@@ -419,7 +419,7 @@ class studentController extends Controller {
 	{
 		$students=[];
 		$semesters= $this->semesters;
-		$departments = Department::select('id','name')->orderby('name','asc')->lists('name', 'id');
+			$departments = ['all' => 'All Departments'] + Department::select('id','name')->orderby('name','asc')->lists('name', 'id')->toArray();
 		$sessions = \App\AcademicYear::orderBy('name', 'desc')->lists('name', 'name');
 		$batches = \App\Student::select('session','session')->distinct()->orderBy('session','desc')->lists('session','session');
 		return view('student.registration.create',compact('departments','students','semesters','sessions','batches'));
