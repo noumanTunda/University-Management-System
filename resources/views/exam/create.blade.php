@@ -89,18 +89,15 @@
                         </div>
                         <div class="col-md-4">
                            <div class="item form-group">
-                              <label class="control-label" for="exam">Exam <span class="required">*</span>
-                              </label>
-
-                              {!!Form::select('exam',$exams, null, ['placeholder' => 'Pick a Exam','class'=>'select2_single exam form-control','required'=>'required'])!!}
-                              <span class="text-danger">{{ $errors->first('exam') }}</span>
-
+                              <label class="control-label">Course Work (CA) <br><small>Max 40%</small></label>
+                              <div class="well well-sm text-center" style="margin-bottom:0">Marks enter in table below</div>
                            </div>
                         </div>
                         <div class="col-md-4">
-
-                           <button id="btnsave" type="submit" class="btn btn-success btn-attend"><i class="fa fa-check"> Submit</i></button>
-
+                           <div class="item form-group">
+                              <label class="control-label">University Exam (UE) <br><small>Max 60%</small></label>
+                              <div class="well well-sm text-center" style="margin-bottom:0">Marks enter in table below</div>
+                           </div>
                         </div>
 
                      </div>
@@ -113,10 +110,8 @@
 
                                        <th>Id No</th>
                                        <th>Name</th>
-                                       <th>Written</th>
-                                       <th>Quiz</th>
-                                       <th>Presentation</th>
-                                       <th>Lab/Practical</th>
+                                       <th>Course Work (CA) <br><small>max 40</small></th>
+                                       <th>University Exam (UE) <br><small>max 60</small></th>
 
                                     </tr>
                                  </thead>
@@ -129,11 +124,11 @@
                               </div>
                            </div>
 
-
-                        </div>
+                           </div>
                      </form>
                   </div>
-                  <!-- row end -->
+               </div>
+                           <button id="btnsave" type="submit" class="btn btn-success btn-attend" style="margin-top:15px"><i class="fa fa-check"></i> Submit</button>
 
 
 
@@ -299,10 +294,8 @@
                   var rowCount = table.rows.length;
                   var row = table.insertRow(rowCount);
 
-
                   var cell0 = row.insertCell(0);
                   var regiNo = document.createElement("label");
-
                   regiNo.innerHTML=idNo;
                   cell0.appendChild(regiNo);
                   var hdregi = document.createElement("input");
@@ -316,48 +309,31 @@
                   name.innerHTML=stdname;
                   cell1.appendChild(name);
 
+                  // Course Work (CA) max 40
                   var cell2 = row.insertCell(2);
-                  var rawScore = document.createElement("input");
-                  rawScore.type = "number";
-                  rawScore.required = "required";
-                  rawScore.className="form-control";
-                  rawScore.name="raw_score["+id+"]";
-                  rawScore.value = "0";
+                  var caInput = document.createElement("input");
+                  caInput.type = "number";
+                  caInput.required = "required";
+                  caInput.className="form-control";
+                  caInput.name="ca_score["+id+"]";
+                  caInput.value = "0";
+                  caInput.min = "0";
+                  caInput.max = "40";
+                  caInput.step = "0.1";
+                  cell2.appendChild(caInput);
 
-
-                  cell2.appendChild(rawScore);
-
+                  // University Exam (UE) max 60
                   var cell3 = row.insertCell(3);
-                  var percentage = document.createElement("input");
-                  percentage.type = "number";
-                  percentage.required = "required";
-                  percentage.className="form-control";
-                  percentage.name="percentage["+id+"]";
-                  percentage.value = "0";
-
-
-                  cell3.appendChild(percentage);
-
-                  var cell4 = row.insertCell(4);
-                  var weight = document.createElement("input");
-                  weight.type = "number";
-                  weight.required = "required";
-                  weight.className="form-control";
-                  weight.name="weight["+id+"]";
-                  weight.value = "0";
-
-
-                  cell4.appendChild(weight);
-
-                  var cell5 = row.insertCell(5);
-                  var percentage_x_weight = document.createElement("input");
-                  percentage_x_weight.type = "number";
-                  percentage_x_weight.value = "0";
-                  percentage_x_weight.required = "required";
-                  percentage_x_weight.className="form-control";
-                  percentage_x_weight.name="percentage_x_weight["+id+"]";
-
-                  cell5.appendChild(percentage_x_weight);
+                  var ueInput = document.createElement("input");
+                  ueInput.type = "number";
+                  ueInput.required = "required";
+                  ueInput.className="form-control";
+                  ueInput.name="ue_score["+id+"]";
+                  ueInput.value = "0";
+                  ueInput.min = "0";
+                  ueInput.max = "60";
+                  ueInput.step = "0.1";
+                  cell3.appendChild(ueInput);
                };
             });
 

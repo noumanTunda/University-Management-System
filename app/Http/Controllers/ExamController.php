@@ -45,13 +45,11 @@ class ExamController extends Controller
     $rules=[
       'session' => 'required',
       'department_id'=> 'required',
-      'exam'=> 'required',
       'subject_id'=> 'required',
       'levelTerm'=> 'required',
       'ids'=> 'required',
-      'raw_score'=> 'required',
-      'percentage'=> 'required',
-      'weight'=> 'required',
+      'ca_score'=> 'required',
+      'ue_score'=> 'required',
     ];
     $validator = Validator::make($data, $rules);
     if ($validator->fails())
@@ -60,16 +58,15 @@ class ExamController extends Controller
     }
     else {
 
-      // Check if marks for this exam already exist. `first()` returns a model or null.
+      // Check if marks for this exam already exist.
       $exists = Exam::select('id')
           ->where('department_id', $data['department_id'])
           ->where('session', $data['session'])
           ->where('levelTerm', $data['levelTerm'])
           ->where('subject_id', $data['subject_id'])
-          ->where('exam', $data['exam'])
           ->first();
       if ($exists) {
-          $notification = ['title' => 'Validation', 'body' => 'Exam marks already exists!'];
+          $notification = ['title' => 'Validation', 'body' => 'Exam marks already exists for this subject/semester!'];
           return redirect()->back()->with('error', $notification);
       }
       $nowDateTime=Carbon::now()->toDateTimeString();
@@ -79,11 +76,9 @@ class ExamController extends Controller
           'session' => $data['session'],
           'levelTerm' => $data['levelTerm'],
           'subject_id' => $data['subject_id'],
-          'exam' => $data['exam'],
           'students_id' => $id,
-          'raw_score' => $data['raw_score'][$id],
-          'percentage' => $data['percentage'][$id],
-          'weight' => $data['weight'][$id],
+          'raw_score' => $data['ca_score'][$id] ?? 0,
+          'percentage' => $data['ue_score'][$id] ?? 0,
           'created_at' => $nowDateTime,
         ];
       }
