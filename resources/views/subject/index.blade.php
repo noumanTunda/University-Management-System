@@ -35,7 +35,7 @@
                           <th>Code</th>
                           <th>Credit</th>
                           <th>Department</th>
-                          <th>Year - Semester</th>
+                          <th>Semester</th>
                           <th>Description</th>
                           <th>Actions</th>
                         </tr>

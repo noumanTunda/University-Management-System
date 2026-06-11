@@ -191,7 +191,7 @@ class SubjectController extends Controller
             $file = fopen('php://output','w');
             fputcsv($file,$columns);
             // example row
-            fputcsv($file,['Biology','BIO101',3,1,'Basic Biology','L1T1']);
+            fputcsv($file,['Biology','BIO101',3,1,'Basic Biology','Semester 1']);
             fclose($file);
         };
         return response()->stream($callback,200,$headers);
