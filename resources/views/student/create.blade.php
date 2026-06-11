@@ -32,12 +32,6 @@
 
 									<div class="row">
 										<div class="col-md-6 col-sm-6 col-xs-12">
-											<label for="department_id">Department: <span class="text-danger">*</span></label>
-											{!!Form::select('department_id', $departments, null, ['placeholder' => 'Pick a department','class'=>'select2_single form-control has-feedback-left','tabindex'=>'-1','id'=>'department_id']) !!}
-											<i class="fa fa-home form-control-feedback left" aria-hidden="true"></i>
-											<span id="msg_department_id" class="text-danger" >{{ $errors->first('department_id') }}</span>
-										</div>
-										<div class="col-md-6 col-sm-6 col-xs-12">
 											<label for="course_id">Course: <span class="text-danger">*</span></label>
 											{!!Form::select('course_id', $courses, old('course_id'), ['placeholder' => 'Pick a course','class'=>'select2_single form-control has-feedback-left','tabindex'=>'-1','id'=>'course_id','required'=>'required']) !!}
 											<i class="fa fa-graduation-cap form-control-feedback left" aria-hidden="true"></i>

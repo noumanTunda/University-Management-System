@@ -104,9 +104,8 @@ class studentController extends Controller {
 	*/
 	public function create()
 	{
-		$departments = Department::select("id","name")->orderby("name","asc")->lists("name", "id");
 		$courses = $this->courseOptions();
-		return view("student.create",compact("departments", "courses"));
+		return view("student.create",compact("courses"));
 	}
 
 
@@ -122,7 +121,6 @@ class studentController extends Controller {
 			'idNo' => 'required|unique:students',
 			'session' => 'required',
 			'course_id' => 'required|exists:courses,id',
-			'department_id' => 'required|exists:department,id',
 			'bncReg' => 'required',
 			'batchNo' => 'required',
 			'firstName' => 'required',
@@ -142,22 +140,15 @@ class studentController extends Controller {
 			'parmanentAddress' => 'required'
 		];
 		$validator = Validator::make($data, $rules);
-		//$errors=$validator->messages()->toArray();
 		if ($validator->fails())
 		{
 			return Redirect::route('student.create')->withInput()->withErrors($validator);
-
-			// return Response()->json([
-			// 	'error' => true,
-			// 	'message' => $errors
-			// ], 400);
 		}
-
-		if (!Course::where('id', $data['course_id'])->where('department_id', $data['department_id'])->exists()) {
-			$validator->errors()->add('course_id', 'Selected course must belong to the selected department.');
+		$course = Course::find($data['course_id']);
+		if (!$course) {
+			$validator->errors()->add('course_id', 'Selected course does not exist.');
 			return Redirect::route('student.create')->withInput()->withErrors($validator);
 		}
-
 		$directory = public_path() . "/assets/images/students/";
 		$fextention = $data['photo']->getClientOriginalExtension();
 		$fileName=str_replace(' ','_',$data['idNo']).'.'.$fextention;
@@ -165,13 +156,8 @@ class studentController extends Controller {
 		$data['photo']=$fileName;
 		$student = new Student;
 		$student->create($data);
-		// return Response()->json([
-		// 	'success' => true,
-		// 	'message' => "Student data store successfully."
-		// ], 200);
 		$notification= array('title' => 'Data Store', 'body' => 'Student admitted succesfully.');
 		return Redirect::route('student.create')->with("success",$notification);
-
 	}
 
 
@@ -207,10 +193,9 @@ class studentController extends Controller {
 	{
 		try
 		{
-			$departments =Department::select('id','name')->orderby('name','asc')->lists('name', 'id');
 			$courses = $this->courseOptions();
 			$student = Student::findOrFail($id);
-			return view('student.edit',compact('departments','courses','student'));
+			return view('student.edit',compact('courses','student'));
 		}
 		catch (\Exception $e)
 		{
@@ -231,7 +216,6 @@ class studentController extends Controller {
 		$data=$request->all();
 		$rules=[
 			'course_id' => 'required|exists:courses,id',
-			'department_id' => 'required|exists:department,id',
 			'bncReg' => 'required',
 			'batchNo' => 'required',
 			'firstName' => 'required',
@@ -251,55 +235,42 @@ class studentController extends Controller {
 			'parmanentAddress' => 'required'
 		];
 		$validator = Validator::make($data, $rules);
-		//$errors=$validator->messages()->toArray();
 		if ($validator->fails())
 		{
 			return Redirect::route('student.edit',[$id])->withInput()->withErrors($validator);
-			// return Response()->json([
-			// 	'error' => true,
-			// 	'message' => $errors
-			// ], 400);
 		}
 		$student = Student::findOrFail($id);
-		if (!Course::where('id', $data['course_id'])->where('department_id', $student->department_id)->exists()) {
-			$validator->errors()->add('course_id', 'Selected course must belong to the student department.');
+		$course = Course::find($data['course_id']);
+		if (!$course) {
+			$validator->errors()->add('course_id', 'Selected course does not exist.');
 			return Redirect::route('student.edit', [$id])->withInput()->withErrors($validator);
 		}
-		else {
-			try {
-				if($request->exists('photo'))
-				{
-
-					$directory = public_path() . "/assets/images/students/";
-					// Only attempt to delete the old photo if it exists and is not the default placeholder.
-					$oldPhotoPath = $directory . $student->photo;
-					if ($student->photo && $student->photo !== 'default.png' && file_exists($oldPhotoPath)) {
-						@unlink($oldPhotoPath);
-					}
-					$fextention = $data['photo']->getClientOriginalExtension();
-					$fileName = str_replace(' ', '_', $student->idNo) . '.' . $fextention;
-					$data['photo']->move($directory, $fileName);
-					$data['photo'] = $fileName;
-				}
-				else{
-					$data['photo']=$student->photo;
-				}
-				$data['department_id']=$student->department_id;
-				$data['session']=$student->session;
-				$data['idNo']=$student->idNo;
-				$student->fill($data)->save();
-				// return Response()->json([
-				// 	'success' => true,
-				// 	'message' => "Student Information Updated Succesfully."
-				// ], 200);
-				$notification= array('title' => 'Data Update', 'body' => "Student Information Updated Succesfully.");
-				return Redirect::route('student.index')->with("success",$notification);
-			}
-			catch (\Exception $e)
+		try {
+			if($request->exists('photo'))
 			{
-				$notification= array('title' => 'Data Update', 'body' => "There is no record.");
-				return Redirect::route('student.index')->with("error",$notification);
+				$directory = public_path() . "/assets/images/students/";
+				$oldPhotoPath = $directory . $student->photo;
+				if ($student->photo && $student->photo !== 'default.png' && file_exists($oldPhotoPath)) {
+					@unlink($oldPhotoPath);
+				}
+				$fextention = $data['photo']->getClientOriginalExtension();
+				$fileName = str_replace(' ', '_', $student->idNo) . '.' . $fextention;
+				$data['photo']->move($directory, $fileName);
+				$data['photo'] = $fileName;
 			}
+			else{
+				$data['photo']=$student->photo;
+			}
+			$data['session']=$student->session;
+			$data['idNo']=$student->idNo;
+			$student->fill($data)->save();
+			$notification= array('title' => 'Data Update', 'body' => "Student Information Updated Succesfully.");
+			return Redirect::route('student.index')->with("success",$notification);
+		}
+		catch (\Exception $e)
+		{
+			$notification= array('title' => 'Data Update', 'body' => "There is no record.");
+			return Redirect::route('student.index')->with("error",$notification);
 		}
 	}
 
@@ -341,13 +312,13 @@ class studentController extends Controller {
 			'Content-Disposition' => 'attachment; filename="students_template.csv"',
 		];
 		$columns = [
-			'idNo','session','department_id','course_id','bncReg','batchNo','firstName','middleName','lastName','mobileNo','gender','religion','bloodgroup','nationality','dob','fatherName','fatherMobileNo','motherName','motherMobileNo','presentAddress','parmanentAddress','isActive'
+			'idNo','session','course_id','bncReg','batchNo','firstName','middleName','lastName','mobileNo','gender','religion','bloodgroup','nationality','dob','fatherName','fatherMobileNo','motherName','motherMobileNo','presentAddress','parmanentAddress','isActive'
 		];
 		$callback = function() use ($columns) {
 			$file = fopen('php://output', 'w');
 			fputcsv($file, $columns);
 			// add an example row (optional)
-			fputcsv($file, ['2021001','2021',1,1,'BN001','B001','John','A.','Doe','0123456789','Male','Christian','O+','American','01/01/2000','Father Name','0123456789','Mother Name','0123456789','Address 1','Address 2',1]);
+			fputcsv($file, ['T2Y-03-XXXXX','202Y-202Z',1,'T2Y-03-XXXXX','202Y-202Z','John','A.','Doe','0123456789','Male','Christian','O+','Tanzanian','01/01/2000','Father Name','0123456789','Mother Name','0123456789','Address 1','Address 2',1]);
 			fclose($file);
 		};
 		return response()->stream($callback, 200, $headers);
@@ -372,7 +343,7 @@ class studentController extends Controller {
 		$file = $request->file('students_file');
 		$handle = fopen($file->getRealPath(), 'r');
 		$header = fgetcsv($handle, 1000, ',');
-		$required = ['idNo','session','department_id','course_id','bncReg','batchNo','firstName','middleName','lastName','mobileNo','gender','religion','bloodgroup','nationality','dob','fatherName','fatherMobileNo','motherName','motherMobileNo','presentAddress','parmanentAddress','isActive'];
+		$required = ['idNo','session','course_id','bncReg','batchNo','firstName','middleName','lastName','mobileNo','gender','religion','bloodgroup','nationality','dob','fatherName','fatherMobileNo','motherName','motherMobileNo','presentAddress','parmanentAddress','isActive'];
 		// simple validation of header
 		if (array_diff($required, $header)) {
 			fclose($handle);
@@ -381,18 +352,15 @@ class studentController extends Controller {
 		$created = 0;
 		while (($row = fgetcsv($handle, 1000, ',')) !== false) {
 			$data = array_combine($header, $row);
-			// basic validation for required fields
 			if (empty($data['idNo']) || empty($data['course_id'])) {
-				continue; // skip invalid rows
+				continue;
 			}
-			// check duplicate idNo
 			if (Student::where('idNo', $data['idNo'])->exists()) {
 				continue;
 			}
-			if (!Course::where('id', $data['course_id'])->where('department_id', $data['department_id'])->exists()) {
+			if (!Course::where('id', $data['course_id'])->exists()) {
 				continue;
 			}
-			// set default photo placeholder
 			$data['photo'] = 'default.png';
 			// convert dob to proper format if needed
 			if (!empty($data['dob'])) {
@@ -565,11 +533,7 @@ class studentController extends Controller {
 			return redirect()->back()->with('error', $notification);
 		}
 
-		if (!Course::where('id', $data['course_id'])->where('department_id', $student->department_id)->exists()) {
-			$validator->errors()->add('course_id', 'Selected course must belong to the student department.');
-			return redirect()->back()->withErrors($validator);
-		}
-
+		$course = Course::find($data['course_id']);
 		$student->course_id = $data['course_id'];
 		$student->save();
 		$notification = ['title' => 'Course Assigned', 'body' => 'Course assigned successfully.'];

@@ -32,13 +32,6 @@
 
 							<div class="row">
 								<div class="col-md-6 col-sm-6 col-xs-12">
-									<label for="department_id">Department: <span class="text-danger">*</span></label>
-									{{ Form::select('department_id',$departments,$student->department_id,['class'=>'select2_single form-control has-feedback-left','tabindex'=>'-1','id'=>'department_id','disabled'=>'disabled']) }}
-									<input type="hidden" name="department_id" value="{{ $student->department_id }}">
-									<i class="fa fa-info form-control-feedback left" aria-hidden="true"></i>
-									<span id="msg_department_id" class="text-danger" >{{ $errors->first('department_id') }}</span>
-								</div>
-								<div class="col-md-6 col-sm-6 col-xs-12">
 									<label for="session">Session: <span class="text-danger">*</span></label>
 									<input type="text" id="session" class="form-control has-feedback-left" name="session" disabled='disabled' data-inputmask="'mask': '9999-9999'" value="{{$student->session}}"required />
 									<i class="fa fa-clock-o form-control-feedback left" aria-hidden="true"></i>

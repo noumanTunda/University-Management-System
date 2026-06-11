@@ -4,6 +4,7 @@ namespace App;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Carbon\Carbon;
+use App\Course;
 
 class Student extends Model {
   use SoftDeletes;
@@ -12,7 +13,6 @@ class Student extends Model {
   protected $fillable = [
     'idNo',
     'session',
-    'department_id',
     'course_id',
     'bncReg',
     'batchNo',
@@ -36,6 +36,8 @@ class Student extends Model {
     'parmanentAddress',
     'isActive'
   ];
+
+  protected $guarded = ['department_id'];
   public static function boot()
   {
     parent::boot();
@@ -84,12 +86,18 @@ class Student extends Model {
     return $this->belongsTo('App\Department');
   }
 
-  /**
-   * The course the student is currently enrolled in.
-   */
   public function course()
   {
       return $this->belongsTo('App\Course');
+  }
+
+  public function setCourseIdAttribute($value)
+  {
+      $this->attributes['course_id'] = $value;
+      if ($value) {
+          $course = Course::find($value);
+          $this->attributes['department_id'] = $course ? $course->department_id : null;
+      }
   }
   public function registered() {
     return $this->hasMany('App\Registration','students_id');
