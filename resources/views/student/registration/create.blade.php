@@ -35,14 +35,14 @@
                 <div class="col-md-3">
                   <div class="item form-group">
                     <label for="department_id">Department <span class="required">*</span></label>
-                    {!!Form::select('department_id', $departments, null, ['placeholder' => 'Pick a department','class'=>'form-control','required'=>'required','id'=>'department_id'])!!}
+                    {!!Form::select('department_id', $departments, old('department_id'), ['placeholder' => 'Pick a department','class'=>'form-control','required'=>'required','id'=>'department_id'])!!}
                     <span class="text-danger">{{ $errors->first('department_id') }}</span>
                   </div>
                 </div>
                 <div class="col-md-3">
                   <div class="item form-group">
                     <label for="batch">Batch (Admission Year) <span class="required">*</span></label>
-                    {!!Form::select('batch', $batches, null, ['placeholder' => 'Pick Batch','class'=>'form-control','required'=>'required','id'=>'batchSelect'])!!}
+                    {!!Form::select('batch', $batches, old('batch'), ['placeholder' => 'Pick Batch','class'=>'form-control','required'=>'required','id'=>'batchSelect'])!!}
                     <span class="text-danger">{{ $errors->first('batch') }}</span>
                   </div>
                 </div>
@@ -141,6 +141,8 @@ $(document).ready(function() {
 
   $('#department_id').on('change', loadStudents);
   $('#batchSelect').on('change', loadStudents);
+  // Auto-load if old values present
+  if ($('#department_id').val() && $('#batchSelect').val()) { loadStudents(); }
 
   // All select toggle
   $('.allCheck').on('change', function() {

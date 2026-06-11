@@ -512,7 +512,7 @@ class studentController extends Controller {
 		if($alreadyRegistered){
 			$notification= array('title' => 'Data Store', 'body' => $newRegistration.' students newly registerd and '.$alreadyRegistered.' has already registered!');
 		}
-		return back()->with("success",$notification);
+		return back()->with("success",$notification)->withInput();
 
 	}
 	private  function isWantToRegister($id,$registeredIds)
