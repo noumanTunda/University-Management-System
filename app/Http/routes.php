@@ -81,6 +81,13 @@ Route::group(['middleware' => 'auth'], function()
   Route::get('assessments/marks/{componentId}',[ 'as' => 'assessment.marks','uses'=>'AssessmentController@marks']);
   Route::post('assessments/marks/{componentId}',[ 'as' => 'assessment.marks.store','uses'=>'AssessmentController@storeMarks']);
 
+  // Exam Marks Entry (new assessment-based system)
+  Route::get('exam-marks',[ 'as' => 'exam.marks.create','uses'=>'ExamMarksController@create']);
+  Route::post('exam-marks',[ 'as' => 'exam.marks.store','uses'=>'ExamMarksController@store']);
+  Route::get('exam-marks/subjects/{deptId}',[ 'as' => 'exam.marks.subjects','uses'=>'ExamMarksController@getSubjects']);
+  Route::get('exam-marks/semesters/{yearId}',[ 'as' => 'exam.marks.semesters','uses'=>'ExamMarksController@getSemesters']);
+  Route::get('exam-marks/entry/{subjectId}/{semesterId}',[ 'as' => 'exam.marks.entry','uses'=>'ExamMarksController@getMarkEntry']);
+
   // Exam Types
   Route::get('exam-type',[ 'as' => 'exam_type.index','uses'=>'ExamTypeController@index']);
   Route::post('exam-type',[ 'as' => 'exam_type.store','uses'=>'ExamTypeController@store']);

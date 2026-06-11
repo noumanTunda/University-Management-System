@@ -89,7 +89,8 @@
                   </li>
                   <li><a><i class="fa fa-edit"></i> Exams <span class="fa fa-chevron-down"></span></a>
                     <ul class="nav child_menu">
-                      <li><a href="{{URL::route('exam.create')}}">Mark Entry </a></li>
+                      <li><a href="{{URL::route('exam.marks.create')}}">Mark Entry (CA/UE) </a></li>
+                      <li><a href="{{URL::route('exam.create')}}">Legacy Entry</a></li>
                       <li><a href="{{URL::route('exam.index')}}">Mark View</a></li>
                       @if(Gate::check('Admin') || Gate::check('HeadOfDepartment'))
                       <li><a href="{{URL::route('exam_type.index')}}">Exam Types</a></li>
