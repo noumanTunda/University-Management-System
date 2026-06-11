@@ -79,15 +79,16 @@ class studentController extends Controller {
 
 		return response()->json(['success' => true, 'students' => $students], 200);
 	}
-	public function studentListByBatch($dID, $batch)
+		public function studentListByBatch($dID, $batch)
 	{
-		$students = \App\Student::select('id','idNo','firstName','lastName','middleName')
-			->where('department_id', $dID)
+		$query = \App\Student::select('id','idNo','firstName','lastName','middleName')
 			->where('session', $batch)
 			->whereNotNull('course_id')
-			->whereNull('deleted_at')
-			->orderBy('firstName')
-			->get();
+			->whereNull('deleted_at');
+		if ($dID != 0 && $dID != 'all') {
+			$query->where('department_id', $dID);
+		}
+		$students = $query->orderBy('firstName')->get();
 		return response()->json(['success' => true, 'students' => $students], 200);
 	}
 	public function registeredStudentList($dID,$session,$semester)
