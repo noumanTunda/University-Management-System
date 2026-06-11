@@ -20,7 +20,8 @@ class TeacherSubjectController extends Controller
     {
         $teachers = User::whereIn('group', ['Teacher', 'HeadOfDepartment'])->with('subjects')->get();
         $departments = Department::select('id','name')->orderBy('name','asc')->get();
-        return view('teacher_subject.index', compact('teachers', 'departments'));
+        $allSubjects = Subject::select('id','name','code','department_id')->with('department')->orderBy('name')->get();
+        return view('teacher_subject.index', compact('teachers', 'departments', 'allSubjects'));
     }
 
     public function getSubjectsByDepartment($deptId)
@@ -40,6 +41,36 @@ class TeacherSubjectController extends Controller
         $teacher = User::findOrFail($data['user_id']);
         $teacher->subjects()->sync($data['subject_ids']);
         $notification = ['title' => 'Data Store', 'body' => 'Subjects assigned successfully.'];
+        return redirect()->route('teacher.subject.index')->with('success', $notification);
+    }
+
+    public function edit($id)
+    {
+        $teacher = User::with('subjects')->findOrFail($id);
+        $departments = Department::select('id','name')->orderBy('name','asc')->get();
+        $allSubjects = Subject::select('id','name','code','department_id')->with('department')->orderBy('name')->get();
+        return view('teacher_subject.edit', compact('teacher', 'departments', 'allSubjects'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $data = $request->all();
+        $rules = ['subject_ids' => 'required|array'];
+        $validator = Validator::make($data, $rules);
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator);
+        }
+        $teacher = User::findOrFail($id);
+        $teacher->subjects()->sync($data['subject_ids']);
+        $notification = ['title' => 'Data Update', 'body' => 'Subjects updated successfully.'];
+        return redirect()->route('teacher.subject.index')->with('success', $notification);
+    }
+
+    public function destroy($id)
+    {
+        $teacher = User::findOrFail($id);
+        $teacher->subjects()->detach();
+        $notification = ['title' => 'Data Delete', 'body' => 'All subjects unassigned from teacher.'];
         return redirect()->route('teacher.subject.index')->with('success', $notification);
     }
 }

@@ -34,7 +34,6 @@ class ExamController extends Controller
     'L4T1' => '4th Year 1st Semester',
     'L4T2' => '4th Year 2nd Semester'
   ];
-  ];
 
   public function Create()
   {

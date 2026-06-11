@@ -343,11 +343,18 @@ class studentController extends Controller {
 		$file = $request->file('students_file');
 		$handle = fopen($file->getRealPath(), 'r');
 		$header = fgetcsv($handle, 1000, ',');
-		$required = ['idNo','session','course_id','bncReg','batchNo','firstName','middleName','lastName','mobileNo','gender','religion','bloodgroup','nationality','dob','fatherName','fatherMobileNo','motherName','motherMobileNo','presentAddress','parmanentAddress','isActive'];
-		// simple validation of header
-		if (array_diff($required, $header)) {
+		if (!$header) {
 			fclose($handle);
-			return back()->withErrors(['students_file' => 'Invalid CSV header. Please use the provided template.']);
+			return back()->withErrors(['students_file' => 'Could not read CSV header.']);
+		}
+		$header = array_map(function($h) {
+			return trim(str_replace("\xEF\xBB\xBF", '', $h));
+		}, $header);
+		$required = ['idNo','session','course_id','bncReg','batchNo','firstName','middleName','lastName','mobileNo','gender','religion','bloodgroup','nationality','dob','fatherName','fatherMobileNo','motherName','motherMobileNo','presentAddress','parmanentAddress','isActive'];
+		$missing = array_diff($required, $header);
+		if (!empty($missing)) {
+			fclose($handle);
+			return back()->withErrors(['students_file' => 'Invalid CSV header. Missing: ' . implode(', ', $missing) . '. Please use the provided template.']);
 		}
 		$created = 0;
 		while (($row = fgetcsv($handle, 1000, ',')) !== false) {

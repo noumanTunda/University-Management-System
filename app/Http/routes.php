@@ -43,6 +43,9 @@ Route::group(['middleware' => 'auth'], function()
   Route::get('teacher-subject',[ 'as' => 'teacher.subject.index','uses'=>'TeacherSubjectController@index']);
   Route::post('teacher-subject',[ 'as' => 'teacher.subject.store','uses'=>'TeacherSubjectController@store']);
   Route::get('teacher-subject/subjects/{deptId}',[ 'as' => 'teacher.subject.subjects','uses'=>'TeacherSubjectController@getSubjectsByDepartment']);
+  Route::get('teacher-subject/{id}/edit',[ 'as' => 'teacher.subject.edit','uses'=>'TeacherSubjectController@edit']);
+  Route::put('teacher-subject/{id}',[ 'as' => 'teacher.subject.update','uses'=>'TeacherSubjectController@update']);
+  Route::delete('teacher-subject/{id}',[ 'as' => 'teacher.subject.destroy','uses'=>'TeacherSubjectController@destroy']);
 
   Route::resource('course','CourseController');
 

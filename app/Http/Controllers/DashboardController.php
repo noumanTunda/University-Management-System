@@ -98,7 +98,18 @@ class DashboardController extends Controller {
 		$expences=$this->datahelper($monthlyExpences);
 		$balance = $incomeTotal - $expenceTotal;
 		$attendance = $this->datahelper($monthlyAttendance);
-		return view('dashboard',compact('error','success','total','incomes','expences','balance','attendance'));
+		// Exam performance data
+		$examStats = \DB::table('exams')
+			->select('exam', \DB::raw('count(*) as total'), \DB::raw('avg(raw_score) as avg_score'))
+			->groupBy('exam')
+			->get();
+		$examChart = ['keys' => [], 'totals' => [], 'avgs' => []];
+		foreach ($examStats as $e) {
+			$examChart['keys'][] = $e->exam;
+			$examChart['totals'][] = $e->total;
+			$examChart['avgs'][] = round($e->avg_score, 1);
+		}
+		return view('dashboard',compact('error','success','total','incomes','expences','balance','attendance','examChart'));
 	}
 	function datahelper($data)
 	{
