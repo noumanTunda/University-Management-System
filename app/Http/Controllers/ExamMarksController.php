@@ -107,33 +107,131 @@ class ExamMarksController extends Controller
     public function store(Request $request)
     {
         $data = $request->all();
-        $planId = $data['plan_id'];
         $subjectId = $data['subject_id'];
         $semesterId = $data['semester_id'];
 
-        if ($planId == 0) {
-            // Default mode: save to exams table or course_registrations
-            foreach ($data['ca'] ?? [] as $studentId => $ca) {
-                $ue = $data['ue'][$studentId] ?? 0;
-                $grade = CourseRegistration::computeGrade($ca, $ue);
-                CourseRegistration::updateOrCreate(
-                    ['student_id' => $studentId, 'subject_id' => $subjectId, 'semester_id' => $semesterId],
-                    ['ca_score' => $ca, 'ue_score' => $ue, 'grade_letter' => $grade['letter'], 'grade_point' => $grade['point'], 'status' => $grade['status']]
+        // Find or auto-create plan with default components
+        $plan = AssessmentPlan::firstOrCreate(
+            ['subject_id' => $subjectId, 'semester_id' => $semesterId],
+            ['subject_id' => $subjectId, 'semester_id' => $semesterId]
+        );
+
+        // If plan was just created, add default CA + UE components
+        if ($plan->components()->count() == 0) {
+            $plan->components()->create(['name' => 'Course Work', 'type' => 'CA', 'max_score' => 40, 'weight' => 40]);
+            $plan->components()->create(['name' => 'University Exam', 'type' => 'UE', 'max_score' => 60, 'weight' => 60]);
+        }
+
+        $plan->load('components');
+        $caComp = $plan->components->where('type', 'CA')->first();
+        $ueComp = $plan->components->where('type', 'UE')->first();
+
+        // Save marks to assessment_marks for each component
+        foreach ($data['ca'] ?? [] as $studentId => $ca) {
+            if ($ca === '' || $ca === null) continue;
+            if ($caComp) {
+                AssessmentMark::updateOrCreate(
+                    ['assessment_component_id' => $caComp->id, 'student_id' => $studentId],
+                    ['score' => $ca]
                 );
             }
-        } else {
-            // Plan-based: save marks for each component
-            foreach ($data['scores'] ?? [] as $componentId => $studentScores) {
-                foreach ($studentScores as $studentId => $score) {
-                    if ($score === '' || $score === null) continue;
-                    AssessmentMark::updateOrCreate(
-                        ['assessment_component_id' => $componentId, 'student_id' => $studentId],
-                        ['score' => $score]
-                    );
-                }
+        }
+        foreach ($data['ue'] ?? [] as $studentId => $ue) {
+            if ($ue === '' || $ue === null) continue;
+            if ($ueComp) {
+                AssessmentMark::updateOrCreate(
+                    ['assessment_component_id' => $ueComp->id, 'student_id' => $studentId],
+                    ['score' => $ue]
+                );
             }
         }
 
-        return redirect()->back()->with('success', ['title'=>'Saved', 'body'=>'Marks saved successfully.']);
+        // Compute and save final grade to course_registrations
+        foreach ($data['ca'] ?? [] as $studentId => $ca) {
+            $ue = $data['ue'][$studentId] ?? 0;
+            $grade = CourseRegistration::computeGrade($ca, $ue);
+            CourseRegistration::updateOrCreate(
+                ['student_id' => $studentId, 'subject_id' => $subjectId, 'semester_id' => $semesterId],
+                ['ca_score' => $ca, 'ue_score' => $ue, 'grade_letter' => $grade['letter'], 'grade_point' => $grade['point'], 'status' => $grade['status']]
+            );
+        }
+
+        return redirect()->back()->with('success', ['title'=>'Saved', 'body'=>'Marks saved to assessment system.']);
+    }
+
+    // Bulk upload via CSV
+    public function uploadForm()
+    {
+        return view('exam_marks.upload');
+    }
+
+    public function uploadStore(Request $request)
+    {
+        $v = Validator::make($request->all(), [
+            'marks_file' => 'required|file|mimes:csv,txt',
+            'subject_id' => 'required|exists:subject,id',
+            'semester_id' => 'required|exists:semesters,id',
+        ]);
+        if ($v->fails()) return back()->withErrors($v);
+
+        $subjectId = $request->subject_id;
+        $semesterId = $request->semester_id;
+
+        // Auto-create plan with default components
+        $plan = AssessmentPlan::firstOrCreate(
+            ['subject_id' => $subjectId, 'semester_id' => $semesterId],
+            ['subject_id' => $subjectId, 'semester_id' => $semesterId]
+        );
+        if ($plan->components()->count() == 0) {
+            $plan->components()->create(['name' => 'Course Work', 'type' => 'CA', 'max_score' => 40, 'weight' => 40]);
+            $plan->components()->create(['name' => 'University Exam', 'type' => 'UE', 'max_score' => 60, 'weight' => 60]);
+        }
+        $plan->load('components');
+        $caComp = $plan->components->where('type', 'CA')->first();
+        $ueComp = $plan->components->where('type', 'UE')->first();
+
+        $file = $request->file('marks_file');
+        $handle = fopen($file->getRealPath(), 'r');
+        $header = fgetcsv($handle, 1000, ',');
+        if (!$header || count($header) < 3) {
+            fclose($handle);
+            return back()->withErrors(['marks_file' => 'CSV must have columns: idNo, ca_score, ue_score']);
+        }
+        $header = array_map(function($h) { return trim(str_replace("\xEF\xBB\xBF", '', $h)); }, $header);
+
+        $imported = 0; $errors = [];
+        while (($row = fgetcsv($handle, 1000, ',')) !== false) {
+            $data = array_combine($header, $row);
+            $student = Student::where('idNo', trim($data['idNo'] ?? ''))->first();
+            if (!$student) { $errors[] = 'Student not found: ' . ($data['idNo'] ?? '?'); continue; }
+
+            $ca = (float) ($data['ca_score'] ?? 0);
+            $ue = (float) ($data['ue_score'] ?? 0);
+
+            if ($caComp) {
+                AssessmentMark::updateOrCreate(
+                    ['assessment_component_id' => $caComp->id, 'student_id' => $student->id],
+                    ['score' => $ca]
+                );
+            }
+            if ($ueComp) {
+                AssessmentMark::updateOrCreate(
+                    ['assessment_component_id' => $ueComp->id, 'student_id' => $student->id],
+                    ['score' => $ue]
+                );
+            }
+
+            $grade = CourseRegistration::computeGrade($ca, $ue);
+            CourseRegistration::updateOrCreate(
+                ['student_id' => $student->id, 'subject_id' => $subjectId, 'semester_id' => $semesterId],
+                ['ca_score' => $ca, 'ue_score' => $ue, 'grade_letter' => $grade['letter'], 'grade_point' => $grade['point'], 'status' => $grade['status']]
+            );
+            $imported++;
+        }
+        fclose($handle);
+
+        $msg = "$imported students imported. ";
+        if (!empty($errors)) $msg .= 'Errors: ' . implode('; ', array_slice($errors, 0, 5));
+        return redirect()->route('exam.marks.create')->with('success', ['title'=>'Imported', 'body'=>$msg]);
     }
 }
