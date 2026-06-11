@@ -1,4 +1,4 @@
-# OSUMS – Open Source University Management System (SRS Guide)
+# OSUMS – Open Source University Management System
 
 ---
 
@@ -9,299 +9,365 @@
 4. [Installation & Setup](#installation--setup)
    - 4.1 [Clone the Repository](#clone-the-repository)
    - 4.2 [Environment Configuration](#environment-configuration)
-   - 4.3 [Docker based Development Environment](#docker-based-development-environment)
+   - 4.3 [Docker Development Environment](#docker-development-environment)
    - 4.4 [Running the Application](#running-the-application)
    - 4.5 [Database Migration & Seeding](#database-migration--seeding)
-5. [Functionalities & Detailed Descriptions](#functionalities--detailed-descriptions)
-   - 5.1 [User Management & Authentication](#user-management--authentication)
-   - 5.2 [Dashboard & Analytics](#dashboard--analytics)
-   - 5.3 [Student Registration & Profile](#student-registration--profile)
-   - 5.4 [Attendance Management](#attendance-management)
-   - 5.5 [Fee Collection & Accounting](#fee-collection--accounting)
-   - 5.6 [Library Management](#library-management)
-   - 5.7 [Dormitory & Hostel Management](#dormitory--hostel-management)
-   - 5.8 [Examination & Result Processing](#examination--result-processing)
-   - 5.9 [Reporting & Export](#reporting--export)
-6. [Functional Requirements (FR)](#functional-requirements-fr)
-7. [Non‑Functional Requirements (NFR)](#non‑functional-requirements-nfr)
-8. [System Requirements](#system-requirements)
-9. [Deployment Options](#deployment-options)
-10. [Testing Strategy](#testing-strategy)
-11. [Maintenance & Extensibility](#maintenance--extensibility)
-12. [FAQ & Troubleshooting](#faq--troubleshooting)
-13. [References & Further Reading](#references--further-reading)
+   - 4.6 [Default Credentials](#default-credentials)
+5. [Modules & Features](#modules--features)
+   - 5.1 [User Management & RBAC](#user-management--rbac)
+   - 5.2 [Student Management](#student-management)
+   - 5.3 [Course & Subject Management](#course--subject-management)
+   - 5.4 [Student Registration (Semester-based)](#student-registration-semester-based)
+   - 5.5 [Teacher & Subject Assignment](#teacher--subject-assignment)
+   - 5.6 [Attendance Management](#attendance-management)
+   - 5.7 [Examination & Assessment System](#examination--assessment-system)
+   - 5.8 [Fee Collection & GePG Integration](#fee-collection--gepg-integration)
+   - 5.9 [Library Management](#library-management)
+   - 5.10 [Dormitory Management](#dormitory-management)
+   - 5.11 [Student Portal](#student-portal)
+   - 5.12 [Reporting](#reporting)
+   - 5.13 [Dashboard & Analytics](#dashboard--analytics)
+6. [Database Schema Overview](#database-schema-overview)
+7. [API Endpoints](#api-endpoints)
+8. [Testing Strategy](#testing-strategy)
+9. [Deployment](#deployment)
+10. [Troubleshooting](#troubleshooting)
+
 ---
 
 ## Introduction
-OSUMS (Open Source University Management System) is a **Laravel‑based web application** that provides a complete suite of tools for managing academic institutions. It covers core processes such as **student registration, attendance tracking, fee collection, library services, dormitory allocation, examinations, and reporting**. The system is designed to be **lightweight, extensible, and Docker‑friendly**, making it suitable for small colleges, training institutes, or as a learning platform for developers.
 
-The repository you are looking at contains the full source code, Docker configuration, database migrations, seeders, and a set of **PHPUnit tests**. The application follows **MVC architecture**, uses **Eloquent ORM**, and ships with **Blade templates** for the UI.
+**OSUMS** (Open Source University Management System) is a **Laravel 5.2** web application that provides a complete suite of tools for managing academic institutions. It follows **Tanzania TCU (Tanzania Commission for Universities)** grading standards and integrates with **GePG (Government e-Payment Gateway)** for fee collections.
+
+The system covers:
+- Student lifecycle (admission → registration → assessment → graduation)
+- Course/curriculum management with year-semester structure
+- TCU-compliant CA/UE assessment with user-definable components
+- RBAC with roles: Admin, Head of Department, Teacher, Accountant, Student
+- Government payment gateway integration (GePG)
+- Student self-service portal
+- Email notifications via MailHog (development)
+
+**Tech Stack:** Laravel 5.2, PHP 7.4 (Docker), MySQL 8.0, Bootstrap 3 (Gentelella theme), jQuery, Chart.js, Select2, PNotify.
 
 ---
 
 ## Prerequisites
+
 | Category | Requirement | Reason |
 |----------|-------------|--------|
-| **Operating System** | Linux (any modern distro) or macOS. Windows users should use WSL2. | Docker and PHP CLI work best on Unix‑like environments. |
-| **Docker Engine** | Docker >= 24.0, Docker Compose v2 (the `docker compose` command). | Provides isolated services (PHP‑FPM, MySQL, Nginx). |
-| **Git** | >= 2.40 | To clone the repository. |
-| **PHP** | 8.2 (only required for local development without Docker). | Laravel 10 requires PHP 8.1+. |
-| **Composer** | >= 2.6 | Dependency management for PHP packages. |
-| **Node.js & npm** | Node 20.x, npm 10.x (optional – only for front‑end asset compilation). | Required if you want to run `npm run dev` for hot‑reloading. |
-| **Make (optional)** | GNU Make | Provides convenient shortcuts via the `Makefile`. |
+| **Operating System** | Linux / macOS / Windows (WSL2) | Docker and PHP CLI |
+| **Docker Engine** | Docker >= 24.0 + Compose v2 | Containerized services |
+| **Git** | >= 2.40 | Clone repository |
+| **Memory** | 4 GB RAM minimum | Docker containers |
 
 ---
 
 ## System Architecture Overview
+
 ```
-+-------------------+        +-------------------+        +-------------------+
-|   Web Browser     | <----> |   Nginx (proxy)   | <----> |   PHP‑FPM (Laravel) |
-+-------------------+        +-------------------+        +-------------------+
-                                   ^                         |
-                                   |                         |
-                                   v                         v
-                           +-------------------+   +-------------------+
-                           |   MySQL 8.0       |   |   Redis (cache)   |
-                           +-------------------+   +-------------------+
++-------------------+       +-------------------+       +-------------------+
+|   Web Browser     | <---> |   PHP-FPM (Laravel)| <---> |   MySQL 8.0       |
++-------------------+       +-------------------+       +-------------------+
+                                    |
+                                    v
+                            +-------------------+
+                            |   MailHog (email)  |
+                            +-------------------+
 ```
-* **Nginx** – Serves static assets and forwards PHP requests to the PHP‑FPM container.
-* **PHP‑FPM** – Runs the Laravel application.
-* **MySQL** – Primary relational database for all entities (students, fees, etc.).
-* **Redis** – Optional cache and queue driver (used by Laravel’s cache and queue systems).
+
+- **app** – PHP 7.4-FPM running Laravel 5.2
+- **db** – MySQL 8.0 (or MariaDB 11.8)
+- **mailhog** – Email testing interface (http://localhost:8025)
 
 ---
 
 ## Installation & Setup
+
 ### 4.1 Clone the Repository
 ```bash
-git clone https://github.com/your‑org/osums.git
-cd osums
+git clone https://github.com/noumanTunda/University-Management-System.git
+cd University-Management-System
 ```
-> Replace the URL with the actual remote if you forked the project.
 
 ### 4.2 Environment Configuration
-1. Copy the example environment file:
-   ```bash
-   cp .env.example .env
-   ```
-2. Edit `.env` to match your Docker service names (the defaults work out‑of‑the‑box):
-   ```dotenv
-   APP_NAME="OSUMS"
-   APP_ENV=local
-   APP_KEY=base64:$(php -r "echo base64_encode(random_bytes(32));")
-   APP_DEBUG=true
-   APP_URL=http://localhost
+```bash
+cp .env.example .env
+```
+Edit `.env` — the defaults work out of the box:
+```dotenv
+APP_NAME=OSUMS
+APP_ENV=local
+APP_KEY=
+APP_DEBUG=true
+APP_URL=http://localhost
 
-   LOG_CHANNEL=stack
+DB_CONNECTION=mysql
+DB_HOST=172.17.0.1
+DB_PORT=3306
+DB_DATABASE=homestead
+DB_USERNAME=root
+DB_PASSWORD=2010
 
-   DB_CONNECTION=mysql
-   DB_HOST=db          # Docker service name for MySQL
-   DB_PORT=3306
-   DB_DATABASE=osums
-   DB_USERNAME=root
-   DB_PASSWORD=secret
+MAIL_DRIVER=smtp
+MAIL_HOST=mailhog
+MAIL_PORT=1025
+MAIL_USERNAME=null
+MAIL_PASSWORD=null
+MAIL_ENCRYPTION=null
+MAIL_FROM_ADDRESS=admin@osums.edu
+MAIL_FROM_NAME=OSUMS
+```
 
-   BROADCAST_DRIVER=log
-   CACHE_DRIVER=file
-   QUEUE_CONNECTION=sync
-   SESSION_DRIVER=file
-   SESSION_LIFETIME=120
-   ```
-3. Generate the application key (Laravel requirement):
-   ```bash
-   docker compose exec app php artisan key:generate
-   ```
+Generate application key:
+```bash
+docker compose exec app php artisan key:generate
+```
 
-### 4.3 Docker based Development Environment
-The repository ships a `docker-compose.yml` that defines three services:
-* `app` – PHP‑FPM with Composer and the source code mounted.
-* `db` – MySQL 8.0.
-* `nginx` – Nginx reverse‑proxy serving the Laravel public folder.
-
-Start the stack:
+### 4.3 Docker Development Environment
 ```bash
 docker compose up -d
 ```
-> The `-d` flag runs containers in detached mode.
+This starts three containers:
+- `app` – PHP 7.4-FPM with Laravel
+- `db` – MySQL 8.0
+- `mailhog` – SMTP testing (web UI at http://localhost:8025)
 
 ### 4.4 Running the Application
-After the containers are up, run the following Artisan commands **inside the `app` container**:
 ```bash
-# Install PHP dependencies
+# Install dependencies
 docker compose exec app composer install
 
-# Install front‑end assets (optional, only if you need to compile CSS/JS)
-docker compose exec app npm install
-
-# Compile assets (development mode)
-docker compose exec app npm run dev
+# Generate app key (if not done above)
+docker compose exec app php artisan key:generate
 ```
-Now you can access the application at **http://localhost** (or the host you configured in `.env`).
+
+Access the app at **http://localhost:8080**
 
 ### 4.5 Database Migration & Seeding
 ```bash
-# Run migrations (creates tables)
- docker compose exec app php artisan migrate
+# Run all migrations
+docker compose exec app php artisan migrate
 
-# Seed initial data (admin user, sample departments, etc.)
- docker compose exec app php artisan db:seed
+# Seed initial data
+docker compose exec app php artisan db:seed
 ```
-The default admin credentials (created by `AdminUserSeeder`) are:
-```
-Email: admin@example.com
-Password: password
-```
-> **Important:** Change the password after first login.
+
+### 4.6 Default Credentials
+| Role | Login | Password |
+|------|-------|----------|
+| **Admin** | `admin` | `admin` |
+| **Teacher** | `teacher` | `teacher` |
+| **Accountant** | `account` | `account` |
+| **Student** | Student ID (e.g. `T24-03-00000`) | Last name (e.g. `Tunda`) |
 
 ---
 
-## Functionalities & Detailed Descriptions
-### 5.1 User Management & Authentication
-* **Roles:** `Admin`, `Account`, `Teacher`, `Student`.
-* **Authentication:** Laravel Breeze (email/password) with session guard.
-* **Authorization:** Gates defined in `AuthServiceProvider` restrict access to routes based on role.
-* **Password Reset:** Uses Laravel’s built‑in token system.
+## Modules & Features
 
-### 5.2 Dashboard & Analytics
-* **Charts:** Attendance trends, fee collection status, library usage.
-* **Widgets:** Quick stats – total students, active fees, overdue payments.
-* **Customizable:** Admin can add new widgets by extending the `DashboardController`.
+### 5.1 User Management & RBAC
 
-### 5.3 Student Registration & Profile
-* **CRUD** for student records (personal info, academic details, photo upload).
-* **Bulk import** via CSV (handled by `StudentImport` service).
-* **Profile page** shows attendance, fees, library loans, and exam results.
+**Roles:** Admin, Head of Department, Teacher, Accountant, Student
 
-### 5.4 Attendance Management
-* **Mark attendance** per class/section.
-* **Automatic validation** – prevents duplicate entries for the same day.
-* **Reports** – daily, monthly, and per‑subject attendance percentages.
+| Role | Permissions |
+|------|-------------|
+| **Admin** | Full system access |
+| **Head of Department (HOD)** | Department-level management, assessment templates, teacher assignments |
+| **Teacher** | Mark entry, attendance, own subjects only |
+| **Accountant** | Fee collection, GePG bills management |
+| **Student** | Self-service portal (results, attendance, fees, library) |
 
-### 5.5 Fee Collection & Accounting
-* **Fee structures** – defined per department/semester.
-* **Payment recording** – cash, bank transfer, or online gateway (stubbed).
-* **Due reminders** – email notifications (queue‑based, uses Laravel Mail).
-* **Financial reports** – total collected, pending, and overdue amounts.
+- Custom `Role`/`Permission` models with polymorphic `user_role` pivot
+- Middleware: `admin`, `hod`, `teacher`, `account`, `student`
+- Gates defined in `AuthServiceProvider` for Blade directives (`@can`, `@if(Gate::check(...))`)
 
-### 5.6 Library Management
-* **Catalog** – books, journals, digital media.
-* **Issue/Return workflow** with automatic fine calculation.
-* **Search** – by title, author, ISBN, or subject.
-* **Inventory alerts** – low‑stock notifications.
+### 5.2 Student Management
+- **Admission** – Create students with photo upload, auto-assign department from course
+- **Bulk Import** – CSV upload with BOM stripping, auto-creates user accounts
+- **Course Assignment** – Students assigned to courses linked to their department
+- **Auto User Creation** – Each student gets a `users` account (login = idNo, password = lastName)
+- **Profile View** – Personal info, photo, course, department
 
-### 5.7 Dormitory & Hostel Management
-* **Room allocation** – based on gender, department, and availability.
-* **Fee tracking** – monthly hostel fees integrated with the fee module.
-* **Visitor log** – optional feature for security staff.
+### 5.3 Course & Subject Management
+- **Courses** – Defined per department with duration_years (1-4)
+- **Subjects** – Assigned to courses via year + semester matrix (curriculum builder)
+- **Curriculum Matrix** – Visual grid: Year 1-4 × Semester 1-2 with searchable checkboxes
+- **Credit Tracking** – Total credits per year and semester
 
-### 5.8 Examination & Result Processing
-* **Exam creation** – define subjects, max marks, and weightage.
-* **Result entry** – bulk entry via spreadsheet or manual UI.
-* **Grade calculation** – configurable grading schema.
-* **Transcript generation** – PDF export using `dompdf`.
+### 5.4 Student Registration (Semester-based)
+- **Batch + Academic Year System:**
+  - **Batch** = Admission year (e.g., 2022-2023 batch)
+  - **Academic Year** = Year being registered FOR
+- **Validation:**
+  - Registration year must be >= admission year
+  - Registration year must be <= admission year + course duration
+- **Semesters** – Only Semester 1 or Semester 2 (no L1T1-L4T2 system)
+- **Bulk Registration** – Select multiple students from a batch and register them
 
-### 5.9 Reporting & Export
-* **CSV/Excel export** for any list view (students, fees, attendance, etc.).
-* **PDF reports** – built with `barryvdh/laravel-dompdf`.
-* **Scheduled jobs** – nightly backup and report generation (Laravel Scheduler).
+### 5.5 Teacher & Subject Assignment
+- Assign teachers to subjects via `teacher_subject` pivot table
+- Select2 searchable dropdowns for both teachers and subjects
+- Subject suggestions filter by teacher's department
+
+### 5.6 Attendance Management
+- Mark attendance per subject, session, and semester
+- Prevent duplicate entries for same student/day
+- View and filter attendance records
+
+### 5.7 Examination & Assessment System
+
+#### Assessment Plans
+- **Plans** link a subject + semester with components
+- **Components** – User-definable items with type (CA/UE), max_score, weight
+- **Default Plan** – Auto-created with Course Work (CA 40%) + University Exam (UE 60%)
+
+#### Assessment Templates (NEW)
+- HOD/Admin create **reusable templates** with predefined components
+- **Default template:** "Standard Course" – Test 1 (20%) + Test 2 (20%) + University Exam (60%)
+- Teachers can use a template when creating a new plan → components pre-filled
+
+#### Mark Entry
+- **New CA/UE Entry** – Dynamic table with columns from assessment plan
+- **Legacy Entry** – Simple CA (max 40) + UE (max 60) input
+- **Bulk Upload** – CSV upload with student list per subject+semester
+- **Downloadable Template** – CSV with enrolled students pre-filled
+
+#### Grade Computation
+- Uses `CourseRegistration::computeGrade()` static method
+- TCU scale: A=5.0, B+=4.0, B=3.0, C=2.0, D=1.0, F=0.0
+- Grades stored in `course_registrations` with ca_score, ue_score, grade_letter, grade_point, status
+
+### 5.8 Fee Collection & GePG Integration
+
+#### Fee Management
+- Define fee types with amounts
+- Record payments (add payment form)
+- View fee collection history
+
+#### GePG Payment Gateway
+- **Student Pay Page** – Select fee type → generate 12-digit control number
+- **Accountant Bills** – View all bills, mark as paid, edit details
+- **Auto-link** – Marking a bill as paid creates a `fee_collections` record
+- **Webhook** – XML callback endpoint for GePG treasury
+
+### 5.9 Library Management
+- Book catalog with search (title, author, code)
+- Issue/Return workflow
+- Track borrowed books per student
+
+### 5.10 Dormitory Management
+- Room allocation per student
+- Track dormitory assignments
+
+### 5.11 Student Portal
+Login with student ID + last name → redirected to personal dashboard:
+- **Dashboard** – Stats cards (registrations, attendance, books, bills)
+- **My Results** – Collapsible panels per academic year + semester
+- **My Attendance** – Date, subject, present/absent
+- **Pay Fees** – Generate GePG control numbers
+- **Library** – Search books, view borrowed books
+
+### 5.12 Reporting
+- Result spreadsheets per subject
+- Transcript generation
+- Attendance reports
+
+### 5.13 Dashboard & Analytics
+- Colored stat cards (students, courses, books, fees)
+- Chart.js graphs (exam performance)
+- Quick links to common actions
 
 ---
 
-## Functional Requirements (FR)
-| FR‑ID | Description |
-|-------|-------------|
-| FR‑1 | The system shall allow users to **register**, **login**, and **logout** securely. |
-| FR‑2 | Admin users shall be able to **create, read, update, delete** (CRUD) any entity (students, fees, books, etc.). |
-| FR‑3 | Teachers shall have read‑only access to their assigned classes and be able to **record attendance**. |
-| FR‑4 | The system shall generate **monthly fee statements** and allow payments to be recorded. |
-| FR‑5 | Library staff shall manage **catalog entries**, **issue**, **return**, and **track fines**. |
-| FR‑6 | Dormitory staff shall allocate rooms and track **hostel fee payments**. |
-| FR‑7 | The examination module shall support **exam creation**, **result entry**, and **grade calculation**. |
-| FR‑8 | All list views shall support **search**, **filter**, **pagination**, and **export** to CSV/Excel. |
-| FR‑9 | The dashboard shall display **real‑time statistics** using charts. |
-| FR‑10 | The system shall send **email notifications** for overdue fees and upcoming exams. |
+## Database Schema Overview
+
+| Table | Purpose |
+|-------|---------|
+| `users` | System login accounts (all roles) |
+| `roles` / `permissions` / `user_role` | RBAC |
+| `students` | Student profiles (admission, personal info) |
+| `courses` | Programs of study with duration_years |
+| `subject` | Subjects with code, credit, levelTerm |
+| `course_subject` | Pivot: courses ↔ subjects with semester |
+| `department` | Academic departments |
+| `attendances` | Daily attendance records |
+| `exams` / `exam_types` | Legacy exam marks |
+| `assessment_plans` / `assessment_components` / `assessment_marks` | CA/UE assessment system |
+| `assessment_templates` / `assessment_template_components` | Reusable templates |
+| `course_registrations` | Final grades (ca_score, ue_score, grade) |
+| `registrations` | Semester registrations (batch-based) |
+| `fees` / `fee_collections` | Fee types and payments |
+| `gepg_bills` / `gepg_payment_receipts` | GePG integration |
+| `books` / `borrow_books` | Library |
+| `dormitory` / `dormitory_rooms` | Hostel management |
+| `academic_years` / `semesters` | Calendar structure |
 
 ---
 
-## Non‑Functional Requirements (NFR)
-| NFR‑ID | Category | Requirement |
-|--------|----------|-------------|
-| NFR‑1 | **Performance** | Page load time < 2 seconds for dashboards under 10 k records. |
-| NFR‑2 | **Scalability** | Able to handle up to 5 000 concurrent users with horizontal scaling of the `app` container. |
-| NFR‑3 | **Security** | Passwords stored with bcrypt, CSRF protection enabled, input validation on all forms. |
-| NFR‑4 | **Reliability** | Automatic DB backups (daily) and graceful degradation if Redis is unavailable. |
-| NFR‑5 | **Usability** | UI follows Bootstrap 5 guidelines; all forms have client‑side validation. |
-| NFR‑6 | **Maintainability** | Code follows PSR‑12, unit tests ≥ 80 % coverage, CI pipeline (GitHub Actions) runs lint & tests on push. |
-| NFR‑7 | **Portability** | Application runs on any Docker‑compatible host (Linux, macOS, Windows‑WSL). |
-| NFR‑8 | **Documentation** | This SRS (`SUMMARY.md`) and inline code comments must be kept up‑to‑date. |
+## API Endpoints
 
----
+All routes are web-based (no REST API). Key AJAX endpoints:
 
-## System Requirements
-### Hardware (Production)
-* **CPU:** 2 vCPU (minimum), 4 vCPU recommended.
-* **RAM:** 2 GB (minimum), 4 GB recommended.
-* **Disk:** 20 GB SSD for OS, DB, and logs.
-* **Network:** 1 Gbps Ethernet (or equivalent cloud bandwidth).
-
-### Software
-| Component | Minimum Version |
-|-----------|-----------------|
-| Docker Engine | 24.0 |
-| Docker Compose | v2 |
-| MySQL | 8.0 |
-| PHP | 8.2 |
-| Composer | 2.6 |
-| Node.js | 20.x |
-| Nginx | 1.24 |
-| Redis (optional) | 7.0 |
-
----
-
-## Deployment Options
-1. **Docker Compose (development / small‑scale production)** – as described in the *Installation* section.
-2. **Kubernetes** – create Helm chart from the `docker-compose.yml` (services → Deployments, ConfigMaps for `.env`).
-3. **Traditional VM** – install PHP, Nginx, MySQL manually; copy the source code; run `php artisan migrate --seed`.
-
-*For production, always enable HTTPS (use Let’s Encrypt) and set `APP_ENV=production` with `APP_DEBUG=false`.*
+| Method | URL | Purpose |
+|--------|-----|---------|
+| GET | `/students/{dept}/{session}` | Student list by dept + session |
+| GET | `/students-batch/{dept}/{batch}` | Students by batch for registration |
+| GET | `/subject/{dept}/{semester}` | Subjects by dept + semester |
+| GET | `/exam-marks/subjects/{deptId}` | Subjects for cascading dropdown |
+| GET | `/exam-marks/semesters/{yearId}` | Semesters for cascading dropdown |
+| GET | `/exam-marks/entry/{subjectId}/{semesterId}` | Marks entry table HTML |
+| POST | `/gepg/callback` | GePG payment webhook |
 
 ---
 
 ## Testing Strategy
-* **Unit Tests** – located in `tests/` (run with `php artisan test`).
-* **Feature Tests** – cover HTTP routes, authentication, and role‑based access.
-* **Static Analysis** – `phpstan` and `laravel‑pint` for code style.
-* **CI Pipeline** – GitHub Actions workflow runs lint, static analysis, and tests on every PR.
+
+The system does not include automated test suites in the current build. Manual testing is done via the browser interface.
+
+For future development:
+- PHPUnit for unit/feature tests
+- Browser tests with Laravel Dusk (if upgraded to Laravel 8+)
 
 ---
 
-## Maintenance & Extensibility
-* **Adding a new module** – create a new Laravel module (model, migration, controller, routes, Blade views) and register routes in `routes/web.php`.
-* **Database versioning** – use Laravel migrations; never edit existing migration files after they are deployed.
-* **Cache busting** – run `php artisan cache:clear` after any configuration change.
-* **Backup strategy** – schedule `mysqldump` inside the `db` container and store backups on a mounted volume.
+## Deployment
+
+### Production Requirements
+- **PHP:** 7.4+ (compatible), 8.x recommended for performance
+- **Database:** MySQL 8.0 or MariaDB 10.5+
+- **Web Server:** Nginx or Apache with PHP-FPM
+- **SSL:** Let's Encrypt for HTTPS
+
+### Production Checklist
+```bash
+# Set production mode
+APP_ENV=production
+APP_DEBUG=false
+
+# Optimize Laravel
+php artisan route:cache
+php artisan config:cache
+php artisan view:clear
+
+# Set proper file permissions
+chmod -R 775 storage bootstrap/cache
+```
 
 ---
 
-## FAQ & Troubleshooting
+## Troubleshooting
+
 | Issue | Solution |
 |-------|----------|
-| **“SQLSTATE[HY000] [2002] Connection refused”** | Ensure the `db` container is running (`docker compose ps`). Verify `DB_HOST=db` in `.env`. |
-| **“Class not found” after composer install** | Run `docker compose exec app composer dump‑autoload`. |
-| **Views not updating after Blade changes** | Clear compiled views: `docker compose exec app php artisan view:clear`. |
-| **Cache still showing old data** | Run `docker compose exec app php artisan cache:clear`. |
-| **Permission denied on storage folder** | Inside container: `chown -R www-data:www-data storage bootstrap/cache`. |
-| **Docker builds hanging** | Increase Docker memory allocation (Docker Desktop → Resources). |
+| **"Class 'App\Fees' not found"** | Class is `Fee` (singular), not `Fees` |
+| **"Undefined variable" in compact()** | Check for empty strings in `compact('',...)` |
+| **Migration error: duplicate column** | Check `migrations` table for already-applied entries |
+| **CSV upload returns 0 students** | BOM bytes in header — stripping added |
+| **"continue 2" error** | Only one loop level — use `continue` not `continue 2` |
+| **Select2 not working** | Ensure `select2.min.css` and `select2.full.min.js` are loaded in master layout |
+| **Student can't login** | Ensure user account exists in `users` table with `login = idNo`, `group = 'Student'` |
+| **Mail not sending** | MailHog runs on port 1025 (SMTP), UI at port 8025 |
 
 ---
 
-## References & Further Reading
-* **Laravel Documentation** – https://laravel.com/docs/10.x
-* **Docker Compose Reference** – https://docs.docker.com/compose/
-* **Bootstrap 5** – https://getbootstrap.com/docs/5.3/getting-started/introduction/
-* **PHPUnit** – https://phpunit.de/
-* **GitHub Actions** – https://docs.github.com/en/actions
-
----
-
-*Prepared on **June 5, 2026**. This document is version‑controlled alongside the source code; any changes to the system architecture or requirements should be reflected here.*
+*Prepared on **June 12, 2026**. This document is version-controlled alongside the source code.*
