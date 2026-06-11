@@ -93,7 +93,7 @@
                           <td>{{ $subject->credit }}</td>
                           <td>
                             @php
-                              $semesterLabels = [1=>'1st Year 1st Semester',2=>'1st Year 2nd Semester',3=>'2nd Year 1st Semester',4=>'2nd Year 2nd Semester',5=>'3rd Year 1st Semester',6=>'3rd Year 2nd Semester',7=>'4th Year 1st Semester',8=>'4th Year 2nd Semester'];
+                              $semesterLabels = [1=>'Semester 1',2=>'Semester 2'];
                             @endphp
                             {{ isset($semesterLabels[$subject->pivot->semester]) ? $semesterLabels[$subject->pivot->semester] : $subject->pivot->semester }}
                           </td>

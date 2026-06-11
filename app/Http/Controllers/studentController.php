@@ -17,16 +17,10 @@ use App\Transformers\StudentTransformer;
 
 class studentController extends Controller {
 	protected $student;
-	protected $semesters=[
-		'L1T1' => '1st Year 1st Semester',
-        'L1T2' => '1st Year 2nd Semester',
-        'L2T1' => '2nd Year 1st Semester',
-        'L2T2' => '2nd Year 2nd Semester',
-        'L3T1' => '3rd Year 1st Semester',
-        'L3T2' => '3rd Year 2nd Semester',
-        'L4T1' => '4th Year 1st Semester',
-        'L4T2' => '4th Year 2nd Semester'
-	];
+	    protected $semesters=[
+        'Semester 1' => 'Semester 1',
+        'Semester 2' => 'Semester 2',
+    ];
 	public function __construct(Student $student)
 	{
 		$this->middleware('hod',['except' => ['registeredStudentList']]);
