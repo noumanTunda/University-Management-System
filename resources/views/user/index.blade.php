@@ -56,6 +56,7 @@
                           <td>{{$user->description}}</td>
                           <td>{{$user->created_at->format('F j, Y h:m A')}}</td>
                           <td>
+                         <a href="{{URL::route('user.edit',$user->id)}}" class='btn btn-warning btn-xs'> <i class="glyphicon glyphicon-edit icon-white"></i></a>
                          <form class="deleteForm" method="POST" action="{{URL::route('user.destroy',$user->id)}}">
                            <input name="_method" type="hidden" value="DELETE">
                          <input type="hidden" name="_token" value="{{ csrf_token() }}">

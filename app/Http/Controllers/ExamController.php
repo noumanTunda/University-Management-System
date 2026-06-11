@@ -13,6 +13,7 @@ use Validator;
 use App\Exam;
 use Carbon\Carbon;
 use App\Transformers\MarksTransformer;
+use App\ExamType;
 use League\Fractal\Manager;
 use League\Fractal\Resource\Collection;
 use App\Serializers\MySerializer;
@@ -33,16 +34,13 @@ class ExamController extends Controller
     'L4T1' => '4th Year 1st Semester',
     'L4T2' => '4th Year 2nd Semester'
   ];
-  protected $exams=[
-    'Midterm Exam' => 'Midterm Exam',
-    'Final Exam' => 'Final Exam',
   ];
 
   public function Create()
   {
     $subjects=[];
     $semesters= $this->semesters;
-    $exams= $this->exams;
+    $exams = ExamType::lists('name', 'id');
     $departments = Department::select('id','name')->orderby('name','asc')->lists('name', 'id');
     $sessions=Student::select('session','session')->distinct()->lists('session','session');
     return view('exam.create',compact('departments','sessions','semesters','exams','subjects'));
@@ -110,7 +108,7 @@ class ExamController extends Controller
     $marks=[];
     $subjects=[];
     $semesters= $this->semesters;
-    $exams= $this->exams;
+    $exams = ExamType::lists('name', 'id');
     $departments = Department::select('id','name')->orderby('name','asc')->lists('name', 'id');
     $sessions=Student::select('session','session')->distinct()->lists('session','session');
     $selectDep="";
@@ -140,7 +138,7 @@ class ExamController extends Controller
 
     $exam =$request->input('exam');
     $semesters= $this->semesters;
-    $exams= $this->exams;
+    $exams = ExamType::lists('name', 'id');
     $selectDep=$request->input('department_id');
     $selectSem=$request->input('levelTerm');
     $selectSub = $request->input('subject_id');

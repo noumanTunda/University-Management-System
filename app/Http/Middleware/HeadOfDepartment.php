@@ -4,18 +4,11 @@ namespace App\Http\Middleware;
 
 use Closure;
 
-class Teacher
+class HeadOfDepartment
 {
-    /**
-     * Handle an incoming request.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure  $next
-     * @return mixed
-     */
     public function handle($request, Closure $next)
     {
-        if($request->user()->group !="Teacher" && $request->user()->group !="Admin" && $request->user()->group !="HeadOfDepartment"){
+        if($request->user()->group !="HeadOfDepartment" && $request->user()->group !="Admin"){
           $notification= array('title' => 'Access Denied!', 'body' => 'You do not have permission to do that!');
           return redirect()->route('user.dashboard')->with('error',$notification);
         }

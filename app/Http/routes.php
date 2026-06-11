@@ -39,6 +39,11 @@ Route::group(['middleware' => 'auth'], function()
   Route::resource('subject','SubjectController');
   Route::get('subject/{deparment}/{semester}',[ 'as' => 'subject.DeptAndSem','uses'=>'SubjectController@subjetsByDptSem']);
 
+  // Teacher-Subject assignment
+  Route::get('teacher-subject',[ 'as' => 'teacher.subject.index','uses'=>'TeacherSubjectController@index']);
+  Route::post('teacher-subject',[ 'as' => 'teacher.subject.store','uses'=>'TeacherSubjectController@store']);
+  Route::get('teacher-subject/subjects/{deptId}',[ 'as' => 'teacher.subject.subjects','uses'=>'TeacherSubjectController@getSubjectsByDepartment']);
+
   Route::resource('course','CourseController');
 
 
@@ -61,6 +66,12 @@ Route::group(['middleware' => 'auth'], function()
 
   Route::resource('attendance','AttendanceController');
   Route::post('attendance/by-subject',[ 'as' => 'attendance.index2','uses'=>'AttendanceController@index2']);
+
+  // Exam Types
+  Route::get('exam-type',[ 'as' => 'exam_type.index','uses'=>'ExamTypeController@index']);
+  Route::post('exam-type',[ 'as' => 'exam_type.store','uses'=>'ExamTypeController@store']);
+  Route::post('exam-type/{id}',[ 'as' => 'exam_type.update','uses'=>'ExamTypeController@update']);
+  Route::get('exam-type/{id}/delete',[ 'as' => 'exam_type.destroy','uses'=>'ExamTypeController@destroy']);
 
   Route::resource('exam','ExamController');
   Route::post('exam/by-subject',[ 'as' => 'exam.index2','uses'=>'ExamController@index2']);

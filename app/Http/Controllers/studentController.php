@@ -29,7 +29,7 @@ class studentController extends Controller {
 	];
 	public function __construct(Student $student)
 	{
-		$this->middleware('admin',['except' => ['registeredStudentList']]);
+		$this->middleware('hod',['except' => ['registeredStudentList']]);
 		$this->student = $student;
 	}
 	/**

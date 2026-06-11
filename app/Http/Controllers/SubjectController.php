@@ -25,7 +25,8 @@ class SubjectController extends Controller
     ];
     public function __construct(Subject $subject)
     {
-        $this->middleware('admin', ['except' => ['subjetsByDptSem']]);
+        $this->middleware('auth');
+        $this->middleware('hod', ['only' => ['create', 'store', 'edit', 'update', 'destroy']]);
         $this->subject = $subject;
     }
 

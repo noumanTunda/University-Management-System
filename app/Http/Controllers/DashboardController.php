@@ -31,15 +31,24 @@ class DashboardController extends Controller {
 		$totalRegisterd = \DB::table('registrations')->distinct('students_id')->count('students_id');
 		$totalDepartment = \DB::table('department')->count();
 		$totalSubject = \DB::table('subject')->count();
+		$totalCourse = \DB::table('courses')->count();
+		$totalUser = \DB::table('users')->count();
+		$totalBook = \DB::table('books')->count();
+		$totalDormitory = \DB::table('dormitories')->count();
+		$totalFeeCollection = \DB::table('fee_collections')->count();
 		// Count distinct attendance dates
 		$totalAttendance = \DB::table('attendances')->distinct('date')->count('date');
-		// Count total exams (distinct combinations not directly supported, using total rows as approximation)
 		$totalExam = \DB::table('exams')->count();
 		$total = [
 			'admitted' => $totalAdmit,
 			'registered' => $totalRegisterd,
 			'department' => $totalDepartment,
 			'subject' => $totalSubject,
+			'course' => $totalCourse,
+			'user' => $totalUser,
+			'book' => $totalBook,
+			'dormitory' => $totalDormitory,
+			'fee_collection' => $totalFeeCollection,
 			'attendance' => $totalAttendance,
 			'exam' => $totalExam,
 		];

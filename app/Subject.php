@@ -25,5 +25,8 @@ class Subject extends Model {
    public function exams() {
       return $this->hasMany('App\Exam','subject_id');
    }
+   public function teachers() {
+      return $this->belongsToMany('App\User', 'teacher_subject', 'subject_id', 'user_id');
+   }
 
 }

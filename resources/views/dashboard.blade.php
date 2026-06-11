@@ -36,6 +36,30 @@
                 <div class="count green">{{$total["exam"]}}</div>
               </div>
             </div>
+            <div class="row tile_count text-center">
+              <div class="col-md-4 col-sm-4 col-xs-6 tile_stats_count">
+              <span class="count_top"><i class="fa fa-2x fa-graduation-cap green"></i> Courses</span>
+                <div class="count red">{{$total["course"]}}</div>
+              </div>
+              <div class="col-md-4 col-sm-4 col-xs-6 tile_stats_count">
+                <span class="count_top"><i class="fa fa-2x fa-users green"></i> Users</span>
+                <div class="count blue">{{$total["user"]}}</div>
+              </div>
+              <div class="col-md-4 col-sm-4 col-xs-6 tile_stats_count">
+                <span class="count_top"><i class="fa fa-2x fa-book green"></i> Books</span>
+                <div class="count green">{{$total["book"]}}</div>
+              </div>
+            </div>
+            <div class="row tile_count text-center">
+              <div class="col-md-4 col-sm-4 col-xs-6 tile_stats_count">
+              <span class="count_top"><i class="fa fa-2x fa-home green"></i> Dormitories</span>
+                <div class="count red">{{$total["dormitory"]}}</div>
+              </div>
+              <div class="col-md-4 col-sm-4 col-xs-6 tile_stats_count">
+                <span class="count_top"><i class="fa fa-2x fa-money green"></i> Fee Collections</span>
+                <div class="count blue">{{$total["fee_collection"]}}</div>
+              </div>
+            </div>
             <!-- /top tiles -->
             <!-- Graph start -->
             <div class="row">

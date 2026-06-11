@@ -54,10 +54,13 @@
 
                     </ul>
                   </li>
+                  @endcan
+                  @if(Gate::check('Admin') || Gate::check('HeadOfDepartment'))
                   <li><a><i class="fa fa-book"></i> Subjects <span class="fa fa-chevron-down"></span></a>
                     <ul class="nav child_menu">
                       <li><a href="{{URL::route('subject.create')}}">Add New</a></li>
                       <li><a href="{{URL::route('subject.index')}}">All Subjects</a></li>
+                      <li><a href="{{URL::route('teacher.subject.index')}}">Assign to Teachers</a></li>
                     </ul>
                   </li>
                   <li><a><i class="fa fa-graduation-cap"></i> Courses <span class="fa fa-chevron-down"></span></a>
@@ -74,8 +77,8 @@
                       <li><a href="{{URL::route('student.registration.index')}}">Registered Student List</a></li>
                       </ul>
                   </li>
-                  @endcan
-                  @if(Gate::check('Admin') || Gate::check('Teacher'))
+                  @endif
+                  @if(Gate::check('Admin') || Gate::check('Teacher') || Gate::check('HeadOfDepartment'))
                   <li><a><i class="fa fa-pencil"></i> Attendance <span class="fa fa-chevron-down"></span></a>
                     <ul class="nav child_menu">
                       <li><a href="{{URL::route('attendance.create')}}">New </a></li>
@@ -86,6 +89,9 @@
                     <ul class="nav child_menu">
                       <li><a href="{{URL::route('exam.create')}}">New </a></li>
                       <li><a href="{{URL::route('exam.index')}}">List</a></li>
+                      @if(Gate::check('Admin') || Gate::check('HeadOfDepartment'))
+                      <li><a href="{{URL::route('exam_type.index')}}">Exam Types</a></li>
+                      @endif
                       </ul>
                   </li>
                   <li><a><i class="fa fa-file-text"></i> Result <span class="fa fa-chevron-down"></span></a>
@@ -131,6 +137,30 @@
 
                   </li>
                   @endcan
+                  @if(Gate::check('Admin') || Gate::check('Teacher') || Gate::check('HeadOfDepartment') || Gate::check('Account'))
+                  <li><a><i class="fa fa-book"></i> Library <span class="fa fa-chevron-down"></span></a>
+                    <ul class="nav child_menu">
+                      <li><a href="/library/search">Book Search</a></li>
+                      <li><a href="/library/issuebook">Borrow Book</a></li>
+                      <li><a href="/library/issuebookview">Borrowed Book List</a></li>
+                      <li><a href="/library/view">Book List</a></li>
+                      <li><a href="/library/addbook">Book Entry</a></li>
+                      <li><a href="/barcode">Barcode Generate</a></li>
+                      <li><a href="/library/reports">Reports</a></li>
+                      <li><a href="/library/reports/fine">Monthly Fine Reports</a></li>
+                    </ul>
+                  </li>
+                  <li><a><i class="fa fa-home"></i> Dormitory <span class="fa fa-chevron-down"></span></a>
+                    <ul class="nav child_menu">
+                      <li><a href="/dormitory">Dormitory</a></li>
+                      <li><a href="/dormitory/assignstd">Assign Student</a></li>
+                      <li><a href="/dormitory/assignstd/list">Student List</a></li>
+                      <li><a href="/dormitory/fee">Fee Collection</a></li>
+                      <li><a href="/dormitory/report/std">Dormitory Report</a></li>
+                      <li><a href="/dormitory/report/fee">Fee Reports</a></li>
+                    </ul>
+                  </li>
+                  @endif
                 </ul>
               </div>
               <div class="menu_section">
@@ -187,41 +217,6 @@
                     <a href="{{URL::route('lock')}}"><i class="glyphicon  glyphicon-eye-close"></i> Lock Screen</a>
                   </li>
                   <li><a href="{{URL::route('user.logout')}}"><i class="glyphicon glyphicon-off"></i> Log Out</a></li>
-                </ul>
-              </li>
-              <li class="">
-                <a href="javascript:;" class="user-profile dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
-                  <span class=" fa fa-book"></span> Library
-                  <span class=" fa fa-angle-down"></span>
-                </a>
-                <ul class="dropdown-menu">
-
-                  <li><a href="/library/search"><i class="glyphicon glyphicon-search"></i> Book Search</a></li>
-                  <li><a href="/library/issuebook"><i class="glyphicon glyphicon-pencil"></i> Borrow Book</a></li>
-                  <li><a href="/library/issuebookview"><i class="glyphicon glyphicon-list"></i> Borrowd Book List</a></li>
-                  <li class="divider"></li>
-                  <li><a href="/library/view"><i class="glyphicon glyphicon-list"></i> Book List</a></li>
-                  <li><a href="/library/addbook"><i class="glyphicon glyphicon-pencil"></i> Book Entry</a></li>
-                  <li class="divider"></li>
-                  <li><a href="/barcode"><i class="fa fa-barcode"></i> Barcode Generate</a></li>
-                  <li class="divider"></li>
-                  <li><a href="/library/reports"><i class="glyphicon glyphicon-print"></i> Reports</a></li>
-                  <li><a href="/library/reports/fine"><i class="glyphicon glyphicon-print"></i> Monthly Fine Reports</a></li>
-                </ul>
-              </li>
-              <li class="">
-                <a href="javascript:;" class="user-profile dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
-                  <span class=" fa fa-home"></span> Dormitory
-                  <span class=" fa fa-angle-down"></span>
-                </a>
-                <ul class="dropdown-menu">
-                  <li><a href="/dormitory"><i class="glyphicon glyphicon-home"></i> Dormitory</a></li>
-                  <li><a href="/dormitory/assignstd"><i class="glyphicon glyphicon-plus"></i> Assign Student</a></li>
-                  <li><a href="/dormitory/assignstd/list"><i class="glyphicon glyphicon-user"></i> Student List</a></li>
-                  <li class="divider"></li>
-                  <li><a href="/dormitory/fee"><i class="glyphicon glyphicon-list"></i> Fee Collection</a></li>
-                  <li><a href="/dormitory/report/std"><i class="glyphicon glyphicon-print"></i> Dormitory Report</a></li>
-                  <li><a href="/dormitory/report/fee"><i class="glyphicon glyphicon-print"></i> Fee Reports</a></li>
                 </ul>
               </li>
           </ul>
