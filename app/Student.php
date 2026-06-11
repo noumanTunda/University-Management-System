@@ -111,5 +111,8 @@ class Student extends Model {
   public function feeCollections() {
     return $this->hasMany('App\FeeCollection','students_id');
   }
+  public function guardians() {
+    return $this->belongsToMany('App\Guardian', 'guardian_student', 'student_id', 'guardian_id');
+  }
 
 }
