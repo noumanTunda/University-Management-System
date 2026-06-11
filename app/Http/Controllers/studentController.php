@@ -56,19 +56,28 @@ class studentController extends Controller {
 		return view('student.index',compact('students','departments','selectDep'));
 	}
 
-	public function studentList($dID,$session)
+	public function studentList($dID, $session)
 	{
+		$regYear = (int) substr($session, 0, 4);
+		$students = \App\Student::select('students.id','idNo','firstName','lastName','middleName','students.session as admSession','course_id')
+			->where('students.department_id', $dID)
+			->whereNotNull('course_id')
+			->whereNull('students.deleted_at')
+			->get()
+			->filter(function($s) use ($regYear) {
+				$admYear = (int) substr($s->admSession, 0, 4);
+				if ($regYear < $admYear) return false;
+				$course = \App\Course::find($s->course_id);
+				$duration = $course ? (int) $course->duration_years : 4;
+				$maxYear = $admYear + $duration;
+				return $regYear <= $maxYear;
+			})
+			->values()
+			->map(function($s) {
+				return ['id' => $s->id, 'idNo' => $s->idNo, 'firstName' => $s->firstName, 'lastName' => $s->lastName, 'middleName' => $s->middleName];
+			});
 
-		$students =Student::select('id','idNo','firstName','lastName','middleName')
-		->where('department_id',$dID)
-		->where('session',$session)
-		->whereNotNull('course_id')
-		->get();
-		return Response()->json([
-			'success' => true,
-			'students' => $students
-		], 200);
-
+		return response()->json(['success' => true, 'students' => $students], 200);
 	}
 	public function registeredStudentList($dID,$session,$semester)
 	{
@@ -396,11 +405,10 @@ class studentController extends Controller {
 	*/
 	public function regCreate()
 	{
-		Student::select('session','session')->distinct()->lists('session','session');
 		$students=[];
 		$semesters= $this->semesters;
 		$departments = Department::select('id','name')->orderby('name','asc')->lists('name', 'id');
-		$sessions=Student::select('session','session')->distinct()->lists('session','session');
+		$sessions = \App\AcademicYear::orderBy('name', 'desc')->lists('name', 'id');
 		return view('student.registration.create',compact('departments','students','semesters','sessions'));
 	}
 	public function regStore(Request $request){
@@ -409,8 +417,8 @@ class studentController extends Controller {
 			'department_id' => 'required',
 			//	'ids' => 'required',
 			//'registeredIds' => 'required',
-			'levelTerm' => 'required'
-				'session' => 'required',
+			'levelTerm' => 'required',
+			'session' => 'required',
 		];
 		$validator = Validator::make($data, $rules);
 		//$errors=$validator->messages()->toArray();
@@ -437,13 +445,13 @@ class studentController extends Controller {
 				$admYear = (int) substr($student->session, 0, 4);
 				if ($regYearStart < $admYear) {
 					$errors[] = $student->idNo . ': Cannot reg in ' . $data['session'] . ' (admitted ' . $student->session . ').';
-					continue 2;
+					continue;
 				}
 				$duration = $student->course ? (int) $student->course->duration_years : 4;
 				$maxYear = $admYear + $duration;
 				if ($regYearStart > $maxYear) {
 					$errors[] = $student->idNo . ': ' . $data['session'] . ' exceeds ' . $duration . '-year.';
-					continue 2;
+					continue;
 				}
 			$isWantTo = $this->isWantToRegister($id,$data['registeredIds']);
 			if($isWantTo){
@@ -506,7 +514,7 @@ class studentController extends Controller {
 
 	public function regIndex(){
 		$departments = Department::select('id','name')->orderby('name','asc')->lists('name', 'id');
-		$sessions=Student::select('session','session')->distinct()->lists('session','session');
+		$sessions = \App\AcademicYear::orderBy('name', 'desc')->lists('name', 'id');
 		$selectDep="";
 		$students =array();
 		$semesters= $this->semesters;
@@ -525,7 +533,7 @@ class studentController extends Controller {
 		->get();
 
 		$departments = Department::select('id','name')->orderby('name','asc')->lists('name', 'id');
-		$sessions=Student::select('session','session')->distinct()->lists('session','session');
+		$sessions = \App\AcademicYear::orderBy('name', 'desc')->lists('name', 'id');
 		$selectDep=$request->input('department_id');
 		$semesters= $this->semesters;
 		$selectSem=$request->input('levelTerm');
