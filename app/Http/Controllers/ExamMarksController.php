@@ -82,7 +82,18 @@ class ExamMarksController extends Controller
         $components = $plan ? $plan->components->toArray() : $defaultComponents;
         $planId = $plan ? $plan->id : 0;
 
-        $students = Student::orderBy('firstName')->get(['id', 'idNo', 'firstName', 'lastName']);
+        // Get the semester's academic year and number to match registrations
+        $sem = Semester::with('academicYear')->find($semesterId);
+        $session = $sem->academicYear->name ?? '';
+        $levelTerm = 'Semester ' . ($sem->semester_number ?? '1');
+
+        // Only load students registered for this academic year + semester
+        $students = Student::whereHas('registered', function($q) use ($session, $levelTerm) {
+                $q->where('session', $session)->where('levelTerm', $levelTerm);
+            })
+            ->orderBy('firstName')
+            ->get(['id', 'idNo', 'firstName', 'lastName']);
+
         $marks = [];
         if ($planId > 0) {
             $marks = AssessmentMark::whereIn('assessment_component_id', $plan->components->pluck('id'))

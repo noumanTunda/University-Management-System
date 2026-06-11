@@ -1,5 +1,5 @@
 @php
-    $initialAssignments = isset($initialAssignments) && is_array($initialAssignments) ? array_values($initialAssignments) : [];
+    $initialAssignments = isset($initialAssignments) && is_array($initialAssignments) ? $initialAssignments : [];
     $subjectCatalog = isset($subjectCatalog) && is_array($subjectCatalog) ? $subjectCatalog : [];
     $durationYears = old('duration_years', isset($course) ? $course->duration_years : 4);
 @endphp
