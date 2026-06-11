@@ -58,9 +58,9 @@ th { text-align:center; }
 
                         <div class="col-md-2">
                            <div class="item form-group">
-                              <label class="control-label" for="session">Session <span class="required">*</span>
+                              <label class="control-label" for="session">Academic Year <span class="required">*</span>
                               </label>
-                              {!!Form::select('session', $sessions, null, ['placeholder' => 'Pick a Session','class'=>'select2_single session form-control col-md-7 col-xs-12 has-feedback-left','required'=>'required' ,'id'=>'session'])!!}
+                              {!!Form::select('session', $sessions, null, ['placeholder' => 'Pick Academic Year','class'=>'select2_single session form-control col-md-7 col-xs-12 has-feedback-left','required'=>'required' ,'id'=>'session'])!!}
                             <i class="fa fa-clock-o form-control-feedback left" aria-hidden="true"></i>
                               <span class="text-danger">{{ $errors->first('session') }}</span>
 

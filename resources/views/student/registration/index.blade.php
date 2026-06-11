@@ -37,7 +37,7 @@
                                 </div>
                                 <div class="col-md-2 col-sm-12 col-xs-12">
                                     <label for="session">Session: <span class="required">*</span></label>
-                                    {!!Form::select('session', $sessions, $session, ['placeholder' => 'Pick a Session','class'=>'select2_single session form-control col-md-7 col-xs-12 has-feedback-left','required'=>'required' ,'id'=>'session'])!!}
+                                    {!!Form::select('session', $sessions, $session, ['placeholder' => 'Pick Academic Year','class'=>'select2_single session form-control col-md-7 col-xs-12 has-feedback-left','required'=>'required' ,'id'=>'session'])!!}
                                     <i class="fa fa-clock-o form-control-feedback left" aria-hidden="true"></i>
 
                                 </div>
@@ -124,7 +124,7 @@ $(document).ready(function() {
         allowClear: true
     });
     $(".session").select2({
-        placeholder: "Select session",
+        placeholder: "Select Academic Year",
         allowClear: true
     });
     $(".semester").select2({

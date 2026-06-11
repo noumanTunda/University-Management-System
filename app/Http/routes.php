@@ -70,6 +70,17 @@ Route::group(['middleware' => 'auth'], function()
   Route::resource('attendance','AttendanceController');
   Route::post('attendance/by-subject',[ 'as' => 'attendance.index2','uses'=>'AttendanceController@index2']);
 
+  // Assessment Plans (TCU CA/UE grading)
+  Route::get('assessments',[ 'as' => 'assessment.index','uses'=>'AssessmentController@index']);
+  Route::get('assessments/create',[ 'as' => 'assessment.create','uses'=>'AssessmentController@create']);
+  Route::post('assessments',[ 'as' => 'assessment.store','uses'=>'AssessmentController@store']);
+  Route::get('assessments/{id}/components',[ 'as' => 'assessment.components','uses'=>'AssessmentController@components']);
+  Route::post('assessments/{id}/components',[ 'as' => 'assessment.component.store','uses'=>'AssessmentController@storeComponent']);
+  Route::delete('assessments/component/{id}',[ 'as' => 'assessment.component.destroy','uses'=>'AssessmentController@destroyComponent']);
+  Route::get('assessments/{id}/compute',[ 'as' => 'assessment.compute','uses'=>'AssessmentController@compute']);
+  Route::get('assessments/marks/{componentId}',[ 'as' => 'assessment.marks','uses'=>'AssessmentController@marks']);
+  Route::post('assessments/marks/{componentId}',[ 'as' => 'assessment.marks.store','uses'=>'AssessmentController@storeMarks']);
+
   // Exam Types
   Route::get('exam-type',[ 'as' => 'exam_type.index','uses'=>'ExamTypeController@index']);
   Route::post('exam-type',[ 'as' => 'exam_type.store','uses'=>'ExamTypeController@store']);
@@ -108,6 +119,15 @@ Route::group(['middleware' => 'auth'], function()
 
   // Resource routes for FeesController (standard CRUD)
   Route::resource('fees','FeesController');
+
+  // GePG Payment Routes
+  Route::get('gepg/pay',[ 'as' => 'gepg.student','uses'=>'GePGController@studentFees']);
+  Route::post('gepg/bill',[ 'as' => 'gepg.bill.generate','uses'=>'GePGController@generateBill']);
+  Route::get('gepg/bills',[ 'as' => 'gepg.accountant','uses'=>'GePGController@accountantBills']);
+  Route::post('gepg/bill/{id}/paid',[ 'as' => 'gepg.bill.paid','uses'=>'GePGController@markPaid']);
+  Route::get('gepg/bill/{id}/edit',[ 'as' => 'gepg.bill.edit','uses'=>'GePGController@editBill']);
+  Route::post('gepg/bill/{id}',[ 'as' => 'gepg.bill.update','uses'=>'GePGController@updateBill']);
+  Route::post('gepg/callback',[ 'as' => 'gepg.callback','uses'=>'GePGController@callback']);
 
   //accounting routes
   Route::get('/accounting/sector',[ 'as' => 'accounting.sector.index','uses'=>'AccountingController@secIndex']);

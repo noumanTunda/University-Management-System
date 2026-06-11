@@ -18,6 +18,7 @@
     <!-- Custom Theme Style -->
 		<link href="{{ URL::asset('assets/css/custom.min.css')}}" rel="stylesheet">
 		<link href="{{ URL::asset('assets/css/app.css')}}" rel="stylesheet">
+		<link href="{{ URL::asset('assets/css/select2.min.css')}}" rel="stylesheet">
     @yield("extrastyle")
     <script>
       var hash = '{{session('user_session_sha1')}}';
@@ -95,6 +96,12 @@
                       @endif
                       </ul>
                   </li>
+                  <li><a><i class="fa fa-tasks"></i> Assessments <span class="fa fa-chevron-down"></span></a>
+                    <ul class="nav child_menu">
+                      <li><a href="{{URL::route('assessment.index')}}">Plans & Marks</a></li>
+                      <li><a href="{{URL::route('assessment.create')}}">New Plan</a></li>
+                    </ul>
+                  </li>
                   <li><a><i class="fa fa-file-text"></i> Result <span class="fa fa-chevron-down"></span></a>
                     <ul class="nav child_menu">
                       <li><a href="{{URL::route('result.subject')}}"> Subject Wise </a></li>
@@ -115,6 +122,8 @@
                       <li><a href="{{URL::route('fees.index')}}">Fee List </a></li>
                       <li><a href="{{URL::route('fees.collection.create')}}">Fee Collection </a></li>
                       <li><a href="{{ URL::route('fees.addPaymentForm') }}">Add Student Payment</a></li>
+                      <li><a href="{{URL::route('gepg.student')}}">Pay Fees (GePG)</a></li>
+                      <li><a href="{{URL::route('gepg.accountant')}}">GePG Bills</a></li>
                     </ul>
                   </li>
                   <li><a><i class="fa fa-print"></i> Reports <span class="fa fa-chevron-down"></span></a>
@@ -247,6 +256,8 @@
 
 <script src="{{ URL::asset('assets/js/pnotify.js')}}"></script>
 <script src="{{ URL::asset('assets/js/pnotify.buttons.js')}}"></script>
+	<script src="{{ URL::asset('assets/js/select2.full.min.js')}}"></script>
+	<script>$(document).ready(function() { $('.select2, select.form-control:not(.no-select2)').select2({ width: '100%' }); });</script>
 
 @yield("extrascript")
 <!-- Custom Theme Scripts -->

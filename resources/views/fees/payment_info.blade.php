@@ -33,8 +33,8 @@
                             <div class="row">
                                 <div class="col-md-4">
                                     <div class="item form-group">
-                                        <label class="control-label" for="session">Session <span class="required">*</span></label>
-                                        {!! Form::select('session', $sessions, null, ['placeholder' => 'Pick a Session','class'=>'select2_single form-control','required'=>'required','id'=>'session']) !!}
+                                        <label class="control-label" for="session">Academic Year <span class="required">*</span></label>
+                                        {!! Form::select('session', $sessions, null, ['placeholder' => 'Pick Academic Year','class'=>'select2_single form-control','required'=>'required','id'=>'session']) !!}
                                         <span class="text-danger">{{ $errors->first('session') }}</span>
                                     </div>
                                 </div>
