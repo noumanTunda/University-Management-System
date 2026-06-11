@@ -58,7 +58,6 @@ class ExamController extends Controller
       'raw_score'=> 'required',
       'percentage'=> 'required',
       'weight'=> 'required',
-      'percentage_x_weight'=> 'required',
     ];
     $validator = Validator::make($data, $rules);
     if ($validator->fails())
@@ -91,7 +90,6 @@ class ExamController extends Controller
           'raw_score' => $data['raw_score'][$id],
           'percentage' => $data['percentage'][$id],
           'weight' => $data['weight'][$id],
-          'percentage_x_weight' => $data['percentage_x_weight'][$id],
           'created_at' => $nowDateTime,
         ];
       }
@@ -152,7 +150,6 @@ class ExamController extends Controller
       'raw_score' => 'required',
       'percentage' => 'required',
       'weight' => 'required',
-      'percentage_x_weight' => 'required',
     ];
     $validator = Validator::make($data, $rules);
     $errors=$validator->messages()->toArray();

@@ -21,8 +21,14 @@ class Exam extends Model
         'raw_score',
         'percentage',
         'weight',
-        'percentage_x_weight',
     ];
+
+    protected $appends = ['percentage_x_weight'];
+
+    public function getPercentageXWeightAttribute()
+    {
+        return ($this->percentage ?? 0) * ($this->weight ?? 0);
+    }
 
     public function subject() {
         return $this->belongsTo('App\Subject','subject_id');

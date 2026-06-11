@@ -14,66 +14,31 @@ class FeeCollection extends Model
         'payableAmount',
         'lateFee',
         'paidAmount',
-        'dueAmount',
         'payDate',
-        // New column to hold the running balance (can be negative when over‑paid)
-        'balance',
     ];
 
-    // Ensure the balance attribute is always present when the model is serialized
-    protected $appends = ['balance'];
+    protected $appends = ['dueAmount', 'balance'];
 
-    /**
-     * Accessor for the balance attribute.
-     * If the column exists in the database it will be used directly;
-     * otherwise we fall back to the dueAmount which already reflects
-     * the remaining amount (negative when over‑paid).
-     */
+    public function getDueAmountAttribute()
+    {
+        return ($this->payableAmount ?? 0) + ($this->lateFee ?? 0) - ($this->paidAmount ?? 0);
+    }
+
     public function getBalanceAttribute()
     {
-        return $this->attributes['balance'] ?? $this->dueAmount;
+        return $this->dueAmount;
     }
+
     protected $dates = ['created_at','payDate'];
-    /**
-     * Mutator for the payDate attribute.
-     *
-     * The original implementation expected a date string in the
-     * "d/m/Y" format (e.g., 31/12/2023). However, the HTML <input type="date">
-     * element used in the payment form sends dates as "Y-m-d" (e.g., 2023-12-31).
-     * This caused a Carbon::createFromFormat error when the form submitted
-     * a value like "2026-06-06".
-     *
-     * To make the model robust, we now attempt to parse the incoming value
-     * using Carbon::createFromFormat for the known "d/m/Y" format first. If that
-     * fails, we fall back to Carbon::parse which can handle ISO dates and many
-     * other common formats.
-     */
+
     function setpayDateAttribute($value)
     {
         try {
-            // Try the original format first.
             $date = Carbon::createFromFormat('d/m/Y', $value);
         } catch (\Exception $e) {
-            // Fallback to a more flexible parser (handles Y-m-d, etc.).
             $date = Carbon::parse($value);
         }
         $this->attributes['payDate'] = $date;
-    }
-
-    /**
-     * Boot the model and ensure the balance column is always kept in sync.
-     * Balance is calculated as: dueAmount + (lateFee ?? 0).
-     * This runs on both creating and updating events so any change to
-     * paidAmount, dueAmount or lateFee will automatically update the balance.
-     */
-    protected static function boot()
-    {
-        parent::boot();
-        static::saving(function ($model) {
-            $late = $model->lateFee ?? 0;
-            $due  = $model->dueAmount ?? 0;
-            $model->balance = $due + $late;
-        });
     }
 
 }

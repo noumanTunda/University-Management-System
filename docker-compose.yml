@@ -32,5 +32,12 @@ services:
     volumes:
       - db_data:/var/lib/mysql
 
+  mailhog:
+    image: mailhog/mailhog
+    container_name: ums_mailhog
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
 volumes:
   db_data:
