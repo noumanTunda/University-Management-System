@@ -36,12 +36,12 @@ class studentController extends Controller {
 	{
 		if(Session::has('deptId'))
 		{
-			$departments = Department::select('id','name')->orderby('name','asc')->lists('name', 'name');
+			$departments = Department::select('id','name')->orderby('name','asc')->lists('name', 'id');
 			$selectDep=Session::get('deptId');
 			$students =Student::with('course')->where('department_id',$selectDep)->get();
 			return view('student.index',compact('students','departments','selectDep'));
 		}
-		$departments = Department::select('id','name')->orderby('name','asc')->lists('name', 'name');
+		$departments = Department::select('id','name')->orderby('name','asc')->lists('name', 'id');
 		$selectDep="";
 		$students =array();
 		return view('student.index',compact('students','departments','selectDep'));
@@ -49,7 +49,7 @@ class studentController extends Controller {
 	public function index2(Request $request)
 	{
 		Session::put('deptId',$request->department_id);
-		$departments = Department::select('id','name')->orderby('name','asc')->lists('name', 'name');
+		$departments = Department::select('id','name')->orderby('name','asc')->lists('name', 'id');
 		$selectDep=$request->department_id;
 		$students =Student::with('course')->where('department_id',$selectDep)->get();
 
@@ -319,7 +319,7 @@ class studentController extends Controller {
 	 */
 	public function uploadForm()
 	{
-		$departments = Department::select('id','name')->orderby('name','asc')->lists('name', 'name');
+		$departments = Department::select('id','name')->orderby('name','asc')->lists('name', 'id');
 		return view('student.upload',compact('departments'));
 	}
 
@@ -418,7 +418,7 @@ class studentController extends Controller {
 	{
 		$students=[];
 		$semesters= $this->semesters;
-		$departments = Department::select('id','name')->orderby('name','asc')->lists('name', 'name');
+		$departments = Department::select('id','name')->orderby('name','asc')->lists('name', 'id');
 		$sessions = \App\AcademicYear::orderBy('name', 'desc')->lists('name', 'name');
 		$batches = \App\Student::select('session','session')->distinct()->orderBy('session','desc')->lists('session','session');
 		return view('student.registration.create',compact('departments','students','semesters','sessions','batches'));
@@ -526,7 +526,7 @@ class studentController extends Controller {
 	}
 
 	public function regIndex(){
-		$departments = Department::select('id','name')->orderby('name','asc')->lists('name', 'name');
+		$departments = Department::select('id','name')->orderby('name','asc')->lists('name', 'id');
 		$sessions = \App\AcademicYear::orderBy('name', 'desc')->lists('name', 'name');
 		$selectDep="";
 		$students =array();
@@ -545,7 +545,7 @@ class studentController extends Controller {
 		->where('levelTerm',$request->input('levelTerm'))
 		->get();
 
-		$departments = Department::select('id','name')->orderby('name','asc')->lists('name', 'name');
+		$departments = Department::select('id','name')->orderby('name','asc')->lists('name', 'id');
 		$sessions = \App\AcademicYear::orderBy('name', 'desc')->lists('name', 'name');
 		$selectDep=$request->input('department_id');
 		$semesters= $this->semesters;
