@@ -82,7 +82,7 @@ class ExamMarksController extends Controller
         $components = $plan ? $plan->components->toArray() : $defaultComponents;
         $planId = $plan ? $plan->id : 0;
 
-        $students = Student::whereHas('registrations')->orderBy('firstName')->get(['id', 'idNo', 'firstName', 'lastName']);
+        $students = Student::orderBy('firstName')->get(['id', 'idNo', 'firstName', 'lastName']);
         $marks = [];
         if ($planId > 0) {
             $marks = AssessmentMark::whereIn('assessment_component_id', $plan->components->pluck('id'))
