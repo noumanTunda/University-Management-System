@@ -410,6 +410,7 @@ class studentController extends Controller {
 			//	'ids' => 'required',
 			//'registeredIds' => 'required',
 			'levelTerm' => 'required'
+				'session' => 'required',
 		];
 		$validator = Validator::make($data, $rules);
 		//$errors=$validator->messages()->toArray();
@@ -427,8 +428,23 @@ class studentController extends Controller {
 		$toBeRegisterStudents = [] ;
 		$alreadyRegistered = 0;
 		$newRegistration = 0;
+			$regYearStart = (int) substr($data['session'], 0, 4);
+			$errors = [];
 		foreach ($data['ids'] as  $id){
 			$isExists = false;
+				$student = \App\Student::with('course')->find($id);
+				if (!$student) continue;
+				$admYear = (int) substr($student->session, 0, 4);
+				if ($regYearStart < $admYear) {
+					$errors[] = $student->idNo . ': Cannot reg in ' . $data['session'] . ' (admitted ' . $student->session . ').';
+					continue 2;
+				}
+				$duration = $student->course ? (int) $student->course->duration_years : 4;
+				$maxYear = $admYear + $duration;
+				if ($regYearStart > $maxYear) {
+					$errors[] = $student->idNo . ': ' . $data['session'] . ' exceeds ' . $duration . '-year.';
+					continue 2;
+				}
 			$isWantTo = $this->isWantToRegister($id,$data['registeredIds']);
 			if($isWantTo){
 				$sts = Registration::where('department_id',$data['department_id'])
@@ -462,8 +478,11 @@ class studentController extends Controller {
 		// 		'message' => ['Data Exists'=>"This student already registered!"]
 		// 	], 400);
 		// }
+			if (!empty($errors)) {
+				return back()->withErrors(['academic_year' => implode('<br>', $errors)]);
+			}
 		Registration::insert($toBeRegisterStudents);
-		$notification= array('title' => 'Data Store', 'body' => $newRegistration.' students new registration successfull.');
+		$notification= array('title' => 'Data Store', 'body' => $newRegistration.' students registered.');
 		// return Response()->json([
 		// 	'success' => true,
 		// 	'message' => $notification
