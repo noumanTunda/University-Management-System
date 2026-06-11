@@ -468,9 +468,9 @@ class studentController extends Controller {
 				}
 			$isWantTo = $this->isWantToRegister($id,$data['registeredIds']);
 			if($isWantTo){
-				$sts = Registration::where('department_id',$data['department_id'])
-				->where('students_id',$id)
-				->where('levelTerm',$data['levelTerm'])->first();
+				$sts = Registration::where('students_id',$id)
+					->where('session',$data['session'])
+					->where('levelTerm',$data['levelTerm'])->first();
 				if($sts){
 					$isExists = true;
 					$alreadyRegistered +=1;
@@ -479,7 +479,7 @@ class studentController extends Controller {
 				if(!$isExists){
 					$toBeRegisterStudents [] = [
 						'levelTerm' => $data['levelTerm'],
-						'department_id' => $data['department_id'],
+						'department_id' => $student->department_id,
 						'students_id' => $id,
 						'session' => $data['session'],
 						'created_at' => Carbon::now(),
