@@ -21,7 +21,7 @@
                       <input type="hidden" name="_token" value="{{ csrf_token() }}">
                       <div class="form-group">
                         <label>Academic Year</label>
-                        <select class="form-control" name="academic_year_id" required>
+                        <select class="form-control" name="academic_year_id" id="yearSelect" required>
                           <option value="">Select Year</option>
                           @foreach($years as $y)
                             <option value="{{$y->id}}">{{$y->name}}</option>
@@ -47,7 +47,7 @@
                       </div>
                       <div class="form-group">
                         <label>Fee Type</label>
-                        <select class="form-control" name="fee_id" required>
+                        <select class="form-control" name="fee_id" id="feeSelect" required>
                           <option value="">Select Fee</option>
                           @foreach($fees as $f)
                             <option value="{{$f->id}}">{{$f->title}} — TZS {{number_format($f->amount)}}</option>
@@ -100,16 +100,44 @@
 <script>
 $(document).ready(function() {
   // Bulk: load students when course changes
-  $('#courseSelect').on('change', function() {
-    var courseId = $(this).val();
-    if (courseId) {
-      $.get('/gepg/students/' + courseId, function(res) {
+  // Load students when course + academic year selected
+  function loadStudents() {
+    var courseId = $('#courseSelect').val();
+    var yearId = $('#yearSelect').val();
+    if (courseId && yearId) {
+      $.get('/gepg/students/' + courseId + '/' + yearId, function(res) {
         var sel = $('#studentSelect').empty();
-        $.each(res.students, function(i, s) {
-          sel.append('<option value="'+s.id+'">'+s.idNo+' — '+s.firstName+' '+s.lastName+'</option>');
-        });
+        if (res.success) {
+          $.each(res.students, function(i, s) {
+            sel.append('<option value="'+s.id+'">'+s.idNo+' — '+s.firstName+' '+s.lastName+'</option>');
+          });
+        }
       });
     }
+  }
+
+  // Load fees by course department
+  function loadFees() {
+    var courseId = $('#courseSelect').val();
+    if (courseId) {
+      $.get('/gepg/fees-course/' + courseId, function(res) {
+        var sel = $('#feeSelect').empty().append('<option value="">Select Fee</option>');
+        if (res.success) {
+          $.each(res.fees, function(i, f) {
+            sel.append('<option value="'+f.id+'">'+f.title+' — TZS '+f.amount.toLocaleString()+'</option>');
+          });
+        }
+      });
+    }
+  }
+
+  $('#yearSelect').on('change', loadStudents);
+  $('#courseSelect').on('change', function() { loadStudents(); loadFees(); });
+
+  // Select All toggle
+  $('#selectAllStudents').on('change', function() {
+    $('#studentSelect option').prop('selected', $(this).is(':checked'));
+    $('#studentSelect').trigger('change');
   });
 
   // Specific: search student by ID No

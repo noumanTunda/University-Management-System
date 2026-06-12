@@ -64,12 +64,33 @@ class GePGController extends Controller
         return view('gepg.allocation', compact('courses', 'fees', 'years', 'students'));
     }
 
-    // AJAX: get students by course
-    public function getStudentsByCourse($courseId)
+    // AJAX: get students by course AND academic year (only registered students)
+    public function getStudentsByCourse($courseId, $academicYearId = null)
     {
-        $students = Student::where('course_id', $courseId)->whereNull('deleted_at')
-            ->select('id', 'idNo', 'firstName', 'lastName')->orderBy('firstName')->get();
+        $query = Student::where('students.course_id', $courseId)->whereNull('students.deleted_at')
+            ->select('students.id', 'students.idNo', 'students.firstName', 'students.lastName');
+
+        if ($academicYearId && $academicYearId != 'all') {
+            $year = AcademicYear::find($academicYearId);
+            if ($year) {
+                $session = $year->name;
+                $query->whereHas('registered', function($q) use ($session) {
+                    $q->where('session', $session);
+                });
+            }
+        }
+
+        $students = $query->orderBy('students.firstName')->get();
         return response()->json(['success' => true, 'students' => $students]);
+    }
+
+    // AJAX: get fees by course's department
+    public function getFeesByDepartment($courseId)
+    {
+        $course = Course::find($courseId);
+        $deptId = $course ? $course->department_id : 0;
+        $fees = Fee::where('department_id', $deptId)->orWhereNull('department_id')->get(['id', 'title', 'amount']);
+        return response()->json(['success' => true, 'fees' => $fees]);
     }
 
     // Allocate fee to students (bulk) — generates control numbers
