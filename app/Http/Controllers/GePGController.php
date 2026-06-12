@@ -96,6 +96,7 @@ class GePGController extends Controller
                 'transaction_id' => 'TXN-' . strtoupper(str_random(12)),
                 'amount_paid' => $payAmount,
                 'payment_provider' => 'Simulated GePG',
+                'payer_mobile' => $request->input('payer_mobile', ''),
                 'paid_at' => Carbon::now(),
             ]);
         });

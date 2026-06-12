@@ -37,6 +37,11 @@
               </div>
 
               <div class="form-group">
+                <label>Phone Number (for receipt)</label>
+                <input type="text" name="payer_mobile" class="form-control" placeholder="e.g. 0712345678" required>
+              </div>
+
+              <div class="form-group">
                 <label>Confirm Amount</label>
                 <input type="number" id="confirmAmount" class="form-control" 
                        placeholder="Re-enter the amount to confirm">

@@ -397,4 +397,126 @@ chmod -R 775 storage bootstrap/cache
 
 ---
 
+## Appendix A: Accounting & Billing Flow — Complete Audit
+
+This section documents the complete logical flow of the billing, payment, receipt, and accounting system.
+
+### 1. Chart of Accounts (Static Structure)
+
+```
+Assets                        Liabilities                   Income                     Expense
+──────────────────────────────────────────────────────────────────────────────────────────────
+1001 Cash & Bank              2001 Deferred Revenue         4001 Tuition Fees           5001 Salaries
+1002 Student Receivables                                      4002 Laboratory Fees        5002 Utilities
+                                                              4003 Library Fees           5003 General Expenses
+                                                              4004 Registration Fees
+                                                              4005 Penalties & Fines
+                                                              4006 Other Income
+```
+
+### 2. Complete Billing → Payment → Receipt → Accounting Flow
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                        FEE ALLOCATION (Accountant)                      │
+│                                                                         │
+│  1. Select Academic Year + Course + Students + Fee Type                 │
+│  2. System generates 12-digit Control Number for each student           │
+│  3. Bill created in gepg_bills (status: Issued)                        │
+│  4. Bill stored with: student_id, control_number, amount,               │
+│     paid_amount=0, bill_description, academic_year, status='Issued'     │
+└─────────────────────────────────────────────────────────────────────────┘
+                                   │
+                                   ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                     STUDENT PAYMENT (Simulated GePG)                    │
+│                                                                         │
+│  1. Student views bills in portal (Amount | Paid | Due | Status)        │
+│  2. Clicks "Pay" on a bill with Due > 0                                 │
+│  3. Enters payment amount (can be partial, ≤ Due)                       │
+│  4. Enters phone number for receipt                                     │
+│  5. Confirms amount (JS: re-enter to match)                             │
+│  6. System processes payment:                                           │
+│     a. Creates gepg_payment_receipt (transaction_id, amount_paid,       │
+│        payment_provider='Simulated GePG', payer_mobile, paid_at)        │
+│     b. Updates gepg_bills.paid_amount += payment                        │
+│     c. Status logic:                                                    │
+│        - If new paid_amount >= amount  → status = 'Paid'                │
+│        - If new paid_amount > 0 && < amount → status = 'Partial'        │
+│     d. If fully paid: creates fee_collections record                    │
+└─────────────────────────────────────────────────────────────────────────┘
+                                   │
+                                   ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│               ACCOUNTANT MANUAL PAYMENT (Mark as Paid)                  │
+│                                                                         │
+│  1. Accountant clicks "Mark as Paid" on any unpaid bill                 │
+│  2. System:                                                             │
+│     a. Sets paid_amount = full amount                                   │
+│     b. Changes status to 'Paid'                                         │
+│     c. Creates gepg_payment_receipt (provider='Manual')                 │
+│     d. Creates fee_collections record                                   │
+└─────────────────────────────────────────────────────────────────────────┘
+                                   │
+                                   ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                   ACCOUNTANT (Edit Bill - Limited)                      │
+│                                                                         │
+│  Can edit:     amount, bill_description, status                         │
+│  Cannot edit:  control_number (read-only after issuance)                │
+│                                                                         │
+│  Status options: Issued, Partial, Paid, Expired, Pending                │
+└─────────────────────────────────────────────────────────────────────────┘
+                                   │
+                                   ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                       ACCOUNTING REPORTS                                │
+│                                                                         │
+│  Chart of Accounts  →  Balance per account (debit/credit)               │
+│  General Journal    →  All journal entries with line items              │
+│  Trial Balance      →  Total debits = Total credits                     │
+│  Fee Invoices       →  Student invoices with payment status             │
+│  GePG Bills         →  All bills with amount, paid, due, status         │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### 3. Key Business Rules
+
+| Rule | Description |
+|------|-------------|
+| **One-time allocation** | Same fee type + same student + same academic year → skipped |
+| **Partial payments** | Student can pay less than bill amount → status = "Partial" |
+| **Full payment** | Only when paid_amount >= amount → status = "Paid" |
+| **Control number immutability** | Once issued, control numbers cannot be edited |
+| **Academic year binding** | Fees allocated per academic year only |
+| **Fee-department binding** | Fees filtered by the course's department |
+| **Receipt phone capture** | Every student payment records payer phone |
+
+### 4. Table Relationships
+
+```
+gepg_bills (one)
+    ├── student_id → students
+    ├── control_number (unique, 12-digit)
+    ├── amount, paid_amount, status, academic_year
+    │
+    └── gepg_payment_receipts (many)
+        ├── control_number → gepg_bills.control_number
+        ├── transaction_id, amount_paid, payer_mobile
+        └── payment_provider ('Simulated GePG', 'Manual')
+
+fee_collections (created on full payment for backward compatibility)
+    ├── students_id → students
+    ├── payableAmount, paidAmount, payDate
+    └── lateFee
+
+chart_of_accounts → journal_entry_items → journal_entries
+
+fee_invoices → invoice_items (alternative billing path)
+    ├── student_id, invoice_no, total_amount, paid_amount, status
+    └── items: description, amount, account_id
+```
+
+---
+
 *Prepared on **June 12, 2026**. This document is version-controlled alongside the source code.*

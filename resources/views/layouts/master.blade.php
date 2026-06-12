@@ -130,7 +130,7 @@
                   <li><a><i class="glyphicon glyphicon-list-alt"></i> Fees <span class="fa fa-chevron-down"></span></a>
                     <ul class="nav child_menu">
                       <li><a href="{{URL::route('fees.index')}}">Fee List </a></li>
-                      <li><a href="{{URL::route('fees.collection.create')}}">Fee Collection </a></li>
+                      <li><a href="{{URL::route('gepg.allocate.form')}}">Fee Allocation (GePG)</a></li>
                       <li><a href="{{ URL::route('fees.addPaymentForm') }}">Add Student Payment</a></li>
                       <li><a href="{{URL::route('gepg.student')}}">Pay Fees (GePG)</a></li>
                       <li><a href="{{URL::route('gepg.allocate.form')}}">Fee Allocation</a></li>

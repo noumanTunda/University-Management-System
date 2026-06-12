@@ -19,7 +19,8 @@
               </div>
               <div class="form-group">
                 <label>Control Number</label>
-                <input class="form-control" name="control_number" value="{{$bill->control_number}}">
+                <input class="form-control" value="{{$bill->control_number}}" disabled>
+                <p class="help-block">Control numbers cannot be changed once issued.</p>
               </div>
               <div class="form-group">
                 <label>Description</label>
