@@ -47,7 +47,7 @@
                 <label>Select Subjects for this Teacher</label>
                 <select class="form-control select2" name="subject_ids[]" id="subjectSelect" multiple>
                   @foreach($allSubjects as $s)
-                    <option value="{{$s->id}}" {{$teacher->subjects->contains($s->id) ? 'selected' : ''}}>
+                    <option value="{{$s->id}}" @if($teacher->subjects()->wherePivot('subject_id', $s->id)->wherePivot('academic_year', $currentYearName ?? '')->exists()) selected @endif>
                       {{$s->name}} ({{$s->code}}) - {{$s->department ? $s->department->name : ''}}
                     </option>
                   @endforeach
