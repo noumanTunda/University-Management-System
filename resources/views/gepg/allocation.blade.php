@@ -84,8 +84,13 @@
 
                   <div class="panel panel-default">
                     <div class="panel-heading"><strong>Fee Items</strong> <span class="badge pull-right" id="feeCount">0</span></div>
-                    <div class="panel-body" id="feeListBody" style="padding:8px;max-height:300px;overflow-y:auto">
-                      <div class="text-muted text-center" style="padding:20px">No fees added yet. Select a fee type and click "Add".</div>
+                    <div class="panel-body" style="padding:0">
+                      <table class="table table-bordered" style="margin-bottom:0">
+                        <thead><tr><th style="width:60%">Description</th><th style="width:30%">Amount (TZS)</th><th style="width:10%"></th></tr></thead>
+                        <tbody id="feeListBody">
+                          <tr id="emptyRow"><td colspan="3" class="text-muted text-center">No fees added yet.</td></tr>
+                        </tbody>
+                      </table>
                     </div>
                     <div class="panel-footer">
                       <div class="row">
@@ -155,6 +160,8 @@ $(document).ready(function() {
 
   // ─── Load fees by course department ───
   function loadFees() {
+    // Reset fee items when course changes
+    feeItems = [];
     var courseId = $('#courseSelect').val();
     if (courseId) {
       $.get('/gepg/fees-course/' + courseId, function(res) {
@@ -164,7 +171,10 @@ $(document).ready(function() {
             sel.append('<option value="'+f.id+'" data-amount="'+f.amount+'" data-title="'+f.title+'">'+f.title+' — TZS '+f.amount.toLocaleString()+'</option>');
           });
         }
+        renderFeeList();
       });
+    } else {
+      renderFeeList();
     }
   }
 
@@ -194,22 +204,27 @@ $(document).ready(function() {
       if (feeItems[i].id == id) { alert('This fee type is already added.'); return; }
     }
     feeItems.push({ id: id, title: title, amount: amount });
+    // Hide this option from dropdown
+    sel.prop('disabled', true).hide();
     renderFeeList();
     $('#feeSelect').val('');
   });
 
   // ─── Fee item: remove ───
   function removeFee(idx) {
+    var removed = feeItems[idx];
     feeItems.splice(idx, 1);
+    // Show this option back in dropdown
+    $('#feeSelect option[value="' + removed.id + '"]').prop('disabled', false).show();
     renderFeeList();
   }
 
-  // ─── Render fee list ───
+  // ─── Render fee list as table rows ───
   function renderFeeList() {
     var body = $('#feeListBody');
     body.empty();
     if (feeItems.length === 0) {
-      body.html('<div class="text-muted text-center" style="padding:20px">No fees added yet.</div>');
+      body.html('<tr id="emptyRow"><td colspan="3" class="text-muted text-center">No fees added yet.</td></tr>');
       $('#feeCount').text('0');
       $('#totalAmount').text('TZS 0.00');
       updateSummary();
@@ -219,11 +234,11 @@ $(document).ready(function() {
     $.each(feeItems, function(i, f) {
       total += f.amount;
       body.append(
-        '<div class="fee-item-row">' +
-        '<span class="fee-name">' + f.title + '</span>' +
-        '<span class="fee-amount">TZS ' + f.amount.toLocaleString() + '</span>' +
-        '<span class="btn-remove" onclick="removeFee(' + i + ')">&times;</span>' +
-        '</div>'
+        '<tr>' +
+        '<td>' + f.title + '</td>' +
+        '<td class="text-right">' + f.amount.toLocaleString() + '</td>' +
+        '<td class="text-center"><span class="btn-remove" onclick="removeFee(' + i + ')" style="color:#d9534f;cursor:pointer;font-size:18px">&times;</span></td>' +
+        '</tr>'
       );
     });
     $('#feeCount').text(feeItems.length);
