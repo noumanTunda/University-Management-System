@@ -8,6 +8,7 @@ use App\GePGPaymentReceipt;
 use App\Fee;
 use App\Student;
 use App\AcademicYear;
+use App\Course;
 use App\FeeCollection;
 use DB;
 use Carbon\Carbon;
