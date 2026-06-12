@@ -11,6 +11,7 @@ use App\Subject;
 use App\Semester;
 use App\Student;
 use App\Registration;
+use App\AcademicYear;
 use Validator;
 use Redirect;
 

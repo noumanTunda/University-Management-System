@@ -95,6 +95,9 @@
                     @if($t->subjects->count() > 0)
                       @foreach($t->subjects as $s)
                         <span class="label label-info">{{$s->name}} ({{$s->code}})</span>
+                        @if($s->pivot->academic_year)
+                          <span class="label label-default" style="font-size:10px">{{$s->pivot->academic_year}}</span>
+                        @endif
                       @endforeach
                     @else
                       <span class="label label-default">No subjects assigned</span>

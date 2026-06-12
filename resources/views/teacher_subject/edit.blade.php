@@ -35,6 +35,15 @@
               <input type="hidden" name="_token" value="{{ csrf_token() }}">
               <input type="hidden" name="_method" value="PUT">
               <div class="form-group">
+                <label>Academic Year <span class="required">*</span></label>
+                <select class="form-control" name="academic_year" required>
+                  <option value="">Select Year</option>
+                  @foreach($academicYears as $y)
+                    <option value="{{$y->name}}">{{$y->name}}</option>
+                  @endforeach
+                </select>
+              </div>
+              <div class="form-group">
                 <label>Select Subjects for this Teacher</label>
                 <select class="form-control select2" name="subject_ids[]" id="subjectSelect" multiple>
                   @foreach($allSubjects as $s)
