@@ -14,6 +14,8 @@ use Carbon\Carbon;
 use DB;
 use App\Sector;
 use App\Account;
+use App\GePGBill;
+use App\GePGPaymentReceipt;
 use App\Student;
 use Session;
 use App\Registration;
@@ -141,14 +143,16 @@ class FeesController extends Controller
             'payDate' => $data['payDate']
         ];
 
+        $generateGePG = $request->has('gepg_enabled');
+        $academicYearName = $request->input('academic_year', '');
+        $controlNo = '';
+
         DB::beginTransaction();
         try {
-            // Iterate over each selected student and create a fee collection record.
             foreach ($data['students_id'] as $studentId) {
                 $feeData = array_merge(['students_id' => $studentId], $commonData);
                 $feeCol = FeeCollection::create($feeData);
 
-                // Build fee items for this collection.
                 $feeItemData = [];
                 foreach ($data['fees'] as $key => $value) {
                     $feeItemData[] = [
@@ -159,7 +163,6 @@ class FeesController extends Controller
                 }
                 DB::table('fee_collection_items')->insert($feeItemData);
 
-                // Create accounting entry if payment was made.
                 if ($data['paidamount'] > 0.00) {
                     $acData = [
                         'sectors_id' => $isFeeSector->id,
@@ -169,6 +172,33 @@ class FeesController extends Controller
                     ];
                     Account::create($acData);
                 }
+
+                // GePG integration: generate control number + bill
+                if ($generateGePG) {
+                    $controlNo = $this->generateControlNumber();
+                    $billDesc = implode(', ', $data['fees']);
+                    GePGBill::create([
+                        'student_id' => $studentId,
+                        'fee_collection_id' => $feeCol->id,
+                        'control_number' => $controlNo,
+                        'amount' => $data['gtotal'],
+                        'paid_amount' => $data['paidamount'],
+                        'bill_description' => $billDesc,
+                        'status' => $data['paidamount'] >= $data['gtotal'] ? 'Paid' : ($data['paidamount'] > 0 ? 'Partial' : 'Issued'),
+                        'academic_year' => $academicYearName,
+                        'expires_at' => Carbon::now()->addDays(30),
+                    ]);
+
+                    if ($data['paidamount'] > 0) {
+                        GePGPaymentReceipt::create([
+                            'control_number' => $controlNo,
+                            'transaction_id' => 'MAN-' . strtoupper(str_random(12)),
+                            'amount_paid' => $data['paidamount'],
+                            'payment_provider' => 'Manual',
+                            'paid_at' => Carbon::now(),
+                        ]);
+                    }
+                }
             }
         } catch (\Exception $e) {
             DB::rollback();
@@ -177,7 +207,9 @@ class FeesController extends Controller
             return redirect()->back()->with('error', $notification);
         }
         DB::commit();
-        $notification = array('title' => 'Data Store', 'body' => 'Fee collection(s) successfully stored.');
+        $msg = 'Fee collection(s) successfully stored.';
+        if ($generateGePG) $msg .= ' GePG control numbers generated.';
+        $notification = array('title' => 'Data Store', 'body' => $msg);
         return redirect()->back()->with('success', $notification);
     }
 
@@ -185,6 +217,15 @@ class FeesController extends Controller
      * Show a simple payment form for a single fee collection record.
      * The form allows the user to enter the amount being paid now.
      */
+    private function generateControlNumber()
+    {
+        do {
+            $no = str_pad(mt_rand(0, 999999999999), 12, '0', STR_PAD_LEFT);
+        } while (GePGBill::where('control_number', $no)->exists());
+        return $no;
+    }
+
+
     public function payForm($id)
     {
         $feeCol = FeeCollection::findOrFail($id);
