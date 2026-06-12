@@ -141,10 +141,9 @@ class DormitoryController extends Controller
     }
     $assignment = DB::table('dormitory_students')
       ->leftJoin('dormitories', 'dormitory_students.dormitories_id', '=', 'dormitories.id')
-      ->leftJoin('rooms', 'dormitory_students.rooms_id', '=', 'rooms.id')
       ->where('dormitory_students.students_id', $student->id)
       ->where('dormitory_students.isActive', 1)
-      ->select('dormitories.name as dormitory', 'rooms.room_no', 'dormitory_students.joinDate', 'dormitory_students.isActive')
+      ->select('dormitories.name as dormitory', 'dormitories.address', 'dormitory_students.roomNo', 'dormitory_students.joinDate', 'dormitory_students.isActive')
       ->first();
     return view('dormitory.myroom', compact('student', 'assignment'));
   }

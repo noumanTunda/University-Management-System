@@ -11,7 +11,8 @@
             @if($assignment)
             <table class="table table-bordered">
               <tr><th>Dormitory</th><td>{{$assignment->dormitory}}</td></tr>
-              <tr><th>Room No</th><td><strong>{{$assignment->room_no}}</strong></td></tr>
+              <tr><th>Address</th><td>{{$assignment->address ?? 'N/A'}}</td></tr>
+              <tr><th>Room No</th><td><strong>{{$assignment->roomNo}}</strong></td></tr>
               <tr><th>Assigned Since</th><td>{{$assignment->joinDate}}</td></tr>
               <tr><th>Status</th><td><span class="label label-success">Active</span></td></tr>
             </table>
