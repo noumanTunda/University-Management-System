@@ -82,10 +82,11 @@ open http://localhost:8080
 
 | Role | Username | Password |
 |------|----------|----------|
-| Admin | `admin` | `admin` |
-| Teacher | `teacher` | `teacher` |
-| Accountant | `account` | `account` |
-| Student | Student ID (e.g. `T24-03-00000`) | Last name (e.g. `Tunda`) |
+| Admin | `admin` | `!Password` |
+| Teacher | `teacher` | `!Password` |
+| Accountant | `accountant` | `!Password` |
+| HeadOfDepartment | `hodcse` | `!Password` |
+| Student | Student ID (e.g. `T21-03-12111`) | Last name (e.g. `Doe`) |
 
 ---
 

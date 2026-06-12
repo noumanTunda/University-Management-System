@@ -11,6 +11,7 @@ use App\Department;
 use App\Student;
 use App\Institute;
 use App\Dormitory;
+use Carbon\Carbon;
 use App\DormitoryStudent;
 use App\DormitoryFee;
 
@@ -143,9 +144,123 @@ class DormitoryController extends Controller
       ->leftJoin('dormitories', 'dormitory_students.dormitories_id', '=', 'dormitories.id')
       ->where('dormitory_students.students_id', $student->id)
       ->where('dormitory_students.isActive', 1)
-      ->select('dormitories.name as dormitory', 'dormitories.address', 'dormitory_students.roomNo', 'dormitory_students.joinDate', 'dormitory_students.isActive')
+      ->select('dormitories.name as dormitory', 'dormitories.address', 'dormitory_students.roomNo',
+               'dormitory_students.joinDate', 'dormitory_students.isActive', 'dormitory_students.id as assignment_id')
       ->first();
-    return view('dormitory.myroom', compact('student', 'assignment'));
+
+    $lastAssignment = DB::table('dormitory_students')
+      ->where('students_id', $student->id)
+      ->orderBy('id', 'desc')
+      ->first();
+
+    $pendingRequest = false;
+    if ($lastAssignment) {
+      $pendingRequest = DB::table('dormitory_requests')
+        ->where('dormitory_student_id', $lastAssignment->id)
+        ->where('type', 'signin')
+        ->where('status', 'pending')
+        ->exists();
+    }
+
+    return view('dormitory.myroom', compact('student', 'assignment', 'lastAssignment', 'pendingRequest'));
+  }
+
+  public function signout(Request $request)
+  {
+    $student = Student::where('idNo', auth()->user()->login)->first();
+    if (!$student) return redirect()->back()->with('error', ['title'=>'Error', 'body'=>'Student profile not found.']);
+
+    $assignment = DB::table('dormitory_students')
+      ->where('students_id', $student->id)
+      ->where('isActive', 1)
+      ->first();
+    if (!$assignment) return redirect()->back()->with('error', ['title'=>'Error', 'body'=>'No active room assignment found.']);
+
+    DB::table('dormitory_students')
+      ->where('id', $assignment->id)
+      ->update([
+        'isActive' => 0,
+        'signed_out_at' => Carbon::now(),
+        'signout_reason' => $request->input('reason', 'Student sign-out'),
+      ]);
+
+    return redirect()->route('dormitory.myroom')->with('success', ['title'=>'Signed Out', 'body'=>'You have signed out of your room. Please submit your keys to the administration.']);
+  }
+
+  public function requestSignin()
+  {
+    $student = Student::where('idNo', auth()->user()->login)->first();
+    if (!$student) return redirect()->back()->with('error', ['title'=>'Error', 'body'=>'Student profile not found.']);
+
+    $assignment = DB::table('dormitory_students')
+      ->where('students_id', $student->id)
+      ->orderBy('id', 'desc')
+      ->first();
+    if (!$assignment) return redirect()->back()->with('error', ['title'=>'Error', 'body'=>'No room assignment found.']);
+
+    // Check if there is already a pending request
+    $pending = DB::table('dormitory_requests')
+      ->where('dormitory_student_id', $assignment->id)
+      ->where('type', 'signin')
+      ->where('status', 'pending')
+      ->first();
+    if ($pending) return redirect()->back()->with('error', ['title'=>'Pending', 'body'=>'You already have a pending sign-in request. Wait for approval.']);
+
+    DB::table('dormitory_requests')->insert([
+      'dormitory_student_id' => $assignment->id,
+      'student_id' => $student->id,
+      'type' => 'signin',
+      'status' => 'pending',
+      'created_at' => Carbon::now(),
+      'updated_at' => Carbon::now(),
+    ]);
+
+    return redirect()->route('dormitory.myroom')->with('success', ['title'=>'Request Submitted', 'body'=>'Your sign-in request has been submitted for approval.']);
+  }
+
+  // ─── Teacher/HOD: approve sign-in requests ───
+  public function pendingRequests()
+  {
+    $requests = DB::table('dormitory_requests')
+      ->join('dormitory_students', 'dormitory_requests.dormitory_student_id', '=', 'dormitory_students.id')
+      ->join('students', 'dormitory_requests.student_id', '=', 'students.id')
+      ->join('dormitories', 'dormitory_students.dormitories_id', '=', 'dormitories.id')
+      ->where('dormitory_requests.status', 'pending')
+      ->where('dormitory_requests.type', 'signin')
+      ->select('dormitory_requests.*', 'students.idNo', 'students.firstName', 'students.lastName',
+               'dormitory_students.roomNo', 'dormitories.name as dormitory')
+      ->get();
+    return view('dormitory.requests', compact('requests'));
+  }
+
+  public function approveRequest($id)
+  {
+    $req = DB::table('dormitory_requests')->find($id);
+    if (!$req || $req->status !== 'pending') return redirect()->back()->with('error', ['title'=>'Error', 'body'=>'Request not found or already processed.']);
+
+    DB::transaction(function() use ($req) {
+      DB::table('dormitory_requests')
+        ->where('id', $req->id)
+        ->update(['status' => 'approved', 'approved_by' => auth()->id(), 'approved_at' => Carbon::now()]);
+
+      DB::table('dormitory_students')
+        ->where('id', $req->dormitory_student_id)
+        ->update(['isActive' => 1, 'signed_out_at' => null, 'signout_reason' => null]);
+    });
+
+    return redirect()->route('dormitory.requests')->with('success', ['title'=>'Approved', 'body'=>'Student sign-in approved. Room is now active.']);
+  }
+
+  public function rejectRequest($id)
+  {
+    $req = DB::table('dormitory_requests')->find($id);
+    if (!$req || $req->status !== 'pending') return redirect()->back()->with('error', ['title'=>'Error', 'body'=>'Request not found or already processed.']);
+
+    DB::table('dormitory_requests')
+      ->where('id', $req->id)
+      ->update(['status' => 'rejected', 'approved_by' => auth()->id(), 'approved_at' => Carbon::now()]);
+
+    return redirect()->route('dormitory.requests')->with('success', ['title'=>'Rejected', 'body'=>'Sign-in request rejected.']);
   }
 
   public function stdindex()

@@ -56,6 +56,7 @@
 				  <li><a href="/library/search"><i class="fa fa-book"></i> Library</a></li>
 				  <li><a href="/library/issuebookview"><i class="fa fa-list"></i> My Books</a></li>
 				  <li><a href="/dormitory/my-room"><i class="fa fa-building"></i> My Room</a></li>
+                      <li><a href="{{URL::route('dormitory.requests')}}">Room Sign-In Requests</a></li>
 				  @endif
                   @can('Admin')
                   <li><a><i class="fa fa-home"></i> Departments <span class="fa fa-chevron-down"></span></a>

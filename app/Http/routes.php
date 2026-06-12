@@ -236,6 +236,11 @@ Route::group(['middleware' => 'auth'], function()
   Route::get('/dormitory/report/std/{dormId}','DormitoryController@reportstdprint');
   Route::get('/dormitory/report/fee','DormitoryController@reportfee');
   Route::get('/dormitory/my-room',[ 'as' => 'dormitory.myroom','uses'=>'DormitoryController@myRoom']);
+  Route::post('/dormitory/signout',[ 'as' => 'dormitory.signout','uses'=>'DormitoryController@signout']);
+  Route::post('/dormitory/request-signin',[ 'as' => 'dormitory.request.signin','uses'=>'DormitoryController@requestSignin']);
+  Route::get('/dormitory/requests',[ 'as' => 'dormitory.requests','uses'=>'DormitoryController@pendingRequests']);
+  Route::get('/dormitory/requests/{id}/approve',[ 'as' => 'dormitory.approve','uses'=>'DormitoryController@approveRequest']);
+  Route::get('/dormitory/requests/{id}/reject',[ 'as' => 'dormitory.reject','uses'=>'DormitoryController@rejectRequest']);
   Route::get('/dormitory/report/fee/{dormId}/{month}','DormitoryController@reportfeeprint');
 
   //barcode generate
