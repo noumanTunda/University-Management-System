@@ -76,6 +76,7 @@
                         <button type="button" class="btn btn-primary" id="btnAddFee"><i class="glyphicon glyphicon-plus"></i> Add</button>
                       </span>
                     </div>
+                    <button type="button" class="btn btn-sm btn-info" id="btnAddAllFees" style="margin-top:5px"><i class="glyphicon glyphicon-check"></i> Add All Fee Types</button>
                   </div>
                 </div>
                 <div class="col-md-7">
@@ -199,22 +200,34 @@ $(document).ready(function() {
   });
   $('#studentSelect').on('change', updateSummary);
 
-  // ─── Fee item: add ───
+  // ─── Fee item: add (single) ───
   $('#btnAddFee').on('click', function() {
     var sel = $('#feeSelect option:selected');
     if (!sel.val()) { alert('Please select a fee type.'); return; }
-    var id = sel.val();
-    var title = sel.data('title');
-    var amount = parseFloat(sel.data('amount'));
-    var dept = sel.data('dept') || 'General';
-    for (var i = 0; i < feeItems.length; i++) {
-      if (feeItems[i].id == id) { alert('This fee type is already added.'); return; }
-    }
-    feeItems.push({ id: id, title: title, amount: amount, dept: dept });
-    sel.prop('disabled', true).hide();
-    renderFeeList();
+    addFeeItem(sel.val(), sel.data('title'), parseFloat(sel.data('amount')), sel.data('dept') || 'General', sel);
     $('#feeSelect').val('');
   });
+
+  // ─── Add all available fee types at once ───
+  $('#btnAddAllFees').on('click', function() {
+    $('#feeSelect option').each(function() {
+      var opt = $(this);
+      if (opt.val() && !opt.prop('disabled')) {
+        addFeeItem(opt.val(), opt.data('title'), parseFloat(opt.data('amount')), opt.data('dept') || 'General', opt);
+      }
+    });
+    $('#feeSelect').val('');
+  });
+
+  // ─── Shared helper: adds one fee item, hides its dropdown option ───
+  function addFeeItem(id, title, amount, dept, opt) {
+    for (var i = 0; i < feeItems.length; i++) {
+      if (feeItems[i].id == id) { return; }
+    }
+    feeItems.push({ id: id, title: title, amount: amount, dept: dept });
+    opt.prop('disabled', true).hide();
+    renderFeeList();
+  }
 
   // ─── Fee item: remove ───
   function removeFee(idx) {
