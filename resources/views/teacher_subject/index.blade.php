@@ -31,7 +31,7 @@
                     <select class="form-control" name="academic_year" required>
                       <option value="">Select Year</option>
                       @foreach($academicYears as $y)
-                        <option value="{{$y->name}}" {{$y->is_current ? "selected" : ""}}>{{$y->name}}</option>
+                        <option value="{{$y->name}}" @if($y->name == $currentYearName) selected @endif>{{$y->name}}</option>
                       @endforeach
                     </select>
                   </div>

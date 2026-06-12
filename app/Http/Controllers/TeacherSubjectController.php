@@ -24,7 +24,6 @@ class TeacherSubjectController extends Controller
         $allSubjects = Subject::select('id','name','code','department_id')->with('department')->orderBy('name')->get();
         $academicYears = AcademicYear::orderBy('name', 'desc')->get();
         $currentYearName = AcademicYear::where('name', 'LIKE', date('Y') . '%')->orderBy('name', 'desc')->first()->name ?? date('Y') . '-' . (date('Y') + 1);
-        foreach ($academicYears as $y) { $y->is_current = ($y->name === $currentYearName); }
         return view('teacher_subject.index', compact('teachers', 'departments', 'allSubjects', 'academicYears', 'currentYearName'));
     }
 
@@ -60,7 +59,6 @@ class TeacherSubjectController extends Controller
         $allSubjects = Subject::select('id','name','code','department_id')->with('department')->orderBy('name')->get();
         $academicYears = AcademicYear::orderBy('name', 'desc')->get();
         $currentYearName = AcademicYear::where('name', 'LIKE', date('Y') . '%')->orderBy('name', 'desc')->first()->name ?? date('Y') . '-' . (date('Y') + 1);
-        foreach ($academicYears as $y) { $y->is_current = ($y->name === $currentYearName); }
         return view('teacher_subject.edit', compact('teacher', 'departments', 'allSubjects', 'academicYears', 'currentYearName'));
     }
 
