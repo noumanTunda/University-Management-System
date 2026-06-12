@@ -122,7 +122,7 @@ class ExamController extends Controller
     $sessions=Student::select('session','session')->distinct()->lists('session','session');
     $subjectsQuery = Subject::select('id','name')->where('department_id',$request->input('department_id'))->where('levelTerm',$request->input('levelTerm'))->orderby('code','asc');
         if (auth()->user()->group === 'Teacher') {
-            $currentYear = AcademicYear::where('name', 'LIKE', date('Y') . '%')->orderBy('name', 'desc')->first();
+            $currentYear = AcademicYear::where('name', 'LIKE', date('Y') . '-%')->orWhere('name', 'LIKE', '%-' . date('Y'))->orderBy('name', 'desc')->first();
         $currentYearName = $currentYear ? $currentYear->name : date('Y') . '-' . (date('Y') + 1);
         $currentYearId = $currentYear ? $currentYear->id : null;
         $subIds = auth()->user()->subjects()->wherePivot('academic_year_id', $currentYearId)->pluck('subject.id')->toArray();

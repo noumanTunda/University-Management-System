@@ -38,7 +38,7 @@ class ExamMarksController extends Controller
     {
         $subjects = Subject::where('department_id', $deptId)->select('id', 'name', 'code')->orderBy('name');
         if (auth()->user()->group === 'Teacher') {
-            $currentYear = AcademicYear::where('name', 'LIKE', date('Y') . '%')->orderBy('name', 'desc')->first();
+            $currentYear = AcademicYear::where('name', 'LIKE', date('Y') . '-%')->orWhere('name', 'LIKE', '%-' . date('Y'))->orderBy('name', 'desc')->first();
         $currentYearName = $currentYear ? $currentYear->name : date('Y') . '-' . (date('Y') + 1);
         $currentYearId = $currentYear ? $currentYear->id : null;
         $subIds = auth()->user()->subjects()->wherePivot('academic_year_id', $currentYearId)->pluck('subject.id')->toArray();

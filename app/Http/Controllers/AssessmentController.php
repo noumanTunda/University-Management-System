@@ -29,7 +29,7 @@ class AssessmentController extends Controller
                 $q->where('is_template', false)->orWhereNull('is_template');
             });
         if (auth()->user()->group === 'Teacher') {
-            $currentYear = AcademicYear::where('name', 'LIKE', date('Y') . '%')->orderBy('name', 'desc')->first();
+            $currentYear = AcademicYear::where('name', 'LIKE', date('Y') . '-%')->orWhere('name', 'LIKE', '%-' . date('Y'))->orderBy('name', 'desc')->first();
         $currentYearName = $currentYear ? $currentYear->name : date('Y') . '-' . (date('Y') + 1);
         $currentYearId = $currentYear ? $currentYear->id : null;
         $subIds = auth()->user()->subjects()->wherePivot('academic_year_id', $currentYearId)->pluck('subject.id')->toArray();
@@ -44,7 +44,7 @@ class AssessmentController extends Controller
     {
         $subjects = Subject::select('id','name','code','department_id')->with('department')->orderBy('name');
         if (auth()->user()->group === 'Teacher') {
-            $currentYear = AcademicYear::where('name', 'LIKE', date('Y') . '%')->orderBy('name', 'desc')->first();
+            $currentYear = AcademicYear::where('name', 'LIKE', date('Y') . '-%')->orWhere('name', 'LIKE', '%-' . date('Y'))->orderBy('name', 'desc')->first();
         $currentYearName = $currentYear ? $currentYear->name : date('Y') . '-' . (date('Y') + 1);
         $currentYearId = $currentYear ? $currentYear->id : null;
         $subIds = auth()->user()->subjects()->wherePivot('academic_year_id', $currentYearId)->pluck('subject.id')->toArray();
