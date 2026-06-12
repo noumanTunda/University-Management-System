@@ -159,20 +159,24 @@ $(document).ready(function() {
         }
     });
 
-    $('.deleteForm').submit(function(e) {
+    $(document).on('submit', '.deleteForm', function(e) {
         e.preventDefault();
         var form = this;
-        swal({
-            title: "Remove All Subjects?",
-            text: "This will unassign all subjects from this teacher.",
-            type: "warning",
-            showCancelButton: true,
-            confirmButtonColor: "#cc3f44",
-            confirmButtonText: "Yes",
-            closeOnConfirm: true
-        }, function(isConfirm) {
-            if(isConfirm) form.submit();
-        });
+        if (typeof swal === 'function') {
+            swal({
+                title: "Remove All Subjects?",
+                text: "This will unassign all subjects from this teacher.",
+                type: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#cc3f44",
+                confirmButtonText: "Yes, remove all",
+                closeOnConfirm: true
+            }, function(isConfirm) {
+                if(isConfirm) form.submit();
+            });
+        } else {
+            if(confirm('Remove all subjects from this teacher?')) form.submit();
+        }
     });
 });
 </script>
