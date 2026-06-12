@@ -45,6 +45,7 @@
                         <label>Course <span class="required">*</span></label>
                         <select class="form-control" id="courseSelect" required>
                           <option value="">Select Course</option>
+                          <option value="all">All Courses</option>
                           @foreach($courses as $c)
                             <option value="{{$c->id}}">{{$c->name}} ({{$c->department->name ?? ''}})</option>
                           @endforeach

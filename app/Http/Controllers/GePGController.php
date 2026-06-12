@@ -172,8 +172,11 @@ class GePGController extends Controller
     // AJAX: get students by course AND academic year (only registered students)
     public function getStudentsByCourse($courseId, $academicYearId = null)
     {
-        $query = Student::where('students.course_id', $courseId)->whereNull('students.deleted_at')
+        $query = Student::whereNull('students.deleted_at')
             ->select('students.id', 'students.idNo', 'students.firstName', 'students.lastName');
+        if ($courseId && $courseId != 'all') {
+            $query->where('students.course_id', $courseId);
+        }
 
         if ($academicYearId && $academicYearId != 'all') {
             $year = AcademicYear::find($academicYearId);
@@ -192,9 +195,13 @@ class GePGController extends Controller
     // AJAX: get fees by course's department
     public function getFeesByDepartment($courseId)
     {
-        $course = Course::find($courseId);
-        $deptId = $course ? $course->department_id : 0;
-        $fees = Fee::where('department_id', $deptId)->orWhereNull('department_id')->get(['id', 'title', 'amount']);
+        $deptId = 0;
+        if ($courseId && $courseId != 'all') {
+            $course = Course::find($courseId);
+            $deptId = $course ? $course->department_id : 0;
+        }
+        $fees = $deptId ? Fee::where('department_id', $deptId)->orWhereNull('department_id')->get(['id', 'title', 'amount'])
+                         : Fee::all(['id', 'title', 'amount']);
         return response()->json(['success' => true, 'fees' => $fees]);
     }
 
