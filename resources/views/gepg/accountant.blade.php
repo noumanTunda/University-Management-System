@@ -12,15 +12,18 @@
           <div class="x_title"><h2>All Bills</h2><div class="clearfix"></div></div>
           <div class="x_content">
             <table class="table table-bordered table-striped">
-              <thead><tr><th>Student</th><th>Control No</th><th>Fee</th><th>Amount</th><th>Status</th><th>Actions</th></tr></thead>
+              <thead><tr><th>Student</th><th>Control No</th><th>Fee</th><th>Amount</th><th>Paid</th><th>Due</th><th>Status</th><th>Actions</th></tr></thead>
               <tbody>
                 @forelse($bills as $b)
+                @php $due = $b->amount - $b->paid_amount; @endphp
                 <tr>
                   <td>{{$b->student->firstName ?? '-'}} {{$b->student->lastName ?? ''}}</td>
                   <td><code>{{$b->control_number}}</code></td>
                   <td>{{$b->bill_description}}</td>
-                  <td>{{number_format($b->amount)}}</td>
-                  <td><span class="label label-{{$b->status=='Paid'?'success':($b->status=='Expired'?'danger':'warning')}}">{{$b->status}}</span></td>
+                  <td class="text-right">{{number_format($b->amount, 2)}}</td>
+                  <td class="text-right">{{number_format($b->paid_amount, 2)}}</td>
+                  <td class="text-right {{$due > 0 ? 'text-danger' : ''}}"><strong>{{number_format($due, 2)}}</strong></td>
+                  <td><span class="label label-{{$b->status=='Paid'?'success':($b->status=='Partial'?'warning':($b->status=='Expired'?'danger':'info'))}}">{{$b->status}}</span></td>
                   <td>
                     <a href="{{URL::route('gepg.bill.edit', $b->id)}}" class="btn btn-warning btn-xs"><i class="fa fa-edit"></i></a>
                     @if($b->status != 'Paid')

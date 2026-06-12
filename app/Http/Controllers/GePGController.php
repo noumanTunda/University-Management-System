@@ -52,6 +52,59 @@ class GePGController extends Controller
         return redirect()->back()->with('success', ['title'=>'Request Sent', 'body'=>'Your payment request has been submitted. Accountant will issue a control number.']);
     }
 
+    // Student: pay a bill (simulate GePG)
+    public function payForm($billId)
+    {
+        $student = Student::where('idNo', auth()->user()->login)->first();
+        $bill = GePGBill::where('id', $billId)->where('student_id', $student->id)->firstOrFail();
+        $dueAmount = $bill->amount - $bill->paid_amount;
+        return view('gepg.pay', compact('bill', 'dueAmount'));
+    }
+
+    public function payStore(Request $request, $billId)
+    {
+        $student = Student::where('idNo', auth()->user()->login)->first();
+        $bill = GePGBill::where('id', $billId)->where('student_id', $student->id)->firstOrFail();
+
+        $v = Validator::make($request->all(), [
+            'amount' => "required|numeric|min:1|max:{$bill->amount}",
+        ]);
+        if ($v->fails()) return redirect()->back()->withErrors($v);
+
+        $payAmount = (float) $request->amount;
+        $newPaid = $bill->paid_amount + $payAmount;
+        $dueAmount = $bill->amount - $newPaid;
+
+        DB::transaction(function() use ($bill, $payAmount, $newPaid, $dueAmount) {
+            // Determine new status
+            if ($dueAmount <= 0) {
+                $status = 'Paid';
+            } elseif ($newPaid > 0) {
+                $status = 'Partial';
+            } else {
+                $status = 'Issued';
+            }
+
+            $bill->update([
+                'paid_amount' => $newPaid,
+                'status' => $status,
+            ]);
+
+            // Create receipt
+            GePGPaymentReceipt::create([
+                'control_number' => $bill->control_number,
+                'transaction_id' => 'TXN-' . strtoupper(str_random(12)),
+                'amount_paid' => $payAmount,
+                'payment_provider' => 'Simulated GePG',
+                'paid_at' => Carbon::now(),
+            ]);
+        });
+
+        $msg = "Payment of TZS " . number_format($payAmount, 2) . " received.";
+        if ($dueAmount > 0) $msg .= " Remaining balance: TZS " . number_format($dueAmount, 2);
+        return redirect()->route('gepg.student')->with('success', ['title'=>'Payment Successful', 'body'=>$msg]);
+    }
+
     // ─── Accountant: allocate fees & generate control numbers ───
 
     // Show allocation form

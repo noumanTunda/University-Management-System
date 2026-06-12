@@ -33,18 +33,25 @@
           <div class="x_title"><h2>My Bills</h2><div class="clearfix"></div></div>
           <div class="x_content">
             <table class="table table-bordered">
-              <thead><tr><th>Control No</th><th>Fee</th><th>Amount</th><th>Status</th><th>Expires</th></tr></thead>
+              <thead><tr><th>Control No</th><th>Fee</th><th>Amount</th><th>Paid</th><th>Due</th><th>Status</th><th></th></tr></thead>
               <tbody>
                 @forelse($bills as $b)
+                @php $due = $b->amount - $b->paid_amount; @endphp
                 <tr>
                   <td><code>{{$b->control_number}}</code></td>
                   <td>{{$b->bill_description}}</td>
-                  <td>{{number_format($b->amount)}}</td>
-                  <td><span class="label label-{{$b->status=='Paid'?'success':($b->status=='Pending'?'info':'warning')}}">{{$b->status}}</span></td>
-                  <td>{{$b->expires_at ? $b->expires_at->format('d/m/Y') : '-'}}</td>
+                  <td class="text-right">{{number_format($b->amount, 2)}}</td>
+                  <td class="text-right">{{number_format($b->paid_amount, 2)}}</td>
+                  <td class="text-right {{$due > 0 ? 'text-danger' : ''}}"><strong>{{number_format($due, 2)}}</strong></td>
+                  <td><span class="label label-{{$b->status=='Paid'?'success':($b->status=='Partial'?'warning':($b->status=='Pending'?'info':'default'))}}">{{$b->status}}</span></td>
+                  <td>
+                    @if($due > 0 && $b->status != 'Pending')
+                      <a href="{{URL::route('gepg.pay.form', $b->id)}}" class="btn btn-success btn-xs"><i class="fa fa-money"></i> Pay</a>
+                    @endif
+                  </td>
                 </tr>
                 @empty
-                <tr><td colspan="5">No bills yet.</td></tr>
+                <tr><td colspan="7">No bills yet.</td></tr>
                 @endforelse
               </tbody>
             </table>
