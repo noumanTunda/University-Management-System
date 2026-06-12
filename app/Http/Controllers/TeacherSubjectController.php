@@ -41,7 +41,9 @@ class TeacherSubjectController extends Controller
                 'subject.name as subject_name',
                 'subject.code as subject_code',
                 'department.name as department_name',
-                'academic_years.name as academic_year_name'
+                'academic_years.name as academic_year_name',
+                'teacher_subject.subject_id',
+                'teacher_subject.academic_year_id',
             )
             ->orderBy('users.firstname')
             ->orderBy('subject.name')
@@ -129,6 +131,17 @@ class TeacherSubjectController extends Controller
         \DB::table('teacher_subject')->where('user_id', $teacher->id)->where('academic_year_id', $yearId)->delete();
         \DB::table('teacher_subject')->insert($inserts);
         $notification = ['title' => 'Data Update', 'body' => 'Subjects updated successfully.'];
+        return redirect()->route('teacher.subject.index')->with('success', $notification);
+    }
+
+    public function deleteAssignment($userId, $subjectId, $yearId)
+    {
+        \DB::table('teacher_subject')
+            ->where('user_id', $userId)
+            ->where('subject_id', $subjectId)
+            ->where('academic_year_id', $yearId)
+            ->delete();
+        $notification = ['title' => 'Deleted', 'body' => 'Assignment removed successfully.'];
         return redirect()->route('teacher.subject.index')->with('success', $notification);
     }
 

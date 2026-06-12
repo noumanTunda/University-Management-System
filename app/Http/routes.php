@@ -49,6 +49,7 @@ Route::group(['middleware' => 'auth'], function()
   Route::get('teacher-subject/{id}/edit',[ 'as' => 'teacher.subject.edit','uses'=>'TeacherSubjectController@edit']);
   Route::put('teacher-subject/{id}',[ 'as' => 'teacher.subject.update','uses'=>'TeacherSubjectController@update']);
   Route::delete('teacher-subject/{id}',[ 'as' => 'teacher.subject.destroy','uses'=>'TeacherSubjectController@destroy']);
+  Route::get('teacher-subject/{userId}/{subjectId}/{yearId}/delete',[ 'as' => 'teacher.subject.delete','uses'=>'TeacherSubjectController@deleteAssignment']);
 
   Route::resource('course','CourseController');
 

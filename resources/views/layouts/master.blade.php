@@ -19,6 +19,7 @@
 		<link href="{{ URL::asset('assets/css/custom.min.css')}}" rel="stylesheet">
 		<link href="{{ URL::asset('assets/css/app.css')}}" rel="stylesheet">
 		<link href="{{ URL::asset('assets/css/select2.min.css')}}" rel="stylesheet">
+<link href="{{ URL::asset('assets/css/sweetalert.css')}}" rel="stylesheet">
     @yield("extrastyle")
     <script>
       var hash = '{{session('user_session_sha1')}}';

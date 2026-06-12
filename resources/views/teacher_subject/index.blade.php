@@ -3,6 +3,7 @@
 @section('extrastyle')
 <link href="{{ URL::asset('assets/css/dataTables.bootstrap.min.css')}}" rel="stylesheet">
 <link href="{{ URL::asset('assets/css/select2.min.css')}}" rel="stylesheet">
+<link href="{{ URL::asset('assets/css/sweetalert.css')}}" rel="stylesheet">
 <style>
 .select2-container { width: 100% !important; }
 </style>
@@ -105,12 +106,8 @@
                   <td>{{$a->department_name ?? '-'}}</td>
                   <td><span class="label label-default">{{$a->academic_year_name}}</span></td>
                   <td>
-                    <a href="{{URL::route('teacher.subject.edit', $a->user_id)}}" class="btn btn-warning btn-xs" title="Edit"><i class="fa fa-edit"></i></a>
-                    <form method="POST" action="{{URL::route('teacher.subject.destroy', $a->user_id)}}" style="display:inline" class="deleteForm">
-                      <input type="hidden" name="_token" value="{{ csrf_token() }}">
-                      <input type="hidden" name="_method" value="DELETE">
-                      <button type="submit" class="btn btn-danger btn-xs" title="Remove All"><i class="fa fa-trash"></i></button>
-                    </form>
+                    <a href="{{URL::route('teacher.subject.edit', $a->user_id)}}" class="btn btn-warning btn-xs" title="Edit Teacher"><i class="fa fa-edit"></i></a>
+                    <a href="{{URL::route('teacher.subject.delete', [$a->user_id, $a->subject_id, $a->academic_year_id])}}" class="btn btn-danger btn-xs btn-delete-assignment" title="Remove"><i class="fa fa-trash"></i></a>
                   </td>
                 </tr>
                 @empty
@@ -159,25 +156,6 @@ $(document).ready(function() {
         }
     });
 
-    $(document).on('submit', '.deleteForm', function(e) {
-        e.preventDefault();
-        var form = this;
-        if (typeof swal === 'function') {
-            swal({
-                title: "Remove All Subjects?",
-                text: "This will unassign all subjects from this teacher.",
-                type: "warning",
-                showCancelButton: true,
-                confirmButtonColor: "#cc3f44",
-                confirmButtonText: "Yes, remove all",
-                closeOnConfirm: true
-            }, function(isConfirm) {
-                if(isConfirm) form.submit();
-            });
-        } else {
-            if(confirm('Remove all subjects from this teacher?')) form.submit();
-        }
-    });
 });
 </script>
 @endsection
