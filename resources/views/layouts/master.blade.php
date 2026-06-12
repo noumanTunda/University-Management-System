@@ -129,11 +129,9 @@
                   </li>
                   <li><a><i class="glyphicon glyphicon-list-alt"></i> Fees <span class="fa fa-chevron-down"></span></a>
                     <ul class="nav child_menu">
-                      <li><a href="{{URL::route('fees.index')}}">Fee List </a></li>
-                      <li><a href="{{URL::route('gepg.allocate.form')}}">Fee Allocation (GePG)</a></li>
-                      <li><a href="{{ URL::route('fees.addPaymentForm') }}">Add Student Payment</a></li>
-                      <li><a href="{{URL::route('gepg.student')}}">Pay Fees (GePG)</a></li>
+                      <li><a href="{{URL::route('fees.index')}}">Fee Types</a></li>
                       <li><a href="{{URL::route('gepg.allocate.form')}}">Fee Allocation</a></li>
+                      <li><a href="{{URL::route('gepg.student')}}">Pay Fees</a></li>
                       <li><a href="{{URL::route('gepg.accountant')}}">GePG Bills</a></li>
                     </ul>
                   </li>
@@ -141,9 +139,6 @@
                     <ul class="nav child_menu">
                       <li><a href="{{URL::route('accounting.reports.type')}}">Account By Type </a></li>
                       <li><a href="{{URL::route('accounting.reports.balance')}}">Account Balance </a></li>
-                      <li><a href="{{URL::route('fees.collection.index')}}">Student Fees </a></li>
-                      <li><a href="{{URL::route('fees.collection.report')}}">Fees Collection </a></li>
-
                       </ul>
                   </li>
                   @endif
