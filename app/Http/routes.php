@@ -145,6 +145,7 @@ Route::group(['middleware' => 'auth'], function()
   Route::get('gepg/allocate',[ 'as' => 'gepg.allocate.form','uses'=>'GePGController@allocationForm']);
   Route::post('gepg/allocate/bulk',[ 'as' => 'gepg.allocate.bulk','uses'=>'GePGController@allocateBulk']);
   Route::post('gepg/allocate/specific',[ 'as' => 'gepg.allocate.specific','uses'=>'GePGController@allocateSpecific']);
+  Route::get('gepg/penalties',[ 'as' => 'gepg.penalties','uses'=>'GePGController@penaltiesForm']);
   Route::get('gepg/students/{courseId}/{academicYearId?}',[ 'as' => 'gepg.students.bycourse','uses'=>'GePGController@getStudentsByCourse']);
   Route::get('gepg/fees-course/{courseId}',[ 'as' => 'gepg.fees.bycourse','uses'=>'GePGController@getFeesByDepartment']);
   Route::get('gepg/allstudents',[ 'as' => 'gepg.students.all','uses'=>'GePGController@getStudentsByCourse']);

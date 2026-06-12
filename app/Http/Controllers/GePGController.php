@@ -118,6 +118,57 @@ class GePGController extends Controller
         return view('gepg.allocation', compact('courses', 'fees', 'years', 'students'));
     }
 
+    // Allocate fee to students — generates control numbers for each fee × student
+    public function allocateBulk(Request $request)
+    {
+        $v = Validator::make($request->all(), [
+            'student_ids' => 'required|array',
+            'student_ids.*' => 'exists:students,id',
+            'fees' => 'required|array',
+            'fees.*.id' => 'exists:fees,id',
+            'fees.*.amount' => 'required|numeric',
+        ]);
+        if ($v->fails()) return redirect()->back()->withErrors($v);
+
+        $academicYearId = $request->input('academic_year_id');
+        $yearName = '';
+        if ($academicYearId) {
+            $year = AcademicYear::find($academicYearId);
+            $yearName = $year ? $year->name : '';
+        }
+
+        $count = 0;
+        $skipped = 0;
+
+        foreach ($request->student_ids as $studentId) {
+            foreach ($request->fees as $fee) {
+                // Check duplicate: same student + fee title + academic year
+                $exists = GePGBill::where('student_id', $studentId)
+                    ->where('bill_description', $fee['title'] ?? Fee::find($fee['id'])->title)
+                    ->where('academic_year', $yearName)
+                    ->exists();
+                if ($exists) { $skipped++; continue; }
+
+                $controlNo = $this->generateControlNumber();
+                GePGBill::create([
+                    'student_id' => $studentId,
+                    'control_number' => $controlNo,
+                    'amount' => $fee['amount'],
+                    'paid_amount' => 0,
+                    'bill_description' => $fee['title'] ?? Fee::find($fee['id'])->title,
+                    'status' => 'Issued',
+                    'expires_at' => Carbon::now()->addDays(30),
+                    'academic_year' => $yearName,
+                ]);
+                $count++;
+            }
+        }
+
+        $msg = "$count control numbers generated.";
+        if ($skipped > 0) $msg .= " $skipped skipped (already allocated this year).";
+        return redirect()->route('gepg.accountant')->with('success', ['title'=>'Allocated', 'body'=>$msg]);
+    }
+
     // AJAX: get students by course AND academic year (only registered students)
     public function getStudentsByCourse($courseId, $academicYearId = null)
     {
@@ -148,51 +199,6 @@ class GePGController extends Controller
     }
 
     // Allocate fee to students (bulk) — generates control numbers
-    public function allocateBulk(Request $request)
-    {
-        $v = Validator::make($request->all(), [
-            'fee_id' => 'required|exists:fees,id',
-            'student_ids' => 'required|array',
-            'student_ids.*' => 'exists:students,id',
-        ]);
-        if ($v->fails()) return redirect()->back()->withErrors($v);
-
-        $fee = Fee::findOrFail($request->fee_id);
-        $academicYearId = $request->input('academic_year_id');
-        $yearName = '';
-        if ($academicYearId) {
-            $year = AcademicYear::find($academicYearId);
-            $yearName = $year ? $year->name : '';
-        }
-        $count = 0;
-        $skipped = 0;
-        foreach ($request->student_ids as $studentId) {
-            $exists = GePGBill::where('student_id', $studentId)
-                ->where('bill_description', $fee->title);
-            if ($yearName) {
-                $exists->where('academic_year', $yearName);
-            }
-            $exists = $exists->exists();
-            if ($exists) { $skipped++; continue; }
-
-            $controlNo = $this->generateControlNumber();
-            GePGBill::create([
-                'student_id' => $studentId,
-                'control_number' => $controlNo,
-                'amount' => $fee->amount,
-                'bill_description' => $fee->title,
-                'status' => 'Issued',
-                'expires_at' => Carbon::now()->addDays(30),
-                'academic_year' => $yearName,
-            ]);
-            $count++;
-        }
-        $msg = "$count bills created.";
-        if ($skipped > 0) $msg .= " $skipped skipped (already allocated this year).";
-        return redirect()->route('gepg.accountant')->with('success', ['title'=>'Allocated', 'body'=>$msg]);
-    }
-
-    // Allocate a specific fee (individual — penalties, permissions)
     public function allocateSpecific(Request $request)
     {
         $v = Validator::make($request->all(), [

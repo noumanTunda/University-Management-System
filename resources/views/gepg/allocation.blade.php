@@ -1,7 +1,14 @@
 @extends('layouts.master')
-@section('title', 'Allocate Fees')
+@section('title', 'Fee Allocation')
 @section('extrastyle')
 <link href="{{ URL::asset('assets/css/select2.min.css')}}" rel="stylesheet">
+<style>
+.fee-item-row { display:flex; align-items:center; padding:8px 10px; border:1px solid #e5e5e5; margin-bottom:6px; background:#fff; border-radius:4px; }
+.fee-item-row .fee-name { flex:1; font-weight:600; }
+.fee-item-row .fee-amount { width:120px; text-align:right; font-weight:600; margin-right:10px; }
+.fee-item-row .btn-remove { color:#d9534f; cursor:pointer; font-size:18px; line-height:1; }
+#feeListBody { min-height:60px; }
+</style>
 @endsection
 @section('content')
 <div class="right_col" role="main">
@@ -9,18 +16,22 @@
     <div class="row">
       <div class="col-md-12">
         <div class="x_panel">
-          <div class="x_title"><h2><i class="fa fa-money"></i> Fee Allocation — Generate Control Numbers</h2><div class="clearfix"></div></div>
+          <div class="x_title">
+            <h2><i class="fa fa-money"></i> Fee Allocation</h2>
+            <div class="clearfix"></div>
+          </div>
           <div class="x_content">
-            <div class="row">
-              <!-- Bulk allocation by course -->
-              <div class="col-md-6">
-                <div class="panel panel-primary">
-                  <div class="panel-heading"><strong>Bulk Allocation by Course</strong></div>
-                  <div class="panel-body">
-                    <form method="post" action="{{URL::route('gepg.allocate.bulk')}}">
-                      <input type="hidden" name="_token" value="{{ csrf_token() }}">
+            <form method="post" action="{{URL::route('gepg.allocate.bulk')}}" id="allocationForm">
+              <input type="hidden" name="_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="fee_data" id="feeDataInput" value="">
+
+              <div class="row">
+                <!-- Left: Selectors -->
+                <div class="col-md-7">
+                  <div class="row">
+                    <div class="col-md-6">
                       <div class="form-group">
-                        <label>Academic Year</label>
+                        <label>Academic Year <span class="required">*</span></label>
                         <select class="form-control" name="academic_year_id" id="yearSelect" required>
                           <option value="">Select Year</option>
                           @foreach($years as $y)
@@ -28,8 +39,10 @@
                           @endforeach
                         </select>
                       </div>
+                    </div>
+                    <div class="col-md-6">
                       <div class="form-group">
-                        <label>Course</label>
+                        <label>Course <span class="required">*</span></label>
                         <select class="form-control" id="courseSelect" required>
                           <option value="">Select Course</option>
                           @foreach($courses as $c)
@@ -37,57 +50,69 @@
                           @endforeach
                         </select>
                       </div>
-                      <div class="form-group">
-                        <label>Students</label>
-                        <div class="checkbox" style="margin-bottom:5px">
-                          <label><input type="checkbox" id="selectAllStudents"> <strong>Select All</strong></label>
-                        </div>
-                        <select class="form-control" id="studentSelect" name="student_ids[]" multiple required style="width:100%">
-                        </select>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label>Students <span class="required">*</span></label>
+                    <div style="margin-bottom:5px">
+                      <button type="button" id="btnSelectAll" class="btn btn-sm btn-primary"><i class="glyphicon glyphicon-check"></i> Select All</button>
+                      <button type="button" id="btnClearAll" class="btn btn-sm btn-default"><i class="glyphicon glyphicon-remove"></i> Clear</button>
+                      <span id="studentCount" class="text-muted" style="margin-left:10px"></span>
+                    </div>
+                    <select class="form-control" id="studentSelect" name="student_ids[]" multiple required style="width:100%;height:200px">
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Right: Fee selector + list -->
+                <div class="col-md-5">
+                  <div class="form-group">
+                    <label>Fee Type</label>
+                    <div class="input-group">
+                      <select class="form-control" id="feeSelect">
+                        <option value="">Select Fee Type</option>
+                        @foreach($fees as $f)
+                          <option value="{{$f->id}}" data-amount="{{$f->amount}}" data-title="{{$f->title}}">{{$f->title}} — TZS {{number_format($f->amount)}}</option>
+                        @endforeach
+                      </select>
+                      <span class="input-group-btn">
+                        <button type="button" class="btn btn-primary" id="btnAddFee"><i class="glyphicon glyphicon-plus"></i> Add</button>
+                      </span>
+                    </div>
+                  </div>
+
+                  <div class="panel panel-default">
+                    <div class="panel-heading"><strong>Fee Items</strong> <span class="badge pull-right" id="feeCount">0</span></div>
+                    <div class="panel-body" id="feeListBody" style="padding:8px;max-height:300px;overflow-y:auto">
+                      <div class="text-muted text-center" style="padding:20px">No fees added yet. Select a fee type and click "Add".</div>
+                    </div>
+                    <div class="panel-footer">
+                      <div class="row">
+                        <div class="col-xs-6"><strong>Total per student:</strong></div>
+                        <div class="col-xs-6 text-right"><strong id="totalAmount">TZS 0.00</strong></div>
                       </div>
-                      <div class="form-group">
-                        <label>Fee Type</label>
-                        <select class="form-control" name="fee_id" id="feeSelect" required>
-                          <option value="">Select Fee</option>
-                          @foreach($fees as $f)
-                            <option value="{{$f->id}}">{{$f->title}} — TZS {{number_format($f->amount)}}</option>
-                          @endforeach
-                        </select>
-                      </div>
-                      <button type="submit" class="btn btn-primary"><i class="fa fa-barcode"></i> Generate Control Numbers</button>
-                    </form>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              <!-- Specific fee (penalties, permissions) -->
-              <div class="col-md-6">
-                <div class="panel panel-warning">
-                  <div class="panel-heading"><strong>Specific Fee (Penalties, Permissions, etc.)</strong></div>
-                  <div class="panel-body">
-                    <form method="post" action="{{URL::route('gepg.allocate.specific')}}">
-                      <input type="hidden" name="_token" value="{{ csrf_token() }}">
-                      <div class="form-group">
-                        <label>Student ID</label>
-                        <input type="text" class="form-control" id="studentIdLookup" placeholder="Type student ID No">
-                        <select class="form-control" name="student_id" id="specificStudentSelect" required style="margin-top:5px">
-                          <option value="">Search student above first</option>
-                        </select>
-                      </div>
-                      <div class="form-group">
-                        <label>Description</label>
-                        <input type="text" name="description" class="form-control" placeholder="e.g. Late registration penalty" required>
-                      </div>
-                      <div class="form-group">
-                        <label>Amount (TZS)</label>
-                        <input type="number" name="amount" class="form-control" required min="1" step="0.01">
-                      </div>
-                      <button type="submit" class="btn btn-warning"><i class="fa fa-barcode"></i> Generate Control Number</button>
-                    </form>
+              <hr>
+              <div class="row">
+                <div class="col-md-12">
+                  <div class="alert alert-info">
+                    <i class="fa fa-info-circle"></i>
+                    <span id="summaryText">Select academic year, course, students, and add fee types to begin.</span>
                   </div>
                 </div>
               </div>
-            </div>
+              <div class="row">
+                <div class="col-md-12 text-right">
+                  <button type="submit" class="btn btn-lg btn-success" id="btnGenerate" disabled>
+                    <i class="fa fa-barcode"></i> Generate Control Numbers
+                  </button>
+                </div>
+              </div>
+            </form>
           </div>
         </div>
       </div>
@@ -95,36 +120,47 @@
   </div>
 </div>
 @endsection
+
 @section('extrascript')
 <script src="{{ URL::asset('assets/js/select2.full.min.js')}}"></script>
 <script>
 $(document).ready(function() {
-  // Bulk: load students when course changes
-  // Load students when course + academic year selected
+  var feeItems = [];
+  var feeIdx = 0;
+
+  // ─── Load students when course + year selected ───
   function loadStudents() {
     var courseId = $('#courseSelect').val();
     var yearId = $('#yearSelect').val();
     if (courseId && yearId) {
       $.get('/gepg/students/' + courseId + '/' + yearId, function(res) {
         var sel = $('#studentSelect').empty();
-        if (res.success) {
+        if (res.success && res.students.length > 0) {
           $.each(res.students, function(i, s) {
             sel.append('<option value="'+s.id+'">'+s.idNo+' — '+s.firstName+' '+s.lastName+'</option>');
           });
+          $('#studentCount').text(res.students.length + ' students');
+        } else {
+          $('#studentCount').text('No registered students found');
         }
+        updateSummary();
       });
+    } else {
+      $('#studentSelect').empty();
+      $('#studentCount').text('');
+      updateSummary();
     }
   }
 
-  // Load fees by course department
+  // ─── Load fees by course department ───
   function loadFees() {
     var courseId = $('#courseSelect').val();
     if (courseId) {
       $.get('/gepg/fees-course/' + courseId, function(res) {
-        var sel = $('#feeSelect').empty().append('<option value="">Select Fee</option>');
+        var sel = $('#feeSelect').empty().append('<option value="">Select Fee Type</option>');
         if (res.success) {
           $.each(res.fees, function(i, f) {
-            sel.append('<option value="'+f.id+'">'+f.title+' — TZS '+f.amount.toLocaleString()+'</option>');
+            sel.append('<option value="'+f.id+'" data-amount="'+f.amount+'" data-title="'+f.title+'">'+f.title+' — TZS '+f.amount.toLocaleString()+'</option>');
           });
         }
       });
@@ -134,25 +170,106 @@ $(document).ready(function() {
   $('#yearSelect').on('change', loadStudents);
   $('#courseSelect').on('change', function() { loadStudents(); loadFees(); });
 
-  // Select All toggle
-  $('#selectAllStudents').on('change', function() {
-    $('#studentSelect option').prop('selected', $(this).is(':checked'));
-    $('#studentSelect').trigger('change');
+  // ─── Student select / deselect all ───
+  $('#btnSelectAll').on('click', function() {
+    $('#studentSelect option').prop('selected', true);
+    updateSummary();
+  });
+  $('#btnClearAll').on('click', function() {
+    $('#studentSelect option').prop('selected', false);
+    updateSummary();
+  });
+  $('#studentSelect').on('change', updateSummary);
+
+  // ─── Fee item: add ───
+  $('#btnAddFee').on('click', function() {
+    var sel = $('#feeSelect option:selected');
+    if (!sel.val()) { alert('Please select a fee type.'); return; }
+    var id = sel.val();
+    var title = sel.data('title');
+    var amount = parseFloat(sel.data('amount'));
+    // Check duplicate
+    for (var i = 0; i < feeItems.length; i++) {
+      if (feeItems[i].id == id) { alert('This fee type is already added.'); return; }
+    }
+    feeItems.push({ id: id, title: title, amount: amount });
+    renderFeeList();
+    $('#feeSelect').val('');
   });
 
-  // Specific: search student by ID No
-  var allStudents = [];
-  $.get('/gepg/students/all', function(res) { allStudents = res.students; });
+  // ─── Fee item: remove ───
+  function removeFee(idx) {
+    feeItems.splice(idx, 1);
+    renderFeeList();
+  }
 
-  $('#studentIdLookup').on('keyup', function() {
-    var q = $(this).val().toLowerCase();
-    var sel = $('#specificStudentSelect').empty().append('<option value="">Select</option>');
-    $.each(allStudents, function(i, s) {
-      if (s.idNo.toLowerCase().indexOf(q) > -1 || s.firstName.toLowerCase().indexOf(q) > -1 || s.lastName.toLowerCase().indexOf(q) > -1) {
-        sel.append('<option value="'+s.id+'">'+s.idNo+' — '+s.firstName+' '+s.lastName+'</option>');
-      }
+  // ─── Render fee list ───
+  function renderFeeList() {
+    var body = $('#feeListBody');
+    body.empty();
+    if (feeItems.length === 0) {
+      body.html('<div class="text-muted text-center" style="padding:20px">No fees added yet.</div>');
+      $('#feeCount').text('0');
+      $('#totalAmount').text('TZS 0.00');
+      updateSummary();
+      return;
+    }
+    var total = 0;
+    $.each(feeItems, function(i, f) {
+      total += f.amount;
+      body.append(
+        '<div class="fee-item-row">' +
+        '<span class="fee-name">' + f.title + '</span>' +
+        '<span class="fee-amount">TZS ' + f.amount.toLocaleString() + '</span>' +
+        '<span class="btn-remove" onclick="removeFee(' + i + ')">&times;</span>' +
+        '</div>'
+      );
     });
+    $('#feeCount').text(feeItems.length);
+    $('#totalAmount').text('TZS ' + total.toLocaleString());
+    updateSummary();
+  }
+
+  // ─── Update summary ───
+  function updateSummary() {
+    var students = $('#studentSelect option:selected').length;
+    var totalStudents = $('#studentSelect option').length;
+    var fees = feeItems.length;
+    var total = 0;
+    $.each(feeItems, function(i, f) { total += f.amount; });
+    var btn = $('#btnGenerate');
+    var summary = $('#summaryText');
+
+    if (!totalStudents) {
+      summary.html('Select academic year and course to load students.');
+      btn.prop('disabled', true);
+    } else if (!students) {
+      summary.html(totalStudents + ' students available. Select students to allocate fees to.');
+      btn.prop('disabled', true);
+    } else if (!fees) {
+      summary.html(students + ' student(s) selected. Add fee types to allocate.');
+      btn.prop('disabled', true);
+    } else {
+      summary.html('<strong>' + students + '</strong> student(s) × <strong>' + fees + '</strong> fee type(s) = <strong>' + (students * fees) + '</strong> control numbers. Total per student: <strong>TZS ' + total.toLocaleString() + '</strong>');
+      btn.prop('disabled', false);
+    }
+  }
+
+  // ─── Form submit: serialize fee data ───
+  $('#allocationForm').on('submit', function(e) {
+    if (feeItems.length === 0) { alert('Add at least one fee type.'); e.preventDefault(); return; }
+    if ($('#studentSelect option:selected').length === 0) { alert('Select at least one student.'); e.preventDefault(); return; }
+    // Build hidden inputs for fee items
+    $.each(feeItems, function(i, f) {
+      $('<input>').attr({ type: 'hidden', name: 'fees['+i+'][id]', value: f.id }).appendTo('#allocationForm');
+      $('<input>').attr({ type: 'hidden', name: 'fees['+i+'][title]', value: f.title }).appendTo('#allocationForm');
+      $('<input>').attr({ type: 'hidden', name: 'fees['+i+'][amount]', value: f.amount }).appendTo('#allocationForm');
+    });
+    return true;
   });
+
+  // Expose removeFee globally
+  window.removeFee = removeFee;
 });
 </script>
 @endsection
