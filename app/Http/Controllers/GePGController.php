@@ -7,7 +7,7 @@ use App\GePGBill;
 use App\GePGPaymentReceipt;
 use App\Fee;
 use App\Student;
-use App\Course;
+use App\AcademicYear;
 use App\FeeCollection;
 use DB;
 use Carbon\Carbon;
@@ -58,8 +58,9 @@ class GePGController extends Controller
     {
         $courses = Course::with('department')->orderBy('name')->get();
         $fees = Fee::all();
+        $years = AcademicYear::orderBy('name', 'desc')->get();
         $students = [];
-        return view('gepg.allocation', compact('courses', 'fees', 'students'));
+        return view('gepg.allocation', compact('courses', 'fees', 'years', 'students'));
     }
 
     // AJAX: get students by course
@@ -81,14 +82,21 @@ class GePGController extends Controller
         if ($v->fails()) return redirect()->back()->withErrors($v);
 
         $fee = Fee::findOrFail($request->fee_id);
-        $currentYear = date('Y');
+        $academicYearId = $request->input('academic_year_id');
+        $yearName = '';
+        if ($academicYearId) {
+            $year = AcademicYear::find($academicYearId);
+            $yearName = $year ? $year->name : '';
+        }
         $count = 0;
         $skipped = 0;
         foreach ($request->student_ids as $studentId) {
             $exists = GePGBill::where('student_id', $studentId)
-                ->where('bill_description', $fee->title)
-                ->whereYear('created_at', $currentYear)
-                ->exists();
+                ->where('bill_description', $fee->title);
+            if ($yearName) {
+                $exists->where('academic_year', $yearName);
+            }
+            $exists = $exists->exists();
             if ($exists) { $skipped++; continue; }
 
             $controlNo = $this->generateControlNumber();
@@ -99,6 +107,7 @@ class GePGController extends Controller
                 'bill_description' => $fee->title,
                 'status' => 'Issued',
                 'expires_at' => Carbon::now()->addDays(30),
+                'academic_year' => $yearName,
             ]);
             $count++;
         }

@@ -121,9 +121,10 @@
                   @if(Gate::check('Admin') || Gate::check('Account'))
                   <li><a><i class="fa fa-money"></i> Accounting <span class="fa fa-chevron-down"></span></a>
                     <ul class="nav child_menu">
-                      <li><a href="{{URL::route('accounting.sector.index')}}">Sector </a></li>
-                      <li><a href="{{URL::route('accounting.income.index')}}">Income </a></li>
-                      <li><a href="{{URL::route('accounting.expence.index')}}">Expence </a></li>
+                      <li><a href="{{URL::route('accounting.coa')}}">Chart of Accounts</a></li>
+                      <li><a href="{{URL::route('accounting.invoices')}}">Fee Invoices</a></li>
+                      <li><a href="{{URL::route('accounting.journal')}}">Journal Entries</a></li>
+                      <li><a href="{{URL::route('accounting.trial.balance')}}">Trial Balance</a></li>
                       </ul>
                   </li>
                   <li><a><i class="glyphicon glyphicon-list-alt"></i> Fees <span class="fa fa-chevron-down"></span></a>

@@ -20,6 +20,15 @@
                     <form method="post" action="{{URL::route('gepg.allocate.bulk')}}">
                       <input type="hidden" name="_token" value="{{ csrf_token() }}">
                       <div class="form-group">
+                        <label>Academic Year</label>
+                        <select class="form-control" name="academic_year_id" required>
+                          <option value="">Select Year</option>
+                          @foreach($years as $y)
+                            <option value="{{$y->id}}">{{$y->name}}</option>
+                          @endforeach
+                        </select>
+                      </div>
+                      <div class="form-group">
                         <label>Course</label>
                         <select class="form-control" id="courseSelect" required>
                           <option value="">Select Course</option>
