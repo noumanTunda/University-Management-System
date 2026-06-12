@@ -48,7 +48,7 @@ open http://localhost:8080
 
 ## 📋 About
 
-**OSUMS** is a full-featured university management system built on Laravel 5.2. It follows **Tanzania TCU grading standards** and integrates with **GePG (Government e-Payment Gateway)** for fee collections.
+**OSUMS** is a full-featured university management system built on Laravel 5.2. It follows **Tanzania TCU grading standards**, integrates with **GePG (Government e-Payment Gateway)** for fee collections, and includes a **double-entry accounting system** with full audit trail.
 
 ### Key Features
 
@@ -56,12 +56,13 @@ open http://localhost:8080
 |--------|-------------|
 | **Student Management** | Admission, bulk CSV import, auto-user creation, course assignment |
 | **Semester Registration** | Batch-based registration with academic year validation |
-| **CA/UE Assessment** | TCU-compliant grading with user-definable components and templates |
-| **GePG Payments** | 12-digit control numbers, auto-reconciliation, accountant editing |
+| **CA/UE Assessment** | TCU-compliant grading with user-definable components; templates merged into plans |
+| **GePG Payments** | 12-digit control numbers, partial payments, student self-service, accountant delete/edit |
+| **Enterprise Accounting** | Chart of Accounts, double-entry journal, trial balance, fee invoices |
+| **Teacher Subject Filtering** | Teachers see only their assigned subjects per academic year |
 | **Student Portal** | Login with student ID, view results/attendance/fees/library |
 | **RBAC** | Admin, HOD, Teacher, Accountant, Student roles with middleware gates |
 | **Curriculum Builder** | Year × Semester subject matrix with credit tracking |
-| **Assessment Templates** | Reusable component templates created by HOD/Admin |
 | **Library** | Book catalog, issue/return, borrowing history |
 | **Email** | MailHog integration for development email testing |
 
@@ -99,7 +100,7 @@ app/
 ├── Models/               # Eloquent models
 ├── Providers/            # AuthServiceProvider (gates)
 database/
-├── migrations/           # ~15 migration files
+├── migrations/           # ~20 migration files
 └── seeds/                # Database seeders
 resources/
 ├── views/                # Blade templates (Gentelella theme)

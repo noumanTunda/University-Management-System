@@ -206,8 +206,8 @@ docker compose exec app php artisan db:seed
 
 ### 5.5 Teacher & Subject Assignment
 - Assign teachers to subjects via `teacher_subject` pivot table
-- Select2 searchable dropdowns for both teachers and subjects
-- Subject suggestions filter by teacher's department
+- Academic year support - each subject can have a different teacher per year
+- Teachers only see their current year subjects by teacher's department
 
 ### 5.6 Attendance Management
 - Mark attendance per subject, session, and semester
@@ -221,7 +221,12 @@ docker compose exec app php artisan db:seed
 - **Components** – User-definable items with type (CA/UE), max_score, weight
 - **Default Plan** – Auto-created with Course Work (CA 40%) + University Exam (UE 60%)
 
-#### Assessment Templates (NEW)
+#### Assessment Plans & Templates (Merged)
+- Templates are now **plans with is_template = true** — no separate tables
+- HOD/Admin create reusable templates as assessment plans with is_template flag
+- **Default template:** "Standard Course" – Test 1 (20%) + Test 2 (20%) + University Exam (60%)
+- Teachers select a template when creating a new plan → components pre-filled
+- Templates displayed inline on the Assessment Plans page
 - HOD/Admin create **reusable templates** with predefined components
 - **Default template:** "Standard Course" – Test 1 (20%) + Test 2 (20%) + University Exam (60%)
 - Teachers can use a template when creating a new plan → components pre-filled
@@ -229,8 +234,8 @@ docker compose exec app php artisan db:seed
 #### Mark Entry
 - **New CA/UE Entry** – Dynamic table with columns from assessment plan
 - **Legacy Entry** – Simple CA (max 40) + UE (max 60) input
-- **Bulk Upload** – CSV upload with student list per subject+semester
-- **Downloadable Template** – CSV with enrolled students pre-filled
+- **Bulk Upload - CSV with columns matching assessment plan components
+- **Downloadable Template - CSV with enrolled students + component columns (Quiz, Lab, Test 1, Test 2, UE, etc.)
 
 #### Grade Computation
 - Uses `CourseRegistration::computeGrade()` static method
@@ -244,28 +249,37 @@ docker compose exec app php artisan db:seed
 - Record payments (add payment form)
 - View fee collection history
 
-#### GePG Payment Gateway
-- **Student Pay Page** – Select fee type → generate 12-digit control number
-- **Accountant Bills** – View all bills, mark as paid, edit details
-- **Auto-link** – Marking a bill as paid creates a `fee_collections` record
-- **Webhook** – XML callback endpoint for GePG treasury
+#### GePG Payment System
+- **Fee Allocation (Accountant)** — Unified form: select Academic Year + Course → students load by registration → add fee types to list (Add/Remove/Select All) → generate 12-digit control numbers for each student × fee type
+- **Duplicate Prevention** — Same fee type + student + academic year → skipped
+- **Student Pay Page** — View bills (Amount, Paid, Due, Status), click Pay for partial/full payment with phone capture
+- **Partial Payments** — Pay less than due → status = "Partial" until fully paid
+- **Student Self-Service** — Request missing control number: pick fee type from department list → system auto-generates 12-digit control number instantly (no accountant approval)
+- **Accountant Bills** — DataTable with search/sort/pagination, mark as paid, edit (control number read-only), delete unpaid bills
+- **Academic Year Filter** — Bills page filterable by academic year
+- **Penalties & Special Fees** — Separate simple page for one-off fees (late registration, library fines)
+- **Phone Recording** — Every student payment records payer mobile number
+- **Control Numbers** — 12-digit, unique, immutable after issuance
 
 ### 5.9 Library Management
-- Book catalog with search (title, author, code)
-- Issue/Return workflow
+- Book catalog with search (title, author, code) — accessible to all authenticated users
+- Issue/Return workflow (teachers + students)
 - Track borrowed books per student
+- Students can browse books, borrow, view their borrowed list
 
 ### 5.10 Dormitory Management
 - Room allocation per student
 - Track dormitory assignments
+- **Student My Room** — Students view their own dormitory + room number + address
 
 ### 5.11 Student Portal
 Login with student ID + last name → redirected to personal dashboard:
 - **Dashboard** – Stats cards (registrations, attendance, books, bills)
 - **My Results** – Collapsible panels per academic year + semester
 - **My Attendance** – Date, subject, present/absent
-- **Pay Fees** – Generate GePG control numbers
-- **Library** – Search books, view borrowed books
+- **Pay Fees** – View bills (Amount, Paid, Due, Status), pay with simulated GePG, request missing control numbers
+- **Library** – Search books, borrow, view borrowed books
+- **My Room** – View dormitory assignment (dormitory name, address, room number)
 
 ### 5.12 Reporting
 - Result spreadsheets per subject
@@ -292,15 +306,19 @@ Login with student ID + last name → redirected to personal dashboard:
 | `department` | Academic departments |
 | `attendances` | Daily attendance records |
 | `exams` / `exam_types` | Legacy exam marks |
-| `assessment_plans` / `assessment_components` / `assessment_marks` | CA/UE assessment system |
-| `assessment_templates` / `assessment_template_components` | Reusable templates |
+| `assessment_plans` / `assessment_components` / `assessment_marks` | CA/UE assessment system (is_template flag for reusable templates) |
+| `teacher_subject` | Teacher-subject assignment with academic_year pivot |
 | `course_registrations` | Final grades (ca_score, ue_score, grade) |
 | `registrations` | Semester registrations (batch-based) |
-| `fees` / `fee_collections` | Fee types and payments |
-| `gepg_bills` / `gepg_payment_receipts` | GePG integration |
+| `fees` | Fee types per department |
+| `fee_collections` / `fee_collection_items` | Legacy fee payments |
+| `gepg_bills` / `gepg_payment_receipts` | GePG integration (control numbers, receipts) |
+| `chart_of_accounts` / `journal_entries` / `journal_entry_items` | Double-entry accounting system |
+| `fee_invoices` / `invoice_items` | Student fee invoices with line items |
+| `payment_allocations` | Links payments to invoices |
+| `academic_years` / `semesters` | Calendar structure (max 2 semesters per year) |
 | `books` / `borrow_books` | Library |
 | `dormitory` / `dormitory_rooms` | Hostel management |
-| `academic_years` / `semesters` | Calendar structure |
 
 ---
 
@@ -317,6 +335,10 @@ All routes are web-based (no REST API). Key AJAX endpoints:
 | GET | `/exam-marks/semesters/{yearId}` | Semesters for cascading dropdown |
 | GET | `/exam-marks/entry/{subjectId}/{semesterId}` | Marks entry table HTML |
 | POST | `/gepg/callback` | GePG payment webhook |
+| GET | `/gepg/students/{courseId}/{yearId}` | Students by course + academic year |
+| GET | `/gepg/fees-course/{courseId}` | Fees filtered by course department |
+| GET | `/gepg/allstudents` | All students for penalties dropdown |
+| GET | `/exam-marks/components/{subjectId}/{semesterId}` | Assessment components for CSV template |
 
 ---
 
