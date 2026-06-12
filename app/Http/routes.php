@@ -177,8 +177,6 @@ Route::group(['middleware' => 'auth'], function()
   // New page to view all payments for a specific student (installment view)
   Route::get('/fees/student/{stdId}/payments', [ 'as' => 'fees.student.payments', 'uses' => 'FeesController@studentPayments' ]);
   // New routes to add a payment (installment) for any student
-  Route::get('/fees/add-payment', [ 'as' => 'fees.addPaymentForm', 'uses' => 'FeesController@addPaymentForm' ]);
-  Route::post('/fees/add-payment', [ 'as' => 'fees.addPaymentStore', 'uses' => 'FeesController@addPaymentStore' ]);
 
   //library routes
   Route::get('/library/addbook','libraryController@getAddbook');
@@ -239,7 +237,6 @@ Route::group(['middleware' => 'auth'], function()
   Route::get('/dormitory/report/fee','DormitoryController@reportfee');
   Route::get('/dormitory/my-room',[ 'as' => 'dormitory.myroom','uses'=>'DormitoryController@myRoom']);
   Route::get('/dormitory/report/fee/{dormId}/{month}','DormitoryController@reportfeeprint');
-  Route::get('/dormitory/my-room',[ 'as' => 'dormitory.myroom','uses'=>'DormitoryController@myRoom']);
 
   //barcode generate
   Route::get('/barcode','barcodeController@index');
