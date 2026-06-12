@@ -26,33 +26,32 @@
               <input type="hidden" name="fee_data" id="feeDataInput" value="">
 
               <div class="row">
-                <!-- Left: Selectors -->
-                <div class="col-md-7">
-                  <div class="row">
-                    <div class="col-md-6">
-                      <div class="form-group">
-                        <label>Academic Year <span class="required">*</span></label>
-                        <select class="form-control" name="academic_year_id" id="yearSelect" required>
-                          <option value="">Select Year</option>
-                          @foreach($years as $y)
-                            <option value="{{$y->id}}">{{$y->name}}</option>
-                          @endforeach
-                        </select>
-                      </div>
-                    </div>
-                    <div class="col-md-6">
-                      <div class="form-group">
-                        <label>Course <span class="required">*</span></label>
-                        <select class="form-control" id="courseSelect" required>
-                          <option value="">Select Course</option>
-                          <option value="all">All Courses</option>
-                          @foreach($courses as $c)
-                            <option value="{{$c->id}}">{{$c->name}} ({{$c->department->name ?? ''}})</option>
-                          @endforeach
-                        </select>
-                      </div>
-                    </div>
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label>Academic Year <span class="required">*</span></label>
+                    <select class="form-control" name="academic_year_id" id="yearSelect" required>
+                      <option value="">Select Year</option>
+                      @foreach($years as $y)
+                        <option value="{{$y->id}}">{{$y->name}}</option>
+                      @endforeach
+                    </select>
                   </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label>Course <span class="required">*</span></label>
+                    <select class="form-control" id="courseSelect" required>
+                      <option value="">Select Course</option>
+                      <option value="all">All Courses</option>
+                      @foreach($courses as $c)
+                        <option value="{{$c->id}}">{{$c->name}} ({{$c->department->name ?? ''}})</option>
+                      @endforeach
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-12">
                   <div class="form-group">
                     <label>Students <span class="required">*</span></label>
                     <div style="margin-bottom:5px">
@@ -60,35 +59,33 @@
                       <button type="button" id="btnClearAll" class="btn btn-sm btn-default"><i class="glyphicon glyphicon-remove"></i> Clear</button>
                       <span id="studentCount" class="text-muted" style="margin-left:10px"></span>
                     </div>
-                    <select class="form-control" id="studentSelect" name="student_ids[]" multiple required style="width:100%;height:200px">
+                    <select class="form-control" id="studentSelect" name="student_ids[]" multiple required style="width:100%;height:150px">
                     </select>
                   </div>
                 </div>
-
-                <!-- Right: Fee selector + list -->
+              </div>
+              <div class="row">
                 <div class="col-md-5">
                   <div class="form-group">
                     <label>Fee Type</label>
                     <div class="input-group">
                       <select class="form-control" id="feeSelect">
                         <option value="">Select Fee Type</option>
-                        @foreach($fees as $f)
-                          <option value="{{$f->id}}" data-amount="{{$f->amount}}" data-title="{{$f->title}}">{{$f->title}} — TZS {{number_format($f->amount)}}</option>
-                        @endforeach
                       </select>
                       <span class="input-group-btn">
                         <button type="button" class="btn btn-primary" id="btnAddFee"><i class="glyphicon glyphicon-plus"></i> Add</button>
                       </span>
                     </div>
                   </div>
-
+                </div>
+                <div class="col-md-7">
                   <div class="panel panel-default">
                     <div class="panel-heading"><strong>Fee Items</strong> <span class="badge pull-right" id="feeCount">0</span></div>
                     <div class="panel-body" style="padding:0">
                       <table class="table table-bordered" style="margin-bottom:0">
-                        <thead><tr><th style="width:60%">Description</th><th style="width:30%">Amount (TZS)</th><th style="width:10%"></th></tr></thead>
+                        <thead><tr><th style="width:50%">Description</th><th style="width:25%">Department</th><th style="width:15%">Amount (TZS)</th><th style="width:10%"></th></tr></thead>
                         <tbody id="feeListBody">
-                          <tr id="emptyRow"><td colspan="3" class="text-muted text-center">No fees added yet.</td></tr>
+                          <tr id="emptyRow"><td colspan="4" class="text-muted text-center">No fees added yet.</td></tr>
                         </tbody>
                       </table>
                     </div>
@@ -158,7 +155,7 @@ $(document).ready(function() {
     }
   }
 
-  // ─── Load fees by course department ───
+  // ─── Load fees by course department (grouped by department) ───
   function loadFees() {
     // Reset fee items when course changes
     feeItems = [];
@@ -167,8 +164,18 @@ $(document).ready(function() {
       $.get('/gepg/fees-course/' + courseId, function(res) {
         var sel = $('#feeSelect').empty().append('<option value="">Select Fee Type</option>');
         if (res.success) {
+          var groups = {};
           $.each(res.fees, function(i, f) {
-            sel.append('<option value="'+f.id+'" data-amount="'+f.amount+'" data-title="'+f.title+'">'+f.title+' — TZS '+f.amount.toLocaleString()+'</option>');
+            var dept = f.department || 'General';
+            if (!groups[dept]) groups[dept] = [];
+            groups[dept].push(f);
+          });
+          $.each(groups, function(dept, fees) {
+            var og = $('<optgroup label="' + dept + '">');
+            $.each(fees, function(i, f) {
+              og.append('<option value="'+f.id+'" data-amount="'+f.amount+'" data-title="'+f.title+'" data-dept="'+dept+'">'+f.title+' — TZS '+f.amount.toLocaleString()+'</option>');
+            });
+            sel.append(og);
           });
         }
         renderFeeList();
@@ -199,12 +206,11 @@ $(document).ready(function() {
     var id = sel.val();
     var title = sel.data('title');
     var amount = parseFloat(sel.data('amount'));
-    // Check duplicate
+    var dept = sel.data('dept') || 'General';
     for (var i = 0; i < feeItems.length; i++) {
       if (feeItems[i].id == id) { alert('This fee type is already added.'); return; }
     }
-    feeItems.push({ id: id, title: title, amount: amount });
-    // Hide this option from dropdown
+    feeItems.push({ id: id, title: title, amount: amount, dept: dept });
     sel.prop('disabled', true).hide();
     renderFeeList();
     $('#feeSelect').val('');
@@ -214,17 +220,16 @@ $(document).ready(function() {
   function removeFee(idx) {
     var removed = feeItems[idx];
     feeItems.splice(idx, 1);
-    // Show this option back in dropdown
     $('#feeSelect option[value="' + removed.id + '"]').prop('disabled', false).show();
     renderFeeList();
   }
 
-  // ─── Render fee list as table rows ───
+  // ─── Render fee list as table rows with department column ───
   function renderFeeList() {
     var body = $('#feeListBody');
     body.empty();
     if (feeItems.length === 0) {
-      body.html('<tr id="emptyRow"><td colspan="3" class="text-muted text-center">No fees added yet.</td></tr>');
+      body.html('<tr id="emptyRow"><td colspan="4" class="text-muted text-center">No fees added yet.</td></tr>');
       $('#feeCount').text('0');
       $('#totalAmount').text('TZS 0.00');
       updateSummary();
@@ -236,6 +241,7 @@ $(document).ready(function() {
       body.append(
         '<tr>' +
         '<td>' + f.title + '</td>' +
+        '<td><span class="label label-default">' + f.dept + '</span></td>' +
         '<td class="text-right">' + f.amount.toLocaleString() + '</td>' +
         '<td class="text-center"><span class="btn-remove" onclick="removeFee(' + i + ')" style="color:#d9534f;cursor:pointer;font-size:18px">&times;</span></td>' +
         '</tr>'

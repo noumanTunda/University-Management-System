@@ -200,8 +200,14 @@ class GePGController extends Controller
             $course = Course::find($courseId);
             $deptId = $course ? $course->department_id : 0;
         }
-        $fees = $deptId ? Fee::where('department_id', $deptId)->orWhereNull('department_id')->get(['id', 'title', 'amount'])
-                         : Fee::all(['id', 'title', 'amount']);
+        if ($deptId) {
+            $fees = Fee::with('department')->where('department_id', $deptId)->orWhereNull('department_id')->get(['id', 'title', 'amount', 'department_id']);
+        } else {
+            $fees = Fee::with('department')->get(['id', 'title', 'amount', 'department_id']);
+        }
+        $fees = $fees->map(function($f) {
+            return ['id' => $f->id, 'title' => $f->title, 'amount' => $f->amount, 'department' => $f->department->name ?? 'General'];
+        });
         return response()->json(['success' => true, 'fees' => $fees]);
     }
 
