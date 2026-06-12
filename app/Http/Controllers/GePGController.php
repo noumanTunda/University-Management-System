@@ -212,6 +212,11 @@ class GePGController extends Controller
     }
 
     // Allocate fee to students (bulk) — generates control numbers
+    public function penaltiesForm()
+    {
+        return view('gepg.penalties');
+    }
+
     public function allocateSpecific(Request $request)
     {
         $v = Validator::make($request->all(), [
