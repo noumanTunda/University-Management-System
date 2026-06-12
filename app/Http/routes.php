@@ -43,7 +43,6 @@ Route::group(['middleware' => 'auth'], function()
   Route::resource('subject','SubjectController');
   Route::get('subject/{deparment}/{semester}',[ 'as' => 'subject.DeptAndSem','uses'=>'SubjectController@subjetsByDptSem']);
 
-  // Teacher-Subject assignment
   Route::get('teacher-subject',[ 'as' => 'teacher.subject.index','uses'=>'TeacherSubjectController@index']);
   Route::post('teacher-subject',[ 'as' => 'teacher.subject.store','uses'=>'TeacherSubjectController@store']);
   Route::get('teacher-subject/subjects/{deptId}',[ 'as' => 'teacher.subject.subjects','uses'=>'TeacherSubjectController@getSubjectsByDepartment']);

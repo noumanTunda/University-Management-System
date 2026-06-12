@@ -28,7 +28,7 @@
                 <div class="col-md-5">
                   <div class="form-group">
                     <label>Academic Year <span class="required">*</span></label>
-                    <select class="form-control" name="academic_year_id" required>
+                    <select class="form-control no-select2" name="academic_year_id" required>
                       <option value="">Select Academic Year</option>
                       @foreach($academicYears as $y)
                         <option value="{{$y->id}}" @if($y->id == $currentYearId) selected @endif>{{$y->name}}</option>

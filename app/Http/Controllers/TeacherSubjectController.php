@@ -39,7 +39,7 @@ class TeacherSubjectController extends Controller
     public function store(Request $request)
     {
         $data = $request->all();
-        $rules = ['user_id' => 'required|exists:users,id', 'subject_ids' => 'required|array', 'academic_year' => 'required'];
+        $rules = ['user_id' => 'required|exists:users,id', 'subject_ids' => 'required|array', 'academic_year_id' => 'required|exists:academic_years,id'];
         $validator = Validator::make($data, $rules);
         if ($validator->fails()) {
             return redirect()->back()->withErrors($validator);
@@ -51,12 +51,19 @@ class TeacherSubjectController extends Controller
             $y = AcademicYear::find($yearId);
             $yearName = $y ? $y->name : '';
         }
-        $syncData = [];
+        $inserts = [];
         foreach ($data['subject_ids'] as $sid) {
-            $syncData[$sid] = ['academic_year_id' => $yearId, 'academic_year' => $yearName];
+            $inserts[] = [
+                'user_id' => $teacher->id,
+                'subject_id' => $sid,
+                'academic_year_id' => $yearId,
+                'created_at' => \Carbon\Carbon::now(),
+                'updated_at' => \Carbon\Carbon::now(),
+            ];
         }
-        $teacher->subjects()->sync($syncData);
-        $notification = ['title' => 'Data Store', 'body' => 'Subjects assigned for ' . ($yearName ?: 'N/A') . ' successfully.'];
+        \DB::table('teacher_subject')->where('user_id', $teacher->id)->where('academic_year_id', $yearId)->delete();
+        \DB::table('teacher_subject')->insert($inserts);
+        $notification = ['title' => 'Data Store', 'body' => 'Subjects assigned successfully.'];
         return redirect()->route('teacher.subject.index')->with('success', $notification);
     }
 
@@ -76,7 +83,7 @@ class TeacherSubjectController extends Controller
     public function update(Request $request, $id)
     {
         $data = $request->all();
-        $rules = ['subject_ids' => 'required|array', 'academic_year' => 'required'];
+        $rules = ['subject_ids' => 'required|array', 'academic_year_id' => 'required|exists:academic_years,id'];
         $validator = Validator::make($data, $rules);
         if ($validator->fails()) {
             return redirect()->back()->withErrors($validator);
@@ -88,12 +95,19 @@ class TeacherSubjectController extends Controller
             $y = AcademicYear::find($yearId);
             $yearName = $y ? $y->name : '';
         }
-        $syncData = [];
+        $inserts = [];
         foreach ($data['subject_ids'] as $sid) {
-            $syncData[$sid] = ['academic_year_id' => $yearId, 'academic_year' => $yearName];
+            $inserts[] = [
+                'user_id' => $teacher->id,
+                'subject_id' => $sid,
+                'academic_year_id' => $yearId,
+                'created_at' => \Carbon\Carbon::now(),
+                'updated_at' => \Carbon\Carbon::now(),
+            ];
         }
-        $teacher->subjects()->sync($syncData);
-        $notification = ['title' => 'Data Update', 'body' => 'Subjects updated for ' . ($yearName ?: 'N/A') . ' successfully.'];
+        \DB::table('teacher_subject')->where('user_id', $teacher->id)->where('academic_year_id', $yearId)->delete();
+        \DB::table('teacher_subject')->insert($inserts);
+        $notification = ['title' => 'Data Update', 'body' => 'Subjects updated successfully.'];
         return redirect()->route('teacher.subject.index')->with('success', $notification);
     }
 

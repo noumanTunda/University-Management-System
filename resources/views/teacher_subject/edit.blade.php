@@ -36,7 +36,7 @@
               <input type="hidden" name="_method" value="PUT">
               <div class="form-group">
                 <label>Academic Year <span class="required">*</span></label>
-                <select class="form-control" name="academic_year_id" required>
+                <select class="form-control no-select2" name="academic_year_id" required>
                   <option value="">Select Academic Year</option>
                   @foreach($academicYears as $y)
                     <option value="{{$y->id}}" @if($y->id == $currentYearId) selected @endif>{{$y->name}}</option>
@@ -47,7 +47,7 @@
                 <label>Select Subjects for this Teacher</label>
                 <select class="form-control select2" name="subject_ids[]" id="subjectSelect" multiple>
                   @foreach($allSubjects as $s)
-                    <option value="{{$s->id}}" @if($teacher->subjects()->wherePivot('subject_id', $s->id)->wherePivot('academic_year', $currentYearName ?? '')->exists()) selected @endif>
+                    <option value="{{$s->id}}" @if($teacher->subjects()->wherePivot('subject_id', $s->id)->wherePivot('academic_year_id', $currentYearId)->exists()) selected @endif>
                       {{$s->name}} ({{$s->code}}) - {{$s->department ? $s->department->name : ''}}
                     </option>
                   @endforeach
