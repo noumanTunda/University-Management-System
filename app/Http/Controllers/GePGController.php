@@ -75,7 +75,7 @@ class GePGController extends Controller
         $newPaid = $bill->paid_amount + $payAmount;
         $dueAmount = $bill->amount - $newPaid;
 
-        DB::transaction(function() use ($bill, $payAmount, $newPaid, $dueAmount) {
+        DB::transaction(function() use ($bill, $payAmount, $newPaid, $dueAmount, $request) {
             // Determine new status
             if ($dueAmount <= 0) {
                 $status = 'Paid';
@@ -240,10 +240,18 @@ class GePGController extends Controller
 
     // ─── Accountant: list, edit, mark paid ───
 
-    public function accountantBills()
+    public function accountantBills(Request $request)
     {
-        $bills = GePGBill::with('student')->orderBy('created_at', 'desc')->paginate(20);
-        return view('gepg.accountant', compact('bills'));
+        $years = AcademicYear::orderBy('name', 'desc')->get();
+        $selectedYear = $request->input('academic_year', '');
+
+        $query = GePGBill::with('student');
+        if ($selectedYear) {
+            $query->where('academic_year', $selectedYear);
+        }
+        $bills = $query->orderBy('created_at', 'desc')->get();
+
+        return view('gepg.accountant', compact('bills', 'years', 'selectedYear'));
     }
 
     public function markPaid(Request $request, $id)

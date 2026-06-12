@@ -1,7 +1,13 @@
 @extends('layouts.master')
-
 @section('title', 'GePG Bills')
-
+@section('extrastyle')
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap.min.css">
+<style>
+td { vertical-align: middle !important; }
+.dataTables_filter input { height: 34px; border-radius: 4px; border: 1px solid #ccc; padding: 6px 12px; }
+.dataTables_length select { height: 34px; border-radius: 4px; border: 1px solid #ccc; padding: 6px 12px; }
+</style>
+@endsection
 @section('content')
 <div class="right_col" role="main">
   <div class="">
@@ -9,10 +15,43 @@
     <div class="row">
       <div class="col-md-12">
         <div class="x_panel">
-          <div class="x_title"><h2>All Bills</h2><div class="clearfix"></div></div>
+          <div class="x_title"><h2><i class="fa fa-barcode"></i> All Bills</h2><div class="clearfix"></div></div>
           <div class="x_content">
-            <table class="table table-bordered table-striped">
-              <thead><tr><th>Student</th><th>Control No</th><th>Fee</th><th>Amount</th><th>Paid</th><th>Due</th><th>Status</th><th>Actions</th></tr></thead>
+            <form method="get" action="{{URL::route('gepg.accountant')}}" class="form-inline" style="margin-bottom:15px">
+              <div class="form-group">
+                <label>Academic Year: &nbsp;</label>
+                <select name="academic_year" class="form-control" onchange="this.form.submit()" style="min-width:200px">
+                  <option value="">All Years</option>
+                  @foreach($years as $y)
+                    <option value="{{$y->name}}" {{$selectedYear == $y->name ? 'selected' : ''}}>{{$y->name}}</option>
+                  @endforeach
+                </select>
+              </div>
+              @if($selectedYear)
+                <a href="{{URL::route('gepg.accountant')}}" class="btn btn-default btn-sm">Clear Filter</a>
+              @endif
+              <span class="pull-right text-muted" style="line-height:34px">
+                @if($selectedYear)
+                  Showing bills for <strong>{{$selectedYear}}</strong>
+                @else
+                  Showing bills for <strong>all academic years</strong>
+                @endif
+                &nbsp;|&nbsp; Total: <strong>{{$bills->count()}}</strong> bills
+              </span>
+            </form>
+            <table id="billsTable" class="table table-bordered table-striped">
+              <thead>
+                <tr>
+                  <th>Student</th>
+                  <th>Control No</th>
+                  <th>Fee</th>
+                  <th>Amount</th>
+                  <th>Paid</th>
+                  <th>Due</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
               <tbody>
                 @forelse($bills as $b)
                 @php $due = $b->amount - $b->paid_amount; @endphp
@@ -35,7 +74,7 @@
                   </td>
                 </tr>
                 @empty
-                <tr><td colspan="6">No bills.</td></tr>
+                <tr><td colspan="8" class="text-center">No bills found.</td></tr>
                 @endforelse
               </tbody>
             </table>
@@ -45,4 +84,23 @@
     </div>
   </div>
 </div>
+@endsection
+@section('extrascript')
+<script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap.min.js"></script>
+<script>
+$(document).ready(function() {
+  $('#billsTable').DataTable({
+    order: [[0, 'asc']],
+    pageLength: 25,
+    lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']],
+    language: {
+      search: 'Search bills:',
+      lengthMenu: 'Show _MENU_ entries',
+      info: 'Showing _START_ to _END_ of _TOTAL_ bills',
+      emptyTable: 'No bills available'
+    }
+  });
+});
+</script>
 @endsection
