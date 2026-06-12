@@ -24,6 +24,8 @@ class TeacherSubjectController extends Controller
         $allSubjects = Subject::select('id','name','code','department_id')->with('department')->orderBy('name')->get();
         $academicYears = AcademicYear::orderBy('name', 'desc')->get();
         $currentYearName = AcademicYear::where('name', 'LIKE', date('Y') . '%')->orderBy('name', 'desc')->first()->name ?? date('Y') . '-' . (date('Y') + 1);
+        // Backfill: ensure existing records without academic_year get one
+        \DB::table('teacher_subject')->whereNull('academic_year')->update(['academic_year' => $currentYearName]);
         return view('teacher_subject.index', compact('teachers', 'departments', 'allSubjects', 'academicYears', 'currentYearName'));
     }
 
