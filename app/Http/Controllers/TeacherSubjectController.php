@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\User;
 use App\Subject;
 use App\Department;
+use App\AcademicYear;
 use Validator;
 use Redirect;
 
@@ -21,7 +22,8 @@ class TeacherSubjectController extends Controller
         $teachers = User::whereIn('group', ['Teacher', 'HeadOfDepartment'])->with('subjects')->get();
         $departments = Department::select('id','name')->orderBy('name','asc')->get();
         $allSubjects = Subject::select('id','name','code','department_id')->with('department')->orderBy('name')->get();
-        return view('teacher_subject.index', compact('teachers', 'departments', 'allSubjects'));
+        $academicYears = AcademicYear::orderBy('name', 'desc')->get();
+        return view('teacher_subject.index', compact('teachers', 'departments', 'allSubjects', 'academicYears'));
     }
 
     public function getSubjectsByDepartment($deptId)
@@ -33,14 +35,19 @@ class TeacherSubjectController extends Controller
     public function store(Request $request)
     {
         $data = $request->all();
-        $rules = ['user_id' => 'required|exists:users,id', 'subject_ids' => 'required|array'];
+        $rules = ['user_id' => 'required|exists:users,id', 'subject_ids' => 'required|array', 'academic_year' => 'required'];
         $validator = Validator::make($data, $rules);
         if ($validator->fails()) {
             return redirect()->back()->withErrors($validator);
         }
         $teacher = User::findOrFail($data['user_id']);
-        $teacher->subjects()->sync($data['subject_ids']);
-        $notification = ['title' => 'Data Store', 'body' => 'Subjects assigned successfully.'];
+        $year = $data['academic_year'];
+        $syncData = [];
+        foreach ($data['subject_ids'] as $sid) {
+            $syncData[$sid] = ['academic_year' => $year];
+        }
+        $teacher->subjects()->sync($syncData);
+        $notification = ['title' => 'Data Store', 'body' => 'Subjects assigned for ' . $year . ' successfully.'];
         return redirect()->route('teacher.subject.index')->with('success', $notification);
     }
 
@@ -49,20 +56,26 @@ class TeacherSubjectController extends Controller
         $teacher = User::with('subjects')->findOrFail($id);
         $departments = Department::select('id','name')->orderBy('name','asc')->get();
         $allSubjects = Subject::select('id','name','code','department_id')->with('department')->orderBy('name')->get();
-        return view('teacher_subject.edit', compact('teacher', 'departments', 'allSubjects'));
+        $academicYears = AcademicYear::orderBy('name', 'desc')->get();
+        return view('teacher_subject.edit', compact('teacher', 'departments', 'allSubjects', 'academicYears'));
     }
 
     public function update(Request $request, $id)
     {
         $data = $request->all();
-        $rules = ['subject_ids' => 'required|array'];
+        $rules = ['subject_ids' => 'required|array', 'academic_year' => 'required'];
         $validator = Validator::make($data, $rules);
         if ($validator->fails()) {
             return redirect()->back()->withErrors($validator);
         }
         $teacher = User::findOrFail($id);
-        $teacher->subjects()->sync($data['subject_ids']);
-        $notification = ['title' => 'Data Update', 'body' => 'Subjects updated successfully.'];
+        $year = $data['academic_year'];
+        $syncData = [];
+        foreach ($data['subject_ids'] as $sid) {
+            $syncData[$sid] = ['academic_year' => $year];
+        }
+        $teacher->subjects()->sync($syncData);
+        $notification = ['title' => 'Data Update', 'body' => 'Subjects updated for ' . $year . ' successfully.'];
         return redirect()->route('teacher.subject.index')->with('success', $notification);
     }
 

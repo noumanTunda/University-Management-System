@@ -27,6 +27,19 @@
               <div class="row">
                 <div class="col-md-5">
                   <div class="form-group">
+                    <label>Academic Year <span class="required">*</span></label>
+                    <select class="form-control" name="academic_year" required>
+                      <option value="">Select Year</option>
+                      @foreach($academicYears as $y)
+                        <option value="{{$y->name}}">{{$y->name}}</option>
+                      @endforeach
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-5">
+                  <div class="form-group">
                     <label>Teacher <span class="required">*</span></label>
                     <select class="form-control select2" name="user_id" id="teacherSelect" required>
                       <option value="">Search Teacher...</option>

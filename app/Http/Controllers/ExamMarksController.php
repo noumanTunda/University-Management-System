@@ -38,7 +38,8 @@ class ExamMarksController extends Controller
     {
         $subjects = Subject::where('department_id', $deptId)->select('id', 'name', 'code')->orderBy('name');
         if (auth()->user()->group === 'Teacher') {
-            $subIds = auth()->user()->subjects()->pluck('subject.id')->toArray();
+            $currentYearName = AcademicYear::where('name', 'LIKE', date('Y') . '%')->orderBy('name', 'desc')->first()->name ?? date('Y') . '-' . (date('Y') + 1);
+        $subIds = auth()->user()->subjects()->wherePivot('academic_year', $currentYearName)->pluck('subject.id')->toArray();
             $subjects->whereIn('id', $subIds);
         }
         $subjects = $subjects->get();
@@ -175,13 +176,25 @@ class ExamMarksController extends Controller
         $subjectId = $request->input('subject_id');
         $semesterId = $request->input('semester_id');
 
+        // Get assessment plan components for this subject/semester
+        $plan = AssessmentPlan::where('subject_id', $subjectId)->where('semester_id', $semesterId)->with('components')->first();
+        $columns = ['idNo', 'firstName', 'lastName'];
+        if ($plan && $plan->components->count() > 0) {
+            foreach ($plan->components as $comp) {
+                $columns[] = $comp->name;
+            }
+        } else {
+            $columns[] = 'ca_score';
+            $columns[] = 'ue_score';
+        }
+
         $headers = [
             'Content-Type' => 'text/csv',
             'Content-Disposition' => 'attachment; filename="marks_template.csv"',
         ];
-        $callback = function() use ($subjectId, $semesterId) {
+        $callback = function() use ($subjectId, $semesterId, $columns, $plan) {
             $file = fopen('php://output', 'w');
-            fputcsv($file, ['idNo', 'firstName', 'lastName', 'ca_score', 'ue_score']);
+            fputcsv($file, $columns);
 
             if ($subjectId && $semesterId) {
                 $sem = Semester::with('academicYear')->find($semesterId);
@@ -195,12 +208,24 @@ class ExamMarksController extends Controller
                     ->get(['idNo', 'firstName', 'lastName']);
 
                 foreach ($students as $s) {
-                    fputcsv($file, [$s->idNo, $s->firstName, $s->lastName, '', '']);
+                    $row = [$s->idNo, $s->firstName, $s->lastName];
+                    // Pre-fill existing marks if available
+                    if ($plan) {
+                        foreach ($plan->components as $comp) {
+                            $mark = AssessmentMark::where('assessment_component_id', $comp->id)
+                                ->where('student_id', $s->id)->first();
+                            $row[] = $mark ? $mark->score : '';
+                        }
+                    } else {
+                        $row[] = '';
+                        $row[] = '';
+                    }
+                    fputcsv($file, $row);
                 }
             } else {
-                // No subject/semester selected — provide generic example
-                fputcsv($file, ['T24-03-00000', 'Nouman', 'Tunda', '', '']);
-                fputcsv($file, ['T22-03-10001', 'Chebet', 'Mbowe', '', '']);
+                $row = ['T24-03-00000', 'Nouman', 'Tunda'];
+                for ($i = 3; $i < count($columns); $i++) $row[] = '';
+                fputcsv($file, $row);
             }
             fclose($file);
         };
@@ -220,53 +245,56 @@ class ExamMarksController extends Controller
         $semesterId = $request->semester_id;
 
         // Auto-create plan with default components
-        $plan = AssessmentPlan::firstOrCreate(
-            ['subject_id' => $subjectId, 'semester_id' => $semesterId],
-            ['subject_id' => $subjectId, 'semester_id' => $semesterId]
-        );
-        if ($plan->components()->count() == 0) {
-            $plan->components()->create(['name' => 'Course Work', 'type' => 'CA', 'max_score' => 40, 'weight' => 40]);
-            $plan->components()->create(['name' => 'University Exam', 'type' => 'UE', 'max_score' => 60, 'weight' => 60]);
+        $plan = AssessmentPlan::where('subject_id', $subjectId)->where('semester_id', $semesterId)->with('components')->first();
+        if (!$plan || $plan->components()->count() == 0) {
+            return back()->withErrors(['marks_file' => 'No assessment plan found for this subject/semester. Create an assessment plan with components first.']);
         }
         $plan->load('components');
-        $caComp = $plan->components->where('type', 'CA')->first();
-        $ueComp = $plan->components->where('type', 'UE')->first();
+        $compMap = [];
+        foreach ($plan->components as $comp) {
+            $compMap[$comp->name] = $comp;
+        }
 
         $file = $request->file('marks_file');
         $handle = fopen($file->getRealPath(), 'r');
         $header = fgetcsv($handle, 1000, ',');
         if (!$header || count($header) < 3) {
             fclose($handle);
-            return back()->withErrors(['marks_file' => 'CSV must have columns: idNo, ca_score, ue_score']);
+            return back()->withErrors(['marks_file' => 'CSV must have at least idNo, firstName, lastName columns.']);
         }
         $header = array_map(function($h) { return trim(str_replace("\xEF\xBB\xBF", '', $h)); }, $header);
 
         $imported = 0; $errors = [];
+        $caTotal = 0; $ueTotal = 0;
         while (($row = fgetcsv($handle, 1000, ',')) !== false) {
             $data = array_combine($header, $row);
             $student = Student::where('idNo', trim($data['idNo'] ?? ''))->first();
             if (!$student) { $errors[] = 'Student not found: ' . ($data['idNo'] ?? '?'); continue; }
 
-            $ca = (float) ($data['ca_score'] ?? 0);
-            $ue = (float) ($data['ue_score'] ?? 0);
-
-            if ($caComp) {
-                AssessmentMark::updateOrCreate(
-                    ['assessment_component_id' => $caComp->id, 'student_id' => $student->id],
-                    ['score' => $ca]
-                );
-            }
-            if ($ueComp) {
-                AssessmentMark::updateOrCreate(
-                    ['assessment_component_id' => $ueComp->id, 'student_id' => $student->id],
-                    ['score' => $ue]
-                );
+            $caSum = 0; $ueSum = 0;
+            foreach ($compMap as $compName => $comp) {
+                $score = (float) ($data[$compName] ?? 0);
+                if ($score > 0) {
+                    AssessmentMark::updateOrCreate(
+                        ['assessment_component_id' => $comp->id, 'student_id' => $student->id],
+                        ['score' => $score]
+                    );
+                    if ($comp->type === 'CA') $caSum += ($score / $comp->max_score) * $comp->weight;
+                    else $ueSum += ($score / $comp->max_score) * $comp->weight;
+                }
             }
 
-            $grade = CourseRegistration::computeGrade($ca, $ue);
+            // Compute final from plan weights
+            $caWeight = $plan->ca_weight / 100;
+            $ueWeight = $plan->ue_weight / 100;
+            $caFinal = $caWeight * $caSum;
+            $ueFinal = $ueWeight * $ueSum;
+            $final = $caFinal + $ueFinal;
+            $grade = CourseRegistration::computeGrade($caFinal, $ueFinal);
+
             CourseRegistration::updateOrCreate(
                 ['student_id' => $student->id, 'subject_id' => $subjectId, 'semester_id' => $semesterId],
-                ['ca_score' => $ca, 'ue_score' => $ue, 'grade_letter' => $grade['letter'], 'grade_point' => $grade['point'], 'status' => $grade['status']]
+                ['ca_score' => $caFinal, 'ue_score' => $ueFinal, 'final_mark' => $final, 'grade_letter' => $grade['letter'], 'grade_point' => $grade['point'], 'status' => $grade['status']]
             );
             $imported++;
         }

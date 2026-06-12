@@ -28,7 +28,8 @@ class AssessmentController extends Controller
                 $q->where('is_template', false)->orWhereNull('is_template');
             });
         if (auth()->user()->group === 'Teacher') {
-            $subIds = auth()->user()->subjects()->pluck('subject.id')->toArray();
+            $currentYearName = AcademicYear::where('name', 'LIKE', date('Y') . '%')->orderBy('name', 'desc')->first()->name ?? date('Y') . '-' . (date('Y') + 1);
+        $subIds = auth()->user()->subjects()->wherePivot('academic_year', $currentYearName)->pluck('subject.id')->toArray();
             $plans->whereIn('subject_id', $subIds);
         }
         $plans = $plans->get();
@@ -40,7 +41,8 @@ class AssessmentController extends Controller
     {
         $subjects = Subject::select('id','name','code','department_id')->with('department')->orderBy('name');
         if (auth()->user()->group === 'Teacher') {
-            $subIds = auth()->user()->subjects()->pluck('subject.id')->toArray();
+            $currentYearName = AcademicYear::where('name', 'LIKE', date('Y') . '%')->orderBy('name', 'desc')->first()->name ?? date('Y') . '-' . (date('Y') + 1);
+        $subIds = auth()->user()->subjects()->wherePivot('academic_year', $currentYearName)->pluck('subject.id')->toArray();
             $subjects->whereIn('id', $subIds);
         }
         $subjects = $subjects->get();
