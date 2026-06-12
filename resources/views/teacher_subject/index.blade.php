@@ -156,6 +156,24 @@ $(document).ready(function() {
         }
     });
 
-});
+    });
+
+    // Per-assignment delete with SweetAlert
+    $(document).on('click', '.btn-delete-assignment', function(e) {
+        e.preventDefault();
+        var link = $(this).attr('href');
+        swal({
+            title: 'Delete Subject Teacher ?',
+            text: 'Remove this subject from this teacher for this academic year?',
+            type: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#cc3f44',
+            confirmButtonText: 'Yes, remove',
+            closeOnConfirm: true,
+            html: false
+        }, function(isConfirm) {
+            if(isConfirm) window.location.href = link;
+        });
+    });
 </script>
 @endsection
