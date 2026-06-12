@@ -81,8 +81,16 @@ class GePGController extends Controller
         if ($v->fails()) return redirect()->back()->withErrors($v);
 
         $fee = Fee::findOrFail($request->fee_id);
+        $currentYear = date('Y');
         $count = 0;
+        $skipped = 0;
         foreach ($request->student_ids as $studentId) {
+            $exists = GePGBill::where('student_id', $studentId)
+                ->where('bill_description', $fee->title)
+                ->whereYear('created_at', $currentYear)
+                ->exists();
+            if ($exists) { $skipped++; continue; }
+
             $controlNo = $this->generateControlNumber();
             GePGBill::create([
                 'student_id' => $studentId,
@@ -94,7 +102,9 @@ class GePGController extends Controller
             ]);
             $count++;
         }
-        return redirect()->route('gepg.accountant')->with('success', ['title'=>'Allocated', "body'=>'$count bills created with control numbers."]);
+        $msg = "$count bills created.";
+        if ($skipped > 0) $msg .= " $skipped skipped (already allocated this year).";
+        return redirect()->route('gepg.accountant')->with('success', ['title'=>'Allocated', 'body'=>$msg]);
     }
 
     // Allocate a specific fee (individual — penalties, permissions)

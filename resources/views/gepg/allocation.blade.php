@@ -30,6 +30,9 @@
                       </div>
                       <div class="form-group">
                         <label>Students</label>
+                        <div class="checkbox" style="margin-bottom:5px">
+                          <label><input type="checkbox" id="selectAllStudents"> <strong>Select All</strong></label>
+                        </div>
                         <select class="form-control" id="studentSelect" name="student_ids[]" multiple required style="width:100%">
                         </select>
                       </div>

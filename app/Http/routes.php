@@ -160,15 +160,6 @@ Route::group(['middleware' => 'auth'], function()
   Route::post('accounting/invoices',[ 'as' => 'accounting.invoice.store','uses'=>'AccountingController@invoiceStore']);
   Route::get('accounting/journal',[ 'as' => 'accounting.journal','uses'=>'AccountingController@journalIndex']);
   Route::get('accounting/trial-balance',[ 'as' => 'accounting.trial.balance','uses'=>'AccountingController@trialBalance']);
-  Route::get('/accounting/sector',[ 'as' => 'accounting.sector.index','uses'=>'AccountingController@secIndex']);
-  Route::post('/accounting/sector',[ 'as' => 'accounting.sector.store','uses'=>'AccountingController@secStore']);
-  Route::get('/accounting/sector/{id}',[ 'as' => 'accounting.sector.destroy','uses'=>'AccountingController@secDestroy']);
-  Route::get('/accounting/income',[ 'as' => 'accounting.income.index','uses'=>'AccountingController@inIndex']);
-  Route::post('/accounting/income',[ 'as' => 'accounting.income.store','uses'=>'AccountingController@inStore']);
-  Route::get('/accounting/income/{id}',[ 'as' => 'accounting.income.destroy','uses'=>'AccountingController@inDestroy']);
-  Route::get('/accounting/expence',[ 'as' => 'accounting.expence.index','uses'=>'AccountingController@exIndex']);
-  Route::post('/accounting/expence',[ 'as' => 'accounting.expence.store','uses'=>'AccountingController@exStore']);
-  Route::get('/accounting/expence/{id}',[ 'as' => 'accounting.expence.destroy','uses'=>'AccountingController@exDestroy']);
   //reports
   Route::get('/accounting/reports-by-type',[ 'as' => 'accounting.reports.type','uses'=>'ReportController@reportByType']);
   Route::post('/accounting/reports-by-type',[ 'as' => 'accounting.reports.type','uses'=>'ReportController@reportByType']);
