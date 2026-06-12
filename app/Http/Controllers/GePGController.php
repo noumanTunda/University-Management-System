@@ -8,6 +8,8 @@ use App\GePGPaymentReceipt;
 use App\Fee;
 use App\Student;
 use App\FeeCollection;
+use DB;
+use Carbon\Carbon;
 use Validator;
 use Redirect;
 
@@ -46,7 +48,7 @@ class GePGController extends Controller
             'amount' => $request->amount,
             'bill_description' => $fee->title,
             'status' => 'Issued',
-            'expires_at' => now()->addDays(30),
+            'expires_at' => Carbon::now()->addDays(30),
         ]);
         return redirect()->back()->with('success', ['title'=>'Bill Generated', 'body'=>"Control No: $controlNo | Amount: ".number_format($request->amount, 2).' TZS']);
     }
@@ -62,7 +64,8 @@ class GePGController extends Controller
     public function markPaid(Request $request, $id)
     {
         $bill = GePGBill::with('student')->findOrFail($id);
-        $bill->update(['status' => 'Paid']);
+        DB::transaction(function() use ($bill) {
+				$bill->update(['status' => 'Paid']);
         // Create receipt
         $trxId = 'MANUAL-' . strtoupper(str_random(12));
         GePGPaymentReceipt::create([
@@ -70,7 +73,7 @@ class GePGController extends Controller
             'transaction_id' => $trxId,
             'amount_paid' => $bill->amount,
             'payment_provider' => 'Manual',
-            'paid_at' => now(),
+            'paid_at' => Carbon::now(),
         ]);
         // Also create a fee_collection record to link with accounting
         if ($bill->student) {
@@ -79,9 +82,10 @@ class GePGController extends Controller
                 'payableAmount' => $bill->amount,
                 'lateFee' => 0,
                 'paidAmount' => $bill->amount,
-                'payDate' => now()->format('Y-m-d'),
+                'payDate' => Carbon::now()->format('Y-m-d'),
             ]);
         }
+        });
         return redirect()->back()->with('success', ['title'=>'Paid', 'body'=>'Bill marked as paid. Fee collection updated.']);
     }
 
@@ -106,17 +110,19 @@ class GePGController extends Controller
         $bill = GePGBill::where('control_number', $controlNo)->first();
         if (!$bill) return response('<GepgResponse>FAILED</GepgResponse>', 200)->header('Content-Type', 'text/xml');
 
-        GePGPaymentReceipt::updateOrCreate(
-            ['transaction_id' => $request->input('TrxId')],
-            [
-                'control_number' => $controlNo,
-                'amount_paid' => $request->input('PaidAmount', 0),
-                'payment_provider' => $request->input('PaymentProvider', 'GePG'),
-                'payer_mobile' => $request->input('PayerMobile'),
-                'paid_at' => now(),
-            ]
-        );
-        $bill->update(['status' => 'Paid']);
+        DB::transaction(function() use ($bill, $request) {
+            $bill->update(['status' => 'Paid']);
+            GePGPaymentReceipt::updateOrCreate(
+                ['transaction_id' => $request->input('TrxId')],
+                [
+                    'control_number' => $controlNo,
+                    'amount_paid' => $request->input('PaidAmount', 0),
+                    'payment_provider' => $request->input('PaymentProvider', 'GePG'),
+                    'payer_mobile' => $request->input('PayerMobile'),
+                    'paid_at' => Carbon::now(),
+                ]
+            );
+        });
         return response('<GepgResponse>SUCCESS</GepgResponse>', 200)->header('Content-Type', 'text/xml');
     }
 

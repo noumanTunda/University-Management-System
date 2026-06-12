@@ -16,7 +16,7 @@ Route::get('/login', array('as' => 'home', 'uses' => 'HomeController@index'));
 Route::get('/lock',array('as' => 'lock', 'uses' => 'HomeController@lock'));
 Route::get('/',"HomeController@index");
 
-Route::post('/user/login',[ 'as' => 'user.login','uses'=>'UserController@login']);
+Route::post('/user/login',[ 'as' => 'user.login','uses'=>'UserController@login','middleware' => 'throttle:10,1']);
 Route::get('/user/logout',[ 'as' => 'user.logout','uses'=>'UserController@logout']);
 
 Route::group(['middleware' => 'auth'], function()

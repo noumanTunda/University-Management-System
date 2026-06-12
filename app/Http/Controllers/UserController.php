@@ -27,7 +27,12 @@ class UserController extends Controller {
 	public function login()
 	{
 
-		if (Auth::attempt(array('login'=>Input::get('login'), 'password'=>Input::get('password')))) {
+					$login = Input::get('login');
+			$password = Input::get('password');
+			if (strlen($password) < 6) {
+				return Redirect::to('/')->with('error', 'Password must be at least 6 characters.');
+			}
+			if (Auth::attempt(array('login'=>$login, 'password'=>$password))) {
 			$name=Auth::user()->firstname.' '.Auth::user()->lastname;
 			Session::put('name', $name);
 			Session::put('user_session_sha1', AppHelper::getUserSessionHash());

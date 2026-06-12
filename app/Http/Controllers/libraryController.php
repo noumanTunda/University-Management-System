@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Http\Requests;
 use Illuminate\Support\Facades\Redirect;
 use App\Http\Controllers\Controller;
+use Carbon\Carbon;
 use DB;
 use App\Department;
 use App\Book;
@@ -191,7 +192,7 @@ class libraryController extends Controller
 
 			$data=$request->all();
 			$issueData = [];
-			$now=\Carbon\Carbon::now();
+			$now=Carbon::now();
 			foreach ($data['bookCode'] as $key => $value){
 				$issueData[] = [
 					'students_id' => $data['students_id'],

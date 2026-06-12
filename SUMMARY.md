@@ -370,4 +370,31 @@ chmod -R 775 storage bootstrap/cache
 
 ---
 
+## Future Roadmap (Tier 4-5 Enhancements)
+
+### Tier 4: Advanced Features
+| # | Enhancement | Status |
+|---|-------------|--------|
+| E16 | **RESTful API** — Mobile app integration endpoints with token auth | 📋 TODO |
+| E17 | **Multi-tenancy** — Support multiple institutions with isolated data | 📋 TODO |
+| E18 | **SMS notifications** — Fee reminders, result alerts via SMS gateway | 📋 TODO |
+| E19 | **Localization** — Swahili language pack, RTL support | 📋 TODO |
+| E20 | **Live payment gateway** — GePG, NMB, M-Pesa production integration | 📋 TODO |
+| E21 | **PDF transcript** — Official TCU transcript generation | 📋 TODO |
+| E22 | **Student ID card** — Printable ID with barcode/QR | 📋 TODO |
+| E23 | **Online course registration** — Students self-register for subjects | 📋 TODO |
+| E24 | **Academic calendar** — Event management (exams, holidays, deadlines) | 📋 TODO |
+
+### Tier 5: DevOps & Quality
+| # | Enhancement | Status |
+|---|-------------|--------|
+| E25 | **CI/CD pipeline** — GitHub Actions: lint → test → build → deploy | 📋 TODO |
+| E26 | **PHPUnit test suite** — Unit + feature tests, minimum 80% coverage | 📋 TODO |
+| E27 | **Production Docker** — Nginx, Redis, supervisor, Horizon config | 📋 TODO |
+| E28 | **Automated backups** — Daily DB dump to S3/cloud storage | 📋 TODO |
+| E29 | **Monitoring** — Sentry error tracking, uptime monitoring | 📋 TODO |
+| E30 | **Laravel upgrade** — Migrate from 5.2 to 10.x (LTS) | 📋 TODO |
+
+---
+
 *Prepared on **June 12, 2026**. This document is version-controlled alongside the source code.*

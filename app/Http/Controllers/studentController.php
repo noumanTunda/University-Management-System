@@ -13,6 +13,7 @@ use Session;
 use Carbon\Carbon;
 use App\Registration;
 use App\Transformers\StudentTransformer;
+use DB;
 
 
 class studentController extends Controller {
@@ -172,7 +173,7 @@ class studentController extends Controller {
 		$student = new Student;
 		$student->create($data);
 			// Auto-create User account for student login (idNo / lastName)
-			$user = AppUser::firstOrCreate(['login' => $data['idNo']], [
+			$user = \App\User::firstOrCreate(['login' => $data['idNo']], [
 			    'firstname' => $data['firstName'],
 			    'lastname'  => $data['lastName'],
 			    'login'     => $data['idNo'],
@@ -503,7 +504,9 @@ class studentController extends Controller {
 				$errMsg = implode('<br>', $errors);
 				return back()->with('error', ['title' => 'Registration Failed', 'body' => $errMsg]);
 			}
-		Registration::insert($toBeRegisterStudents);
+		DB::transaction(function() use ($toBeRegisterStudents) {
+				Registration::insert($toBeRegisterStudents);
+			});
 		$notification= array('title' => 'Data Store', 'body' => $newRegistration.' students registered.');
 		// return Response()->json([
 		// 	'success' => true,

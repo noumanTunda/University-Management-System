@@ -1,3 +1,0 @@
-Marking Exams is not Working
-in Assigning Fees to students, implement a feature to assign fees to all students at once
-
