@@ -36,7 +36,12 @@ class ExamMarksController extends Controller
 
     public function getSubjects($deptId)
     {
-        $subjects = Subject::where('department_id', $deptId)->select('id', 'name', 'code')->orderBy('name')->get();
+        $subjects = Subject::where('department_id', $deptId)->select('id', 'name', 'code')->orderBy('name');
+        if (auth()->user()->group === 'Teacher') {
+            $subIds = auth()->user()->subjects()->pluck('subject.id')->toArray();
+            $subjects->whereIn('id', $subIds);
+        }
+        $subjects = $subjects->get();
         return response()->json(['success' => true, 'subjects' => $subjects]);
     }
 

@@ -70,6 +70,7 @@ td { vertical-align: middle !important; }
                       <input type="hidden" name="_token" value="{{ csrf_token() }}">
                       <button class="btn btn-success btn-xs" onclick="return confirm('Mark as paid?')"><i class="fa fa-check"></i></button>
                     </form>
+                    <a href="{{URL::route('gepg.bill.delete', $b->id)}}" class="btn btn-danger btn-xs" onclick="return confirm('Delete this bill? This cannot be undone.')"><i class="fa fa-trash"></i></a>
                     @endif
                   </td>
                 </tr>

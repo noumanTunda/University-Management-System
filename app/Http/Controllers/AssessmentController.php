@@ -24,16 +24,26 @@ class AssessmentController extends Controller
     public function index()
     {
         $plans = AssessmentPlan::with('subject.department', 'semester.academicYear', 'components')
-            ->where('is_template', false)
-            ->orWhereNull('is_template')
-            ->get();
+            ->where(function($q) {
+                $q->where('is_template', false)->orWhereNull('is_template');
+            });
+        if (auth()->user()->group === 'Teacher') {
+            $subIds = auth()->user()->subjects()->pluck('subject.id')->toArray();
+            $plans->whereIn('subject_id', $subIds);
+        }
+        $plans = $plans->get();
         $templates = AssessmentPlan::with('components')->where('is_template', true)->get();
         return view('assessment.index', compact('plans', 'templates'));
     }
 
     public function create()
     {
-        $subjects = Subject::select('id','name','code','department_id')->with('department')->orderBy('name')->get();
+        $subjects = Subject::select('id','name','code','department_id')->with('department')->orderBy('name');
+        if (auth()->user()->group === 'Teacher') {
+            $subIds = auth()->user()->subjects()->pluck('subject.id')->toArray();
+            $subjects->whereIn('id', $subIds);
+        }
+        $subjects = $subjects->get();
         $semesters = Semester::with('academicYear')->orderBy('id')->get();
         $templates = AssessmentPlan::with('components')->where('is_template', true)->orderBy('template_name')->get();
         return view('assessment.create', compact('subjects', 'semesters', 'templates'));

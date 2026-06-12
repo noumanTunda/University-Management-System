@@ -123,7 +123,12 @@ class AttendanceController extends Controller
         $students=$manager->createData($stdData)->toArray();
         $departments = Department::select('id','name')->orderby('name','asc')->lists('name', 'id');
         $sessions=Student::select('session','session')->distinct()->lists('session','session');
-        $subjects=Subject::select('id','name')->where('department_id',$request->input('department_id'))->where('levelTerm',$request->input('levelTerm'))->orderby('code','asc')->lists('name', 'id');
+        $subjectsQuery = Subject::select('id','name')->where('department_id',$request->input('department_id'))->where('levelTerm',$request->input('levelTerm'))->orderby('code','asc');
+        if (auth()->user()->group === 'Teacher') {
+            $subIds = auth()->user()->subjects()->pluck('subject.id')->toArray();
+            $subjectsQuery->whereIn('id', $subIds);
+        }
+        $subjects = $subjectsQuery->lists('name', 'id');
 
         $semesters= $this->semesters;
 
