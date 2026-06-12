@@ -102,7 +102,9 @@
        if ($("#datatable-buttons").length) {
          $("#datatable-buttons").DataTable({
            responsive: true,
-           iDisplayLength:100,
+           pageLength: 25,
+           lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']],
+           order: [[0, 'asc']],
            dom: "Bfrtip",
            buttons: [
              {
@@ -138,7 +140,13 @@
                className: "btn-sm"
              },
            ],
-           responsive: true
+           responsive: true,
+           language: {
+             search: 'Search users:',
+             lengthMenu: 'Show _MENU_ entries',
+             info: 'Showing _START_ to _END_ of _TOTAL_ users',
+             emptyTable: 'No users available'
+           }
          });
        }
      };
