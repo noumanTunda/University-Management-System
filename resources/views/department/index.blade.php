@@ -55,7 +55,6 @@
                       @endforeach
                       </tbody>
                     </table>
-                    <div class="text-center">{!! $departments->render() !!}</div>
                   </div>
                 </div>
               <!-- row end -->
