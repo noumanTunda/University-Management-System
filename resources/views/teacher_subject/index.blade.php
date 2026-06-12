@@ -28,10 +28,10 @@
                 <div class="col-md-5">
                   <div class="form-group">
                     <label>Academic Year <span class="required">*</span></label>
-                    <select class="form-control" name="academic_year" required>
+                    <select class="form-control" name="academic_year_id" required>
                       <option value="">Select Academic Year</option>
                       @foreach($academicYears as $y)
-                        <option value="{{$y->name}}">{{$y->name}}</option>
+                        <option value="{{$y->id}}" @if($y->id == $currentYearId) selected @endif>{{$y->name}}</option>
                       @endforeach
                     </select>
                   </div>
@@ -95,8 +95,8 @@
                     @if($t->subjects->count() > 0)
                       @foreach($t->subjects as $s)
                         <span class="label label-info">{{$s->name}} ({{$s->code}})</span>
-                        @if($s->pivot->academic_year)
-                          <span class="label label-default" style="font-size:10px">{{$s->pivot->academic_year}}</span>
+                        @if(isset($yearNames[$s->pivot->academic_year_id]))
+                          <span class="label label-default" style="font-size:10px">{{$yearNames[$s->pivot->academic_year_id]}}</span>
                         @endif
                       @endforeach
                     @else

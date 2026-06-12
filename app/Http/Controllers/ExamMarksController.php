@@ -38,8 +38,10 @@ class ExamMarksController extends Controller
     {
         $subjects = Subject::where('department_id', $deptId)->select('id', 'name', 'code')->orderBy('name');
         if (auth()->user()->group === 'Teacher') {
-            $currentYearName = AcademicYear::where('name', 'LIKE', date('Y') . '%')->orderBy('name', 'desc')->first()->name ?? date('Y') . '-' . (date('Y') + 1);
-        $subIds = auth()->user()->subjects()->wherePivot('academic_year', $currentYearName)->pluck('subject.id')->toArray();
+            $currentYear = AcademicYear::where('name', 'LIKE', date('Y') . '%')->orderBy('name', 'desc')->first();
+        $currentYearName = $currentYear ? $currentYear->name : date('Y') . '-' . (date('Y') + 1);
+        $currentYearId = $currentYear ? $currentYear->id : null;
+        $subIds = auth()->user()->subjects()->wherePivot('academic_year_id', $currentYearId)->pluck('subject.id')->toArray();
             $subjects->whereIn('id', $subIds);
         }
         $subjects = $subjects->get();

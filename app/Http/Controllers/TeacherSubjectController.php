@@ -23,10 +23,11 @@ class TeacherSubjectController extends Controller
         $departments = Department::select('id','name')->orderBy('name','asc')->get();
         $allSubjects = Subject::select('id','name','code','department_id')->with('department')->orderBy('name')->get();
         $academicYears = AcademicYear::orderBy('name', 'desc')->get();
-        $currentYearName = $academicYears->first() ? $academicYears->first()->name : date('Y') . '-' . (date('Y') + 1);
-        // Backfill
-        \DB::table('teacher_subject')->whereNull('academic_year')->update(['academic_year' => $currentYearName]);
-        return view('teacher_subject.index', compact('teachers', 'departments', 'allSubjects', 'academicYears', 'currentYearName'));
+        $currentYear = $academicYears->first();
+        $currentYearName = $currentYear ? $currentYear->name : date('Y') . '-' . (date('Y') + 1);
+        $currentYearId = $currentYear ? $currentYear->id : null;
+        $yearNames = AcademicYear::pluck('name', 'id')->toArray();
+        return view('teacher_subject.index', compact('teachers', 'departments', 'allSubjects', 'academicYears', 'currentYearName', 'currentYearId', 'yearNames'));
     }
 
     public function getSubjectsByDepartment($deptId)
@@ -44,13 +45,18 @@ class TeacherSubjectController extends Controller
             return redirect()->back()->withErrors($validator);
         }
         $teacher = User::findOrFail($data['user_id']);
-        $year = $data['academic_year'];
+        $yearId = $data['academic_year_id'];
+        $yearName = '';
+        if ($yearId) {
+            $y = AcademicYear::find($yearId);
+            $yearName = $y ? $y->name : '';
+        }
         $syncData = [];
         foreach ($data['subject_ids'] as $sid) {
-            $syncData[$sid] = ['academic_year' => $year];
+            $syncData[$sid] = ['academic_year_id' => $yearId, 'academic_year' => $yearName];
         }
         $teacher->subjects()->sync($syncData);
-        $notification = ['title' => 'Data Store', 'body' => 'Subjects assigned for ' . $year . ' successfully.'];
+        $notification = ['title' => 'Data Store', 'body' => 'Subjects assigned for ' . ($yearName ?: 'N/A') . ' successfully.'];
         return redirect()->route('teacher.subject.index')->with('success', $notification);
     }
 
@@ -60,8 +66,11 @@ class TeacherSubjectController extends Controller
         $departments = Department::select('id','name')->orderBy('name','asc')->get();
         $allSubjects = Subject::select('id','name','code','department_id')->with('department')->orderBy('name')->get();
         $academicYears = AcademicYear::orderBy('name', 'desc')->get();
-        $currentYearName = $academicYears->first() ? $academicYears->first()->name : date('Y') . '-' . (date('Y') + 1);
-        return view('teacher_subject.edit', compact('teacher', 'departments', 'allSubjects', 'academicYears', 'currentYearName'));
+        $currentYear = $academicYears->first();
+        $currentYearName = $currentYear ? $currentYear->name : date('Y') . '-' . (date('Y') + 1);
+        $currentYearId = $currentYear ? $currentYear->id : null;
+        $yearNames = AcademicYear::pluck('name', 'id')->toArray();
+        return view('teacher_subject.edit', compact('teacher', 'departments', 'allSubjects', 'academicYears', 'currentYearName', 'currentYearId', 'yearNames'));
     }
 
     public function update(Request $request, $id)
@@ -73,13 +82,18 @@ class TeacherSubjectController extends Controller
             return redirect()->back()->withErrors($validator);
         }
         $teacher = User::findOrFail($id);
-        $year = $data['academic_year'];
+        $yearId = $data['academic_year_id'];
+        $yearName = '';
+        if ($yearId) {
+            $y = AcademicYear::find($yearId);
+            $yearName = $y ? $y->name : '';
+        }
         $syncData = [];
         foreach ($data['subject_ids'] as $sid) {
-            $syncData[$sid] = ['academic_year' => $year];
+            $syncData[$sid] = ['academic_year_id' => $yearId, 'academic_year' => $yearName];
         }
         $teacher->subjects()->sync($syncData);
-        $notification = ['title' => 'Data Update', 'body' => 'Subjects updated for ' . $year . ' successfully.'];
+        $notification = ['title' => 'Data Update', 'body' => 'Subjects updated for ' . ($yearName ?: 'N/A') . ' successfully.'];
         return redirect()->route('teacher.subject.index')->with('success', $notification);
     }
 
