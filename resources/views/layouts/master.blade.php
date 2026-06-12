@@ -55,6 +55,7 @@
 				  <li><a href="{{URL::route('gepg.student')}}"><i class="fa fa-money"></i> Pay Fees</a></li>
 				  <li><a href="/library/search"><i class="fa fa-book"></i> Library</a></li>
 				  <li><a href="/library/issuebookview"><i class="fa fa-list"></i> My Books</a></li>
+				  <li><a href="/dormitory/my-room"><i class="fa fa-building"></i> My Room</a></li>
 				  @endif
                   @can('Admin')
                   <li><a><i class="fa fa-home"></i> Departments <span class="fa fa-chevron-down"></span></a>
@@ -171,7 +172,7 @@
                     <ul class="nav child_menu">
                       <li><a href="/dormitory">Dormitory</a></li>
                       <li><a href="/dormitory/assignstd">Assign Student</a></li>
-                      <li><a href="/dormitory/assignstd/list">Student List</a></li>
+                      <li><a href="/dormitory/my-room">Student List</a></li>
                       <li><a href="/dormitory/fee">Fee Collection</a></li>
                       <li><a href="/dormitory/report/std">Dormitory Report</a></li>
                       <li><a href="/dormitory/report/fee">Fee Reports</a></li>

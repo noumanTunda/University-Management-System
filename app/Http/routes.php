@@ -154,6 +154,7 @@ Route::group(['middleware' => 'auth'], function()
   Route::post('gepg/bill/{id}/paid',[ 'as' => 'gepg.bill.paid','uses'=>'GePGController@markPaid']);
   Route::get('gepg/bill/{id}/edit',[ 'as' => 'gepg.bill.edit','uses'=>'GePGController@editBill']);
   Route::post('gepg/bill/{id}',[ 'as' => 'gepg.bill.update','uses'=>'GePGController@updateBill']);
+  Route::get('gepg/bill/{id}/delete',[ 'as' => 'gepg.bill.delete','uses'=>'GePGController@deleteBill']);
   Route::post('gepg/callback',[ 'as' => 'gepg.callback','uses'=>'GePGController@callback']);
 
   //accounting routes
@@ -236,7 +237,9 @@ Route::group(['middleware' => 'auth'], function()
   Route::get('/dormitory/report/std','DormitoryController@reportstd');
   Route::get('/dormitory/report/std/{dormId}','DormitoryController@reportstdprint');
   Route::get('/dormitory/report/fee','DormitoryController@reportfee');
+  Route::get('/dormitory/my-room',[ 'as' => 'dormitory.myroom','uses'=>'DormitoryController@myRoom']);
   Route::get('/dormitory/report/fee/{dormId}/{month}','DormitoryController@reportfeeprint');
+  Route::get('/dormitory/my-room',[ 'as' => 'dormitory.myroom','uses'=>'DormitoryController@myRoom']);
 
   //barcode generate
   Route::get('/barcode','barcodeController@index');

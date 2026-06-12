@@ -21,7 +21,7 @@ class libraryController extends Controller
     ];
 	public function __construct()
 	{
-		$this->middleware('teacher');
+		$this->middleware('auth');
 	}
 
 	public function getAddbook()

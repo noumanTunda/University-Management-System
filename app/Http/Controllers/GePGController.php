@@ -25,31 +25,60 @@ class GePGController extends Controller
     // ─── Student: view bills & request missing ───
     public function studentFees()
     {
-        $student = Student::where('idNo', auth()->user()->login)->first();
+        $student = Student::with('course.department')->where('idNo', auth()->user()->login)->first();
         $bills = $student ? GePGBill::where('student_id', $student->id)->orderBy('created_at', 'desc')->get() : [];
-        return view('gepg.student', compact('student', 'bills'));
+        $fees = collect();
+        if ($student && $student->course && $student->course->department) {
+            $fees = Fee::where('department_id', $student->course->department_id)
+                ->orWhereNull('department_id')
+                ->get();
+        }
+        return view('gepg.student', compact('student', 'bills', 'fees'));
     }
 
     // Student: request a missing control number
     public function requestControl(Request $request)
     {
-        $student = Student::where('idNo', auth()->user()->login)->first();
+        $student = Student::with('course.department')->where('idNo', auth()->user()->login)->first();
         if (!$student) return redirect()->back()->with('error', ['title'=>'Error', 'body'=>'Student profile not found.']);
 
         $v = Validator::make($request->all(), [
-            'description' => 'required|max:255',
-            'amount' => 'required|numeric|min:1',
+            'fee_id' => 'required|exists:fees,id',
         ]);
         if ($v->fails()) return redirect()->back()->withErrors($v);
 
+        $fee = Fee::findOrFail($request->fee_id);
+        $currentYearName = '';
+        $activeYear = AcademicYear::where('name', '<=', date('Y') . '-' . (date('Y') + 1))
+            ->orWhere('name', 'LIKE', date('Y') . '%')
+            ->orderBy('name', 'desc')
+            ->first();
+        if ($activeYear) $currentYearName = $activeYear->name;
+        if (!$currentYearName) $currentYearName = date('Y') . '-' . (date('Y') + 1);
+
+        // Check if already allocated this year
+        $existing = GePGBill::where('student_id', $student->id)
+            ->where('bill_description', $fee->title)
+            ->where('academic_year', $currentYearName)
+            ->first();
+        if ($existing) {
+            return redirect()->back()->with('error', ['title'=>'Already Allocated', 'body'=>'You already have a control number for "' . $fee->title . '" this academic year: ' . $existing->control_number]);
+        }
+
+        // Auto-generate control number
+        $controlNo = $this->generateControlNumber();
         GePGBill::create([
             'student_id' => $student->id,
-            'control_number' => 'REQUESTED',
-            'amount' => $request->amount,
-            'bill_description' => $request->description,
-            'status' => 'Pending',
+            'control_number' => $controlNo,
+            'amount' => $fee->amount,
+            'paid_amount' => 0,
+            'bill_description' => $fee->title,
+            'status' => 'Issued',
+            'academic_year' => $currentYearName,
+            'expires_at' => Carbon::now()->addDays(30),
         ]);
-        return redirect()->back()->with('success', ['title'=>'Request Sent', 'body'=>'Your payment request has been submitted. Accountant will issue a control number.']);
+
+        return redirect()->back()->with('success', ['title'=>'Control Number Issued', 'body'=>'Your control number for "' . $fee->title . '" is: ' . $controlNo . '. Amount: TZS ' . number_format($fee->amount, 2)]);
     }
 
     // Student: pay a bill (simulate GePG)
@@ -278,6 +307,18 @@ class GePGController extends Controller
             }
         });
         return redirect()->back()->with('success', ['title'=>'Paid', 'body'=>'Bill marked as paid.']);
+    }
+
+    public function deleteBill($id)
+    {
+        $bill = GePGBill::findOrFail($id);
+        if ($bill->status === 'Paid') {
+            return redirect()->back()->with('error', ['title'=>'Cannot Delete', 'body'=>'Paid bills cannot be deleted.']);
+        }
+        // Delete receipts first
+        GePGPaymentReceipt::where('control_number', $bill->control_number)->delete();
+        $bill->delete();
+        return redirect()->back()->with('success', ['title'=>'Deleted', 'body'=>'Bill deleted successfully.']);
     }
 
     public function editBill($id)

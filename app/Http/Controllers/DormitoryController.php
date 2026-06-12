@@ -22,7 +22,7 @@ class DormitoryController extends Controller
 	];
   public function __construct()
   {
-    $this->middleware('teacher');
+    $this->middleware('auth');
   }
   /**
   * Display a listing of the resource.
@@ -133,6 +133,22 @@ class DormitoryController extends Controller
 
 
   //student assign to dormitory part goes Here
+  public function myRoom()
+  {
+    $student = Student::where('idNo', auth()->user()->login)->first();
+    if (!$student) {
+      return redirect()->back()->with('error', ['title'=>'Error', 'body'=>'Student profile not found.']);
+    }
+    $assignment = DB::table('dormitory_students')
+      ->leftJoin('dormitories', 'dormitory_students.dormitories_id', '=', 'dormitories.id')
+      ->leftJoin('rooms', 'dormitory_students.rooms_id', '=', 'rooms.id')
+      ->where('dormitory_students.students_id', $student->id)
+      ->where('dormitory_students.isActive', 1)
+      ->select('dormitories.name as dormitory', 'rooms.room_no', 'dormitory_students.joinDate', 'dormitory_students.isActive')
+      ->first();
+    return view('dormitory.myroom', compact('student', 'assignment'));
+  }
+
   public function stdindex()
   {
     $semesters = $this->semesters;

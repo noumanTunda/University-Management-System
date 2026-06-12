@@ -10,21 +10,26 @@
       @else
       <div class="col-md-5">
         <div class="x_panel">
-          <div class="x_title"><h2>Request Missing Payment</h2><div class="clearfix"></div></div>
+          <div class="x_title"><h2>Request Control Number</h2><div class="clearfix"></div></div>
           <div class="x_content">
-            <p class="text-muted">If you need to pay a fee that is not yet billed, submit a request. Accountant will issue a control number.</p>
+            @if($fees->count() > 0)
+            <p class="text-muted">Select a fee type below. If you don't already have a control number for it this year, one will be generated immediately.</p>
             <form method="post" action="{{URL::route('gepg.request')}}">
               <input type="hidden" name="_token" value="{{ csrf_token() }}">
               <div class="form-group">
-                <label>Description</label>
-                <input type="text" name="description" class="form-control" placeholder="e.g. Lab fee, Library fine" required>
+                <label>Fee Type</label>
+                <select class="form-control" name="fee_id" required>
+                  <option value="">Select Fee Type</option>
+                  @foreach($fees as $f)
+                    <option value="{{$f->id}}">{{$f->title}} — TZS {{number_format($f->amount)}}</option>
+                  @endforeach
+                </select>
               </div>
-              <div class="form-group">
-                <label>Amount (TZS)</label>
-                <input type="number" name="amount" class="form-control" required min="1" step="0.01">
-              </div>
-              <button type="submit" class="btn btn-warning"><i class="fa fa-send"></i> Submit Request</button>
+              <button type="submit" class="btn btn-primary btn-block"><i class="fa fa-barcode"></i> Generate Control Number</button>
             </form>
+            @else
+              <div class="alert alert-info">No fee types are currently available for your department.</div>
+            @endif
           </div>
         </div>
       </div>
