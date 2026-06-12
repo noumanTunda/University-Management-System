@@ -1,7 +1,5 @@
 @extends('layouts.master')
-
 @section('title', 'Assign Subjects to Teachers')
-
 @section('extrastyle')
 <link href="{{ URL::asset('assets/css/dataTables.bootstrap.min.css')}}" rel="stylesheet">
 <link href="{{ URL::asset('assets/css/select2.min.css')}}" rel="stylesheet">
@@ -14,11 +12,12 @@
 <div class="right_col" role="main">
   <div class="">
     <div class="clearfix"></div>
+    <!-- Assignment Form -->
     <div class="row">
       <div class="col-md-12">
         <div class="x_panel">
           <div class="x_title">
-            <h2>Assign Subjects to Teacher</h2>
+            <h2><i class="fa fa-plus-circle"></i> Assign Subjects</h2>
             <div class="clearfix"></div>
           </div>
           <div class="x_content">
@@ -32,19 +31,6 @@
                       <option value="">Select Academic Year</option>
                       @foreach($academicYears as $y)
                         <option value="{{$y->id}}" @if($y->id == $currentYearId) selected @endif>{{$y->name}}</option>
-                      @endforeach
-                    </select>
-                  </div>
-                </div>
-              </div>
-              <div class="row">
-                <div class="col-md-5">
-                  <div class="form-group">
-                    <label>Teacher <span class="required">*</span></label>
-                    <select class="form-control select2" name="user_id" id="teacherSelect" required>
-                      <option value="">Search Teacher...</option>
-                      @foreach($teachers as $t)
-                        <option value="{{$t->id}}">{{$t->firstname}} {{$t->lastname}} ({{$t->login}})</option>
                       @endforeach
                     </select>
                   </div>
@@ -65,8 +51,19 @@
                 </div>
               </div>
               <div class="row">
-                <div class="col-md-12">
-                  <button type="submit" class="btn btn-primary pull-right"><i class="fa fa-save"></i> Assign Subjects</button>
+                <div class="col-md-5">
+                  <div class="form-group">
+                    <label>Teacher <span class="required">*</span></label>
+                    <select class="form-control select2" name="user_id" id="teacherSelect" required>
+                      <option value="">Search Teacher...</option>
+                      @foreach($teachers as $t)
+                        <option value="{{$t->id}}">{{$t->firstname}} {{$t->lastname}} ({{$t->login}})</option>
+                      @endforeach
+                    </select>
+                  </div>
+                </div>
+                <div class="col-md-7" style="padding-top:25px">
+                  <button type="submit" class="btn btn-primary btn-block"><i class="fa fa-save"></i> Assign Subjects</button>
                 </div>
               </div>
             </form>
@@ -74,53 +71,54 @@
         </div>
       </div>
     </div>
+
+    <!-- Current Assignments Table -->
     <div class="row">
       <div class="col-md-12">
         <div class="x_panel">
           <div class="x_title">
-            <h2>Current Assignments</h2>
+            <h2><i class="fa fa-list"></i> Current Assignments</h2>
             <div class="clearfix"></div>
           </div>
           <div class="x_content">
             <table id="assignTable" class="table table-striped table-bordered">
               <thead>
-                <tr><th>Teacher</th><th>Group</th><th>Assigned Subjects</th><th width="120">Actions</th></tr>
+                <tr>
+                  <th>Teacher</th>
+                  <th>Subject</th>
+                  <th>Code</th>
+                  <th>Department</th>
+                  <th>Academic Year</th>
+                  <th width="100">Actions</th>
+                </tr>
               </thead>
               <tbody>
-                @foreach($teachers as $t)
+                @forelse($assignments as $a)
                 <tr>
-                  <td>{{$t->firstname}} {{$t->lastname}}</td>
-                  <td>{{$t->group}}</td>
+                  <td>{{$a->teacher_name}} {{$a->teacher_lastname}}</td>
+                  <td>{{$a->subject_name}}</td>
+                  <td>{{$a->subject_code}}</td>
+                  <td>{{$a->department_name ?? '-'}}</td>
+                  <td><span class="label label-default">{{$a->academic_year_name}}</span></td>
                   <td>
-                    @if($t->subjects->count() > 0)
-                      @foreach($t->subjects as $s)
-                        <span class="label label-info">{{$s->name}} ({{$s->code}})</span>
-                        @if(isset($yearNames[$s->pivot->academic_year_id]))
-                          <span class="label label-default" style="font-size:10px">{{$yearNames[$s->pivot->academic_year_id]}}</span>
-                        @endif
-                      @endforeach
-                    @else
-                      <span class="label label-default">No subjects assigned</span>
-                    @endif
-                  </td>
-                  <td>
-                    <div class="btn-group btn-group-xs">
-                      <a href="{{URL::route('teacher.subject.edit', $t->id)}}" class="btn btn-warning" title="Edit"><i class="glyphicon glyphicon-edit"></i></a>
-                      <form method="POST" action="{{URL::route('teacher.subject.destroy', $t->id)}}" style="display:inline" class="deleteForm">
-                        <input type="hidden" name="_token" value="{{ csrf_token() }}">
-                        <input type="hidden" name="_method" value="DELETE">
-                        <button type="submit" class="btn btn-danger" title="Remove All"><i class="glyphicon glyphicon-trash"></i></button>
-                      </form>
-                    </div>
+                    <a href="{{URL::route('teacher.subject.edit', $a->user_id)}}" class="btn btn-warning btn-xs" title="Edit"><i class="fa fa-edit"></i></a>
+                    <form method="POST" action="{{URL::route('teacher.subject.destroy', $a->user_id)}}" style="display:inline" class="deleteForm">
+                      <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                      <input type="hidden" name="_method" value="DELETE">
+                      <button type="submit" class="btn btn-danger btn-xs" title="Remove All"><i class="fa fa-trash"></i></button>
+                    </form>
                   </td>
                 </tr>
-                @endforeach
+                @empty
+                <tr><td colspan="6" class="text-center">No assignments found.</td></tr>
+                @endforelse
               </tbody>
             </table>
           </div>
         </div>
       </div>
     </div>
+
   </div>
 </div>
 @endsection
@@ -130,14 +128,37 @@
 <script src="{{ URL::asset('assets/js/dataTables.bootstrap.min.js')}}"></script>
 <script src="{{ URL::asset('assets/js/select2.full.min.js')}}"></script>
 <script src="{{ URL::asset('assets/js/sweetalert.min.js')}}"></script>
-    <script>
-    $(document).ready(function() {
-        $('.select2').select2({ placeholder: 'Search and select...', allowClear: true });
-        $('.deleteForm').submit(function(e) {
-            e.preventDefault();
-            var form = this;
-            swal({title:"Remove All Subjects?",text:"This will unassign all subjects from this teacher.",type:"warning",showCancelButton:true,confirmButtonColor:"#cc3f44",confirmButtonText:"Yes",closeOnConfirm:true},function(isConfirm){if(isConfirm)form.submit();});
+<script>
+$(document).ready(function() {
+    $('.select2').select2({ placeholder: 'Search and select...', allowClear: true });
+
+    $('#assignTable').DataTable({
+        pageLength: 25,
+        lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']],
+        order: [[0, 'asc']],
+        language: {
+            search: 'Search assignments:',
+            lengthMenu: 'Show _MENU_ entries',
+            info: 'Showing _START_ to _END_ of _TOTAL_ assignments',
+            emptyTable: 'No assignments available'
+        }
+    });
+
+    $('.deleteForm').submit(function(e) {
+        e.preventDefault();
+        var form = this;
+        swal({
+            title: "Remove All Subjects?",
+            text: "This will unassign all subjects from this teacher.",
+            type: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#cc3f44",
+            confirmButtonText: "Yes",
+            closeOnConfirm: true
+        }, function(isConfirm) {
+            if(isConfirm) form.submit();
         });
     });
-    </script>
-    @endsection
+});
+</script>
+@endsection

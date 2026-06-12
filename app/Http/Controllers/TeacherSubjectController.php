@@ -27,7 +27,26 @@ class TeacherSubjectController extends Controller
         $currentYearName = $currentYear ? $currentYear->name : date('Y') . '-' . (date('Y') + 1);
         $currentYearId = $currentYear ? $currentYear->id : null;
         $yearNames = AcademicYear::pluck('name', 'id')->toArray();
-        return view('teacher_subject.index', compact('teachers', 'departments', 'allSubjects', 'academicYears', 'currentYearName', 'currentYearId', 'yearNames'));
+        // Build flat assignments list for DataTable
+        $assignments = \DB::table('teacher_subject')
+            ->join('users', 'teacher_subject.user_id', '=', 'users.id')
+            ->join('subject', 'teacher_subject.subject_id', '=', 'subject.id')
+            ->leftJoin('department', 'subject.department_id', '=', 'department.id')
+            ->leftJoin('academic_years', 'teacher_subject.academic_year_id', '=', 'academic_years.id')
+            ->select(
+                'teacher_subject.user_id',
+                'users.firstname as teacher_name',
+                'users.lastname as teacher_lastname',
+                'users.login',
+                'subject.name as subject_name',
+                'subject.code as subject_code',
+                'department.name as department_name',
+                'academic_years.name as academic_year_name'
+            )
+            ->orderBy('users.firstname')
+            ->orderBy('subject.name')
+            ->get();
+        return view('teacher_subject.index', compact('teachers', 'departments', 'allSubjects', 'academicYears', 'currentYearName', 'currentYearId', 'yearNames', 'assignments'));
     }
 
     public function getSubjectsByDepartment($deptId)
