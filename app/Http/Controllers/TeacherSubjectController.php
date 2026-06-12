@@ -58,31 +58,33 @@ class TeacherSubjectController extends Controller
     public function store(Request $request)
     {
         $data = $request->all();
-        $rules = ['user_id' => 'required|exists:users,id', 'subject_ids' => 'required|array', 'academic_year_id' => 'required|exists:academic_years,id'];
+        $rules = ['user_id' => 'required|exists:users,id', 'subject_ids' => 'required|array', 'academic_year_ids' => 'required|array', 'academic_year_ids.*' => 'exists:academic_years,id'];
         $validator = Validator::make($data, $rules);
         if ($validator->fails()) {
             return redirect()->back()->withErrors($validator);
         }
         $teacher = User::findOrFail($data['user_id']);
-        $yearId = $data['academic_year_id'];
-        $yearName = '';
-        if ($yearId) {
-            $y = AcademicYear::find($yearId);
-            $yearName = $y ? $y->name : '';
-        }
+        $yearIds = $data['academic_year_ids'];
         $inserts = [];
-        foreach ($data['subject_ids'] as $sid) {
-            $inserts[] = [
-                'user_id' => $teacher->id,
-                'subject_id' => $sid,
-                'academic_year_id' => $yearId,
-                'created_at' => \Carbon\Carbon::now(),
-                'updated_at' => \Carbon\Carbon::now(),
-            ];
+        foreach ($yearIds as $yearId) {
+            \DB::table('teacher_subject')
+                ->where('user_id', $teacher->id)
+                ->where('academic_year_id', $yearId)
+                ->delete();
+            foreach ($data['subject_ids'] as $sid) {
+                $inserts[] = [
+                    'user_id' => $teacher->id,
+                    'subject_id' => $sid,
+                    'academic_year_id' => $yearId,
+                    'created_at' => \Carbon\Carbon::now(),
+                    'updated_at' => \Carbon\Carbon::now(),
+                ];
+            }
         }
-        \DB::table('teacher_subject')->where('user_id', $teacher->id)->where('academic_year_id', $yearId)->delete();
         \DB::table('teacher_subject')->insert($inserts);
-        $notification = ['title' => 'Data Store', 'body' => 'Subjects assigned successfully.'];
+        $yearCount = count($yearIds);
+        $subjCount = count($data['subject_ids']);
+        $notification = ['title' => 'Data Store', 'body' => "{$subjCount} subject(s) assigned across {$yearCount} year(s)."];
         return redirect()->route('teacher.subject.index')->with('success', $notification);
     }
 
@@ -102,7 +104,7 @@ class TeacherSubjectController extends Controller
     public function update(Request $request, $id)
     {
         $data = $request->all();
-        $rules = ['subject_ids' => 'required|array', 'academic_year_id' => 'required|exists:academic_years,id'];
+        $rules = ['subject_ids' => 'required|array', 'academic_year_ids' => 'required|array', 'academic_year_ids.*' => 'exists:academic_years,id'];
         $validator = Validator::make($data, $rules);
         if ($validator->fails()) {
             return redirect()->back()->withErrors($validator);

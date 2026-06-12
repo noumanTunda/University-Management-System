@@ -26,13 +26,17 @@
               <div class="row">
                 <div class="col-md-5">
                   <div class="form-group">
-                    <label>Academic Year <span class="required">*</span></label>
-                    <select class="form-control no-select2" name="academic_year_id" required>
-                      <option value="">Select Academic Year</option>
+                    <label>Academic Years <span class="required">*</span></label>
+                    <div style="margin-bottom:5px">
+                      <button type="button" id="btnSelectAllYears" class="btn btn-xs btn-info"><i class="fa fa-check-square-o"></i> All Years</button>
+                      <button type="button" id="btnClearYears" class="btn btn-xs btn-default"><i class="fa fa-square-o"></i> Clear</button>
+                    </div>
+                    <select class="form-control" name="academic_year_ids[]" id="yearSelect" multiple required style="height:120px">
                       @foreach($academicYears as $y)
                         <option value="{{$y->id}}" @if($y->id == $currentYearId) selected @endif>{{$y->name}}</option>
                       @endforeach
                     </select>
+                    <small class="text-muted">Ctrl+click to select multiple years, or use All Years button.</small>
                   </div>
                 </div>
                 <div class="col-md-7">
@@ -131,6 +135,14 @@
 <script>
 $(document).ready(function() {
     $('.select2').select2({ placeholder: 'Search and select...', allowClear: true });
+
+    // Select All / Clear academic years
+    $('#btnSelectAllYears').on('click', function() {
+        $('#yearSelect option').prop('selected', true);
+    });
+    $('#btnClearYears').on('click', function() {
+        $('#yearSelect option').prop('selected', false);
+    });
 
     $('#assignTable').DataTable({
         pageLength: 25,
