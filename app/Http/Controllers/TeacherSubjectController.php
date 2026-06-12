@@ -22,9 +22,7 @@ class TeacherSubjectController extends Controller
         $teachers = User::whereIn('group', ['Teacher', 'HeadOfDepartment'])->with('subjects')->get();
         $departments = Department::select('id','name')->orderBy('name','asc')->get();
         $allSubjects = Subject::select('id','name','code','department_id')->with('department')->orderBy('name')->get();
-        // Force load academic years with explicit query
-        $academicYears = \DB::table('academic_years')->orderBy('name', 'desc')->get();
-        $academicYears = AcademicYear::hydrate($academicYears->toArray());
+        $academicYears = AcademicYear::orderBy('name', 'desc')->get();
         $currentYearName = $academicYears->first() ? $academicYears->first()->name : date('Y') . '-' . (date('Y') + 1);
         // Backfill
         \DB::table('teacher_subject')->whereNull('academic_year')->update(['academic_year' => $currentYearName]);
@@ -61,8 +59,7 @@ class TeacherSubjectController extends Controller
         $teacher = User::with('subjects')->findOrFail($id);
         $departments = Department::select('id','name')->orderBy('name','asc')->get();
         $allSubjects = Subject::select('id','name','code','department_id')->with('department')->orderBy('name')->get();
-        $academicYears = \DB::table('academic_years')->orderBy('name', 'desc')->get();
-        $academicYears = AcademicYear::hydrate($academicYears->toArray());
+        $academicYears = AcademicYear::orderBy('name', 'desc')->get();
         $currentYearName = $academicYears->first() ? $academicYears->first()->name : date('Y') . '-' . (date('Y') + 1);
         return view('teacher_subject.edit', compact('teacher', 'departments', 'allSubjects', 'academicYears', 'currentYearName'));
     }
