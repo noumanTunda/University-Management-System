@@ -230,6 +230,7 @@ class DormitoryController extends Controller
       ->select('dormitory_requests.*', 'students.idNo', 'students.firstName', 'students.lastName',
                'dormitory_students.roomNo', 'dormitories.name as dormitory')
       ->get();
+    $requests = collect($requests);
     return view('dormitory.requests', compact('requests'));
   }
 
