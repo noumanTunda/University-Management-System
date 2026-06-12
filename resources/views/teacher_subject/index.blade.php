@@ -31,7 +31,7 @@
                       <button type="button" id="btnSelectAllYears" class="btn btn-xs btn-info"><i class="fa fa-check-square-o"></i> All Years</button>
                       <button type="button" id="btnClearYears" class="btn btn-xs btn-default"><i class="fa fa-square-o"></i> Clear</button>
                     </div>
-                    <select class="form-control" name="academic_year_ids[]" id="yearSelect" multiple required style="height:120px">
+                    <select class="form-control select2" name="academic_year_ids[]" id="yearSelect" multiple required >
                       @foreach($academicYears as $y)
                         <option value="{{$y->id}}" @if($y->id == $currentYearId) selected @endif>{{$y->name}}</option>
                       @endforeach
@@ -134,14 +134,17 @@
 <script src="{{ URL::asset('assets/js/sweetalert.min.js')}}"></script>
 <script>
 $(document).ready(function() {
-    $('.select2').select2({ placeholder: 'Search and select...', allowClear: true });
+    $('#teacherSelect, #subjectSelect').select2({ placeholder: 'Search and select...', allowClear: true });
+    $('#yearSelect').select2({ placeholder: 'Select academic years...' });
 
     // Select All / Clear academic years
     $('#btnSelectAllYears').on('click', function() {
         $('#yearSelect option').prop('selected', true);
+        $('#yearSelect').trigger('change');
     });
     $('#btnClearYears').on('click', function() {
         $('#yearSelect option').prop('selected', false);
+        $('#yearSelect').trigger('change');
     });
 
     $('#assignTable').DataTable({
