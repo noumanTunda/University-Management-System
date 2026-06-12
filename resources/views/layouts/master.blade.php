@@ -133,6 +133,7 @@
                       <li><a href="{{URL::route('fees.collection.create')}}">Fee Collection </a></li>
                       <li><a href="{{ URL::route('fees.addPaymentForm') }}">Add Student Payment</a></li>
                       <li><a href="{{URL::route('gepg.student')}}">Pay Fees (GePG)</a></li>
+                      <li><a href="{{URL::route('gepg.allocate.form')}}">Fee Allocation</a></li>
                       <li><a href="{{URL::route('gepg.accountant')}}">GePG Bills</a></li>
                     </ul>
                   </li>

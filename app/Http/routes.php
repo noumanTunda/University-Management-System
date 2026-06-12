@@ -145,6 +145,12 @@ Route::group(['middleware' => 'auth'], function()
 
   // GePG Payment Routes
   Route::get('gepg/pay',[ 'as' => 'gepg.student','uses'=>'GePGController@studentFees']);
+  Route::post('gepg/request',[ 'as' => 'gepg.request','uses'=>'GePGController@requestControl']);
+  Route::get('gepg/allocate',[ 'as' => 'gepg.allocate.form','uses'=>'GePGController@allocationForm']);
+  Route::post('gepg/allocate/bulk',[ 'as' => 'gepg.allocate.bulk','uses'=>'GePGController@allocateBulk']);
+  Route::post('gepg/allocate/specific',[ 'as' => 'gepg.allocate.specific','uses'=>'GePGController@allocateSpecific']);
+  Route::get('gepg/students/{courseId}',[ 'as' => 'gepg.students.bycourse','uses'=>'GePGController@getAllStudents']);
+  Route::get('gepg/allstudents',[ 'as' => 'gepg.students.all','uses'=>'GePGController@getAllStudents']);
   Route::post('gepg/bill',[ 'as' => 'gepg.bill.generate','uses'=>'GePGController@generateBill']);
   Route::get('gepg/bills',[ 'as' => 'gepg.accountant','uses'=>'GePGController@accountantBills']);
   Route::post('gepg/bill/{id}/paid',[ 'as' => 'gepg.bill.paid','uses'=>'GePGController@markPaid']);

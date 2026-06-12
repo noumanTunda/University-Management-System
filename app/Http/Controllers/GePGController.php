@@ -7,6 +7,7 @@ use App\GePGBill;
 use App\GePGPaymentReceipt;
 use App\Fee;
 use App\Student;
+use App\Course;
 use App\FeeCollection;
 use DB;
 use Carbon\Carbon;
@@ -20,76 +21,138 @@ class GePGController extends Controller
         $this->middleware('auth');
     }
 
-    // Student: list fees & pay
+    // ─── Student: view bills & request missing ───
     public function studentFees()
     {
         $student = Student::where('idNo', auth()->user()->login)->first();
         $bills = $student ? GePGBill::where('student_id', $student->id)->orderBy('created_at', 'desc')->get() : [];
-        $fees = Fee::all();
-        return view('gepg.student', compact('student', 'bills', 'fees'));
+        return view('gepg.student', compact('student', 'bills'));
     }
 
-    // Generate a 12-digit control number for a fee
-    public function generateBill(Request $request)
+    // Student: request a missing control number
+    public function requestControl(Request $request)
     {
+        $student = Student::where('idNo', auth()->user()->login)->first();
+        if (!$student) return redirect()->back()->with('error', ['title'=>'Error', 'body'=>'Student profile not found.']);
+
         $v = Validator::make($request->all(), [
-            'student_id' => 'required|exists:students,id',
-            'fee_id' => 'required|exists:fees,id',
+            'description' => 'required|max:255',
             'amount' => 'required|numeric|min:1',
         ]);
         if ($v->fails()) return redirect()->back()->withErrors($v);
 
-        $fee = Fee::findOrFail($request->fee_id);
-        $controlNo = $this->generateControlNumber();
+        GePGBill::create([
+            'student_id' => $student->id,
+            'control_number' => 'REQUESTED',
+            'amount' => $request->amount,
+            'bill_description' => $request->description,
+            'status' => 'Pending',
+        ]);
+        return redirect()->back()->with('success', ['title'=>'Request Sent', 'body'=>'Your payment request has been submitted. Accountant will issue a control number.']);
+    }
 
-        $bill = GePGBill::create([
+    // ─── Accountant: allocate fees & generate control numbers ───
+
+    // Show allocation form
+    public function allocationForm()
+    {
+        $courses = Course::with('department')->orderBy('name')->get();
+        $fees = Fee::all();
+        $students = [];
+        return view('gepg.allocation', compact('courses', 'fees', 'students'));
+    }
+
+    // AJAX: get students by course
+    public function getStudentsByCourse($courseId)
+    {
+        $students = Student::where('course_id', $courseId)->whereNull('deleted_at')
+            ->select('id', 'idNo', 'firstName', 'lastName')->orderBy('firstName')->get();
+        return response()->json(['success' => true, 'students' => $students]);
+    }
+
+    // Allocate fee to students (bulk) — generates control numbers
+    public function allocateBulk(Request $request)
+    {
+        $v = Validator::make($request->all(), [
+            'fee_id' => 'required|exists:fees,id',
+            'student_ids' => 'required|array',
+            'student_ids.*' => 'exists:students,id',
+        ]);
+        if ($v->fails()) return redirect()->back()->withErrors($v);
+
+        $fee = Fee::findOrFail($request->fee_id);
+        $count = 0;
+        foreach ($request->student_ids as $studentId) {
+            $controlNo = $this->generateControlNumber();
+            GePGBill::create([
+                'student_id' => $studentId,
+                'control_number' => $controlNo,
+                'amount' => $fee->amount,
+                'bill_description' => $fee->title,
+                'status' => 'Issued',
+                'expires_at' => Carbon::now()->addDays(30),
+            ]);
+            $count++;
+        }
+        return redirect()->route('gepg.accountant')->with('success', ['title'=>'Allocated', "body'=>'$count bills created with control numbers."]);
+    }
+
+    // Allocate a specific fee (individual — penalties, permissions)
+    public function allocateSpecific(Request $request)
+    {
+        $v = Validator::make($request->all(), [
+            'student_id' => 'required|exists:students,id',
+            'description' => 'required|max:255',
+            'amount' => 'required|numeric|min:1',
+        ]);
+        if ($v->fails()) return redirect()->back()->withErrors($v);
+
+        $controlNo = $this->generateControlNumber();
+        GePGBill::create([
             'student_id' => $request->student_id,
             'control_number' => $controlNo,
             'amount' => $request->amount,
-            'bill_description' => $fee->title,
+            'bill_description' => $request->description,
             'status' => 'Issued',
             'expires_at' => Carbon::now()->addDays(30),
         ]);
-        return redirect()->back()->with('success', ['title'=>'Bill Generated', 'body'=>"Control No: $controlNo | Amount: ".number_format($request->amount, 2).' TZS']);
+        return redirect()->route('gepg.accountant')->with('success', ['title'=>'Created', 'body'=>'Special fee bill created.']);
     }
 
-    // Accountant: list all bills
+    // ─── Accountant: list, edit, mark paid ───
+
     public function accountantBills()
     {
-        $bills = GePGBill::with('student')->orderBy('created_at', 'desc')->get();
+        $bills = GePGBill::with('student')->orderBy('created_at', 'desc')->paginate(20);
         return view('gepg.accountant', compact('bills'));
     }
 
-    // Accountant: mark as paid manually
     public function markPaid(Request $request, $id)
     {
         $bill = GePGBill::with('student')->findOrFail($id);
         DB::transaction(function() use ($bill) {
-				$bill->update(['status' => 'Paid']);
-        // Create receipt
-        $trxId = 'MANUAL-' . strtoupper(str_random(12));
-        GePGPaymentReceipt::create([
-            'control_number' => $bill->control_number,
-            'transaction_id' => $trxId,
-            'amount_paid' => $bill->amount,
-            'payment_provider' => 'Manual',
-            'paid_at' => Carbon::now(),
-        ]);
-        // Also create a fee_collection record to link with accounting
-        if ($bill->student) {
-            FeeCollection::create([
-                'students_id' => $bill->student_id,
-                'payableAmount' => $bill->amount,
-                'lateFee' => 0,
-                'paidAmount' => $bill->amount,
-                'payDate' => Carbon::now()->format('Y-m-d'),
+            $bill->update(['status' => 'Paid']);
+            $trxId = 'MANUAL-' . strtoupper(str_random(12));
+            GePGPaymentReceipt::create([
+                'control_number' => $bill->control_number,
+                'transaction_id' => $trxId,
+                'amount_paid' => $bill->amount,
+                'payment_provider' => 'Manual',
+                'paid_at' => Carbon::now(),
             ]);
-        }
+            if ($bill->student) {
+                FeeCollection::create([
+                    'students_id' => $bill->student_id,
+                    'payableAmount' => $bill->amount,
+                    'lateFee' => 0,
+                    'paidAmount' => $bill->amount,
+                    'payDate' => Carbon::now()->format('Y-m-d'),
+                ]);
+            }
         });
-        return redirect()->back()->with('success', ['title'=>'Paid', 'body'=>'Bill marked as paid. Fee collection updated.']);
+        return redirect()->back()->with('success', ['title'=>'Paid', 'body'=>'Bill marked as paid.']);
     }
 
-    // Accountant: edit bill details
     public function editBill($id)
     {
         $bill = GePGBill::with('student')->findOrFail($id);
@@ -103,7 +166,7 @@ class GePGController extends Controller
         return redirect()->route('gepg.accountant')->with('success', ['title'=>'Updated', 'body'=>'Bill updated.']);
     }
 
-    // Webhook: GePG payment callback
+    // ─── Webhook ───
     public function callback(Request $request)
     {
         $controlNo = $request->input('ControlNo');
@@ -126,6 +189,15 @@ class GePGController extends Controller
         return response('<GepgResponse>SUCCESS</GepgResponse>', 200)->header('Content-Type', 'text/xml');
     }
 
+
+    public function getAllStudents()
+    {
+        $students = Student::whereNull('deleted_at')
+            ->select('id', 'idNo', 'firstName', 'lastName')
+            ->orderBy('firstName')
+            ->get();
+        return response()->json(['success' => true, 'students' => $students]);
+    }
     private function generateControlNumber()
     {
         do {

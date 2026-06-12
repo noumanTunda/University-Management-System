@@ -1,7 +1,5 @@
 @extends('layouts.master')
-
-@section('title', 'Pay Fees')
-
+@section('title', 'My Fees')
 @section('content')
 <div class="right_col" role="main">
   <div class="">
@@ -12,24 +10,20 @@
       @else
       <div class="col-md-5">
         <div class="x_panel">
-          <div class="x_title"><h2>Generate Bill</h2><div class="clearfix"></div></div>
+          <div class="x_title"><h2>Request Missing Payment</h2><div class="clearfix"></div></div>
           <div class="x_content">
-            <form method="post" action="{{URL::route('gepg.bill.generate')}}">
+            <p class="text-muted">If you need to pay a fee that is not yet billed, submit a request. Accountant will issue a control number.</p>
+            <form method="post" action="{{URL::route('gepg.request')}}">
               <input type="hidden" name="_token" value="{{ csrf_token() }}">
-              <input type="hidden" name="student_id" value="{{$student->id}}">
               <div class="form-group">
-                <label>Fee Type</label>
-                <select class="form-control" name="fee_id" required>
-                  @foreach($fees as $f)
-                    <option value="{{$f->id}}">{{$f->title}} - {{number_format($f->amount)}} TZS</option>
-                  @endforeach
-                </select>
+                <label>Description</label>
+                <input type="text" name="description" class="form-control" placeholder="e.g. Lab fee, Library fine" required>
               </div>
               <div class="form-group">
                 <label>Amount (TZS)</label>
                 <input type="number" name="amount" class="form-control" required min="1" step="0.01">
               </div>
-              <button type="submit" class="btn btn-primary"><i class="fa fa-barcode"></i> Generate Control Number</button>
+              <button type="submit" class="btn btn-warning"><i class="fa fa-send"></i> Submit Request</button>
             </form>
           </div>
         </div>
@@ -46,7 +40,7 @@
                   <td><code>{{$b->control_number}}</code></td>
                   <td>{{$b->bill_description}}</td>
                   <td>{{number_format($b->amount)}}</td>
-                  <td><span class="label label-{{$b->status=='Paid'?'success':'warning'}}">{{$b->status}}</span></td>
+                  <td><span class="label label-{{$b->status=='Paid'?'success':($b->status=='Pending'?'info':'warning')}}">{{$b->status}}</span></td>
                   <td>{{$b->expires_at ? $b->expires_at->format('d/m/Y') : '-'}}</td>
                 </tr>
                 @empty
