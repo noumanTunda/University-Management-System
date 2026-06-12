@@ -1,7 +1,5 @@
 @extends('layouts.master')
-
 @section('title', 'Assessment Plans')
-
 @section('content')
 <div class="right_col" role="main">
   <div class="">
@@ -20,8 +18,8 @@
               <tbody>
                 @forelse($plans as $p)
                 <tr>
-                  <td>{{$p->subject->name}} ({{$p->subject->code}})</td>
-                  <td>{{$p->semester->academicYear->name}} - S{{$p->semester->semester_number}}</td>
+                  <td>{{$p->subject->name ?? '-'}} ({{$p->subject->code ?? '-'}})</td>
+                  <td>{{$p->semester->academicYear->name ?? '-'}} - S{{$p->semester->semester_number ?? '-'}}</td>
                   <td>{{$p->components->count()}}</td>
                   <td>{{$p->ca_weight}}% / {{$p->ue_weight}}%</td>
                   <td>
@@ -38,6 +36,34 @@
         </div>
       </div>
     </div>
+
+    @if(count($templates) > 0)
+    <div class="row" style="margin-top:20px">
+      <div class="col-md-12">
+        <div class="x_panel">
+          <div class="x_title">
+            <h2><i class="fa fa-file-text-o"></i> Templates <small>Reusable assessment structures</small></h2>
+            <div class="clearfix"></div>
+          </div>
+          <div class="x_content">
+            @foreach($templates as $t)
+            <div class="panel panel-default">
+              <div class="panel-heading"><strong>{{$t->template_name}}</strong> <small>{{$t->description}}</small> <span class="label label-info pull-right">CA {{$t->ca_weight}}% / UE {{$t->ue_weight}}%</span></div>
+              <div class="panel-body">
+                <table class="table table-bordered table-sm">
+                  <tr><th>Component</th><th>Type</th><th>Max</th><th>Weight</th></tr>
+                  @foreach($t->components as $c)
+                  <tr><td>{{$c->name}}</td><td><span class="label label-{{$c->type=='CA'?'primary':'warning'}}">{{$c->type}}</span></td><td>{{$c->max_score}}</td><td>{{$c->weight}}%</td></tr>
+                  @endforeach
+                </table>
+              </div>
+            </div>
+            @endforeach
+          </div>
+        </div>
+      </div>
+    </div>
+    @endif
   </div>
 </div>
 @endsection

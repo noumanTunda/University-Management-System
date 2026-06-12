@@ -39,7 +39,7 @@
                 <select class="form-control" name="template_id">
                   <option value="">No template (manual setup)</option>
                   @foreach($templates as $t)
-                    <option value="{{$t->id}}">{{$t->name}} — CA {{$t->ca_weight}}% / UE {{$t->ue_weight}}%</option>
+                    <option value="{{$t->id}}">{{$t->template_name}} — CA {{$t->ca_weight}}% / UE {{$t->ue_weight}}%</option>
                   @endforeach
                 </select>
               </div>

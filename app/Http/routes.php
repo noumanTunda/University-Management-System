@@ -83,12 +83,6 @@ Route::group(['middleware' => 'auth'], function()
   Route::post('assessments/{id}/components',[ 'as' => 'assessment.component.store','uses'=>'AssessmentController@storeComponent']);
 
   // Assessment Templates (HOD/Admin only)
-  Route::get('assessment-templates',[ 'as' => 'assessment.template.index','uses'=>'AssessmentTemplateController@index']);
-  Route::get('assessment-templates/create',[ 'as' => 'assessment.template.create','uses'=>'AssessmentTemplateController@create']);
-  Route::post('assessment-templates',[ 'as' => 'assessment.template.store','uses'=>'AssessmentTemplateController@store']);
-  Route::get('assessment-templates/{id}/edit',[ 'as' => 'assessment.template.edit','uses'=>'AssessmentTemplateController@edit']);
-  Route::post('assessment-templates/{id}',[ 'as' => 'assessment.template.update','uses'=>'AssessmentTemplateController@update']);
-  Route::post('assessment-templates/{id}/delete',[ 'as' => 'assessment.template.destroy','uses'=>'AssessmentTemplateController@destroy']);
   Route::delete('assessments/component/{id}',[ 'as' => 'assessment.component.destroy','uses'=>'AssessmentController@destroyComponent']);
   Route::get('assessments/{id}/compute',[ 'as' => 'assessment.compute','uses'=>'AssessmentController@compute']);
   Route::get('assessments/marks/{componentId}',[ 'as' => 'assessment.marks','uses'=>'AssessmentController@marks']);
@@ -159,6 +153,13 @@ Route::group(['middleware' => 'auth'], function()
   Route::post('gepg/callback',[ 'as' => 'gepg.callback','uses'=>'GePGController@callback']);
 
   //accounting routes
+  Route::get('accounting/coa',[ 'as' => 'accounting.coa','uses'=>'AccountingController@coaIndex']);
+  Route::post('accounting/coa',[ 'as' => 'accounting.coa.store','uses'=>'AccountingController@coaStore']);
+  Route::get('accounting/invoices',[ 'as' => 'accounting.invoices','uses'=>'AccountingController@invoiceIndex']);
+  Route::get('accounting/invoices/create',[ 'as' => 'accounting.invoice.create','uses'=>'AccountingController@invoiceCreate']);
+  Route::post('accounting/invoices',[ 'as' => 'accounting.invoice.store','uses'=>'AccountingController@invoiceStore']);
+  Route::get('accounting/journal',[ 'as' => 'accounting.journal','uses'=>'AccountingController@journalIndex']);
+  Route::get('accounting/trial-balance',[ 'as' => 'accounting.trial.balance','uses'=>'AccountingController@trialBalance']);
   Route::get('/accounting/sector',[ 'as' => 'accounting.sector.index','uses'=>'AccountingController@secIndex']);
   Route::post('/accounting/sector',[ 'as' => 'accounting.sector.store','uses'=>'AccountingController@secStore']);
   Route::get('/accounting/sector/{id}',[ 'as' => 'accounting.sector.destroy','uses'=>'AccountingController@secDestroy']);

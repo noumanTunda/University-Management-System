@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\AssessmentPlan;
 use App\AssessmentComponent;
 use App\AssessmentMark;
-use App\AssessmentTemplate;
 use App\CourseRegistration;
 use App\Subject;
 use App\Semester;
@@ -24,15 +23,19 @@ class AssessmentController extends Controller
 
     public function index()
     {
-        $plans = AssessmentPlan::with('subject.department', 'semester.academicYear', 'components')->get();
-        return view('assessment.index', compact('plans'));
+        $plans = AssessmentPlan::with('subject.department', 'semester.academicYear', 'components')
+            ->where('is_template', false)
+            ->orWhereNull('is_template')
+            ->get();
+        $templates = AssessmentPlan::with('components')->where('is_template', true)->get();
+        return view('assessment.index', compact('plans', 'templates'));
     }
 
     public function create()
     {
         $subjects = Subject::select('id','name','code','department_id')->with('department')->orderBy('name')->get();
         $semesters = Semester::with('academicYear')->orderBy('id')->get();
-        $templates = AssessmentTemplate::with('components')->orderBy('name')->get();
+        $templates = AssessmentPlan::with('components')->where('is_template', true)->orderBy('template_name')->get();
         return view('assessment.create', compact('subjects', 'semesters', 'templates'));
     }
 
@@ -48,14 +51,14 @@ class AssessmentController extends Controller
             'subject_id' => $data['subject_id'],
             'semester_id' => $data['semester_id'],
         ]);
-        // If a template is selected, copy its components
+        // If a template plan is selected, copy its components
         if (!empty($data['template_id'])) {
-            $template = AssessmentTemplate::with('components')->find($data['template_id']);
+            $template = AssessmentPlan::with('components')->find($data['template_id']);
             if ($template) {
                 foreach ($template->components as $comp) {
                     $plan->components()->create($comp->toArray());
                 }
-                return redirect()->route('assessment.index')->with('success', ['title'=>'Created','body'=>'Plan created from template "'.$template->name.'".']);
+                return redirect()->route('assessment.index')->with('success', ['title'=>'Created','body'=>'Plan created from template "'.$template->template_name.'".']);
             }
         }
         return redirect()->route('assessment.components', $plan->id)->with('success', ['title'=>'Created','body'=>'Plan created. Add components.']);
