@@ -335,7 +335,7 @@
             <!-- Structural Slate Titles -->
             <div class="text-center">
               <h4>Welcome to University Management System (UMS)</h4>
-              <p class="subtitle">Sign-in to your administrative account to continue</p>
+              <p class="subtitle">Sign-in to your account to continue</p>
             </div>
             
             <!-- Custom Dynamic Tall-Font Input Fields -->
