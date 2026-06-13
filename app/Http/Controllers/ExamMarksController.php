@@ -80,6 +80,7 @@ class ExamMarksController extends Controller
 
     public function getMarkEntry($subjectId, $semesterId)
     {
+        try {
         $plan = AssessmentPlan::where('subject_id', $subjectId)->where('semester_id', $semesterId)->with('components')->first();
         $defaultComponents = [
             ['id' => 0, 'name' => 'Course Work', 'type' => 'CA', 'max_score' => 40, 'weight' => 40],
@@ -90,8 +91,14 @@ class ExamMarksController extends Controller
 
         // Get the semester's academic year and number to match registrations
         $sem = Semester::with('academicYear')->find($semesterId);
-        $session = $sem->academicYear->name ?? '';
+        if (!$sem) {
+            return '<div class="alert alert-danger">Semester not found.</div>';
+        }
+        $session = $sem->academicYear ? $sem->academicYear->name : '';
         $levelTerm = 'Semester ' . ($sem->semester_number ?? '1');
+        if (empty($session)) {
+            return '<div class="alert alert-warning">No academic year linked to this semester.</div>';
+        }
 
         // Only load students registered for this academic year + semester
         $students = Student::whereHas('registered', function($q) use ($session, $levelTerm) {
@@ -112,6 +119,9 @@ class ExamMarksController extends Controller
 
         $examTypes = ExamType::all();
         return view('exam_marks.entry', compact('components', 'planId', 'students', 'marks', 'subjectId', 'semesterId', 'examTypes'));
+        } catch (\Exception $e) {
+            return '<div class="alert alert-danger">Error: ' . $e->getMessage() . ' (Line: ' . $e->getLine() . ')</div>';
+        }
     }
 
     public function store(Request $request)
