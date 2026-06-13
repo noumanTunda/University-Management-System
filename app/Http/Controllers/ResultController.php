@@ -9,10 +9,12 @@ use Illuminate\Support\Collection;
 use App\Http\Controllers\Controller;
 use App\Student;
 use App\Department;
-use App\Subject;
 use Validator;
 use App\Institute;
+use App\Subject;
 use App\Exam;
+use App\CourseRegistration;
+use App\Semester;
 use Carbon\Carbon;
 
 class ResultController extends Controller
@@ -52,6 +54,43 @@ class ResultController extends Controller
         ->groupBy('exam')
         ->get();
         if(count($allExams)!=2) {
+            // Fallback: check new assessment system (course_registrations)
+            $subject = Subject::find($request->input('subject_id'));
+            $sem = Semester::whereHas('academicYear', function($q) use ($request) {
+                $q->where('name', $request->input('session'));
+            })->where('semester_number', str_replace('Semester ', '', $request->input('levelTerm')))->first();
+            
+            $courseRegs = collect();
+            if ($sem && $subject) {
+                $courseRegs = CourseRegistration::where('subject_id', $subject->id)
+                    ->where('semester_id', $sem->id)
+                    ->whereNotNull('grade_letter')
+                    ->get();
+            }
+            
+            if ($courseRegs->isNotEmpty()) {
+                $results = [];
+                foreach ($courseRegs as $cr) {
+                    $student = $cr->student;
+                    $results[] = (object)[
+                        'ca' => $cr->ca_score,
+                        'final' => $cr->ue_score,
+                        'grade' => $cr->grade_letter,
+                        'student' => $student ? (object)[
+                            'idNo' => $student->idNo,
+                            'firstName' => $student->firstName,
+                            'middleName' => $student->middleName ?? '',
+                            'lastName' => $student->lastName,
+                        ] : null,
+                    ];
+                }
+                $institute = Institute::select('name')->first();
+                $department = Department::select('name')->where('id', $request->input('department_id'))->first();
+                $semester = $request->input('levelTerm');
+                $session = $request->input('session');
+                return view('reports.result.subject', compact('results', 'institute', 'department', 'semester', 'session'));
+            }
+            
             $notification= array('title' => 'Not Found!', 'body' => 'All Examinations marks not submit for this subject!');
             return redirect()->back()->with("error", $notification);
         }

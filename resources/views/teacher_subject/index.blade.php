@@ -10,6 +10,7 @@
 @endsection
 
 @section('content')
+<div class="row"><div class="col-md-12"><ol class="breadcrumb"><li><a href="{{URL::route('user.dashboard')}}">Dashboard</a></li><li class="active">Subject Assignment</li></ol></div></div>
 <div class="right_col" role="main">
   <div class="">
     <div class="clearfix"></div>
