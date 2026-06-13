@@ -1,3 +1,74 @@
+# OSUMS — Full Documentation
+
+> **Last Updated:** June 2026
+
+---
+
+## Recent Updates & Changes
+
+### Installation & Setup
+- **Installation Wizard** (`public/setup.php`): Interactive form for first-time setup — creates Super Admin, sends welcome email via MailHog, auto-locks after completion via `storage/installed.lock`
+- **403 Forbidden Page**: Clean error card for already-installed systems, styled with system colors
+- **404 Handling**: All invalid URLs redirect to `/login`
+- **Database Backup**: If migrations fail, import `database/db_backup.sql` (see README for instructions)
+
+### Academic Year Management
+- New **CRUD UI** at `/academic-years` with DataTable, Create/Edit/Delete forms
+- Only one academic year can be active at a time (auto-toggle)
+- Accessible to Admin, HOD, and Teacher roles
+
+### Exam Sitting System (Tanzanian University Standards)
+- Repurposed `exam_types` table: **Regular** (1), **Special** (2), **Supplementary** (3), **Retake** (4)
+- Added `exam_type_id` FK to `assessment_components` and `assessment_marks`
+- New unique constraint: `(component_id, student_id, exam_type_id)` allows multiple sittings per student
+- Updated `course_registrations.status` ENUM: added `Special`, `Supp`, `Retake`
+- **Grading rules**: Regular/Special = no cap; Supplementary/Retake = capped at C (2.0)
+- Mark entry UI includes Exam Sitting dropdown
+- Assessment plans table shows Sitting column
+
+### Teacher Subject Assignment
+- Fixed cascading dropdowns (department → academic year → semester → subject)
+- Added `no-select2` class to prevent Select2 from hiding native options
+- Switched from `sync()` to explicit delete + insert for per-year assignments
+- Added `academic_year_id` FK (replaced string column)
+- Teachers now see **all assigned subjects** across all years (not just current year heuristic)
+
+### Student Management
+- Auto-creation: changed from `firstOrCreate` to `updateOrCreate` to ensure fields are always updated
+- **Create Missing Student Accounts**: Admin UI to bulk-create user accounts for students without them
+- Registration deletion now uses registration ID (not student ID)
+- Registration cancel returns redirect instead of JSON
+
+### Mark Entry & Assessments
+- Fixed `firstWhere` → `where()->first()` (Laravel 5.2 compatibility)
+- Fixed empty `whereIn()` causing SQL errors
+- Added `(float)` cast in `computeGrade` to handle non-numeric values
+- Store method now handles both `scores[comp_id][student_id]` and legacy `ca[]`/`ue[]` formats
+- Bulk upload template includes existing marks
+- Missing marks detection during grade computation (redirects to mark entry with details)
+
+### Student Dashboard
+- Subjects grouped by **Academic Year + Semester** in collapsible panels
+- Shows per-subject CA, UE, Grade, Grade Point
+
+### UI/UX
+- Assessment plans table: DataTable with search, sort, pagination, collapsible toggle
+- Assessment plans: Components column shows all component names (not just count)
+- Dashboard link hidden from students in sidebar
+- User Management table: uses `all()` instead of `paginate()` for DataTable
+- Department table: same fix
+
+### Bug Fixes
+- `SoftDeletingScope` PHP 7.4 count() fix (`count((array)$joins)`)
+- Exam deletion: added missing `destroy` method
+- Exam type deletion: changed from POST form to direct GET link
+- Fee edit: removed `control_number` from updatable fields (read-only)
+- User edit: added "Student" option to group dropdown
+- Dormitory "Student List" sidebar link corrected
+- Many AJAX cascading fixes across attendance, exams, assessments
+
+---
+
 # OSUMS – Open Source University Management System
 
 ---
