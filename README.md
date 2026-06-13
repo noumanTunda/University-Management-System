@@ -120,6 +120,31 @@ docker compose exec db mysqldump -u root -psecurePassword databaseName > databas
 
 ---
 
+## 🖼️ Screenshots
+
+<div align="center">
+
+| | | |
+|:---:|:---:|:---:|
+| ![Dashboard](screenshots/1.png) | ![Login](screenshots/2.png) | ![Student Management](screenshots/3.png) |
+| **Dashboard** | **Login Page** | **Student Management** |
+| ![Registration](screenshots/4.png) | ![Course Subjects](screenshots/5.png) | ![Teacher Subjects](screenshots/6.png) |
+| **Student Registration** | **Course Subject Builder** | **Teacher Subject Assignment** |
+| ![Assessment Plans](screenshots/7.png) | ![Mark Entry](screenshots/8.png) | ![Bulk Upload](screenshots/9.png) |
+| **Assessment Plans** | **Mark Entry** | **Bulk Upload CSV** |
+| ![GePG Allocation](screenshots/10.png) | ![GePG Payments](screenshots/11.png) | ![GePG Bills](screenshots/12.png) |
+| **Fee Allocation** | **Student Payment** | **GePG Bills** |
+| ![Accounting](screenshots/13.png) | ![Trial Balance](screenshots/14.png) | ![Library](screenshots/15.png) |
+| **Chart of Accounts** | **Trial Balance** | **Library Management** |
+| ![Dormitory](screenshots/16.png) | ![Student Portal](screenshots/17.png) | ![Student Results](screenshots/18.png) |
+| **Dormitory Management** | **Student Portal Dashboard** | **Student Results** |
+| ![Attendance](screenshots/19.png) | ![Setup Wizard](screenshots/20.png) | |
+| **Attendance Management** | **Installation Wizard** | |
+
+</div>
+
+---
+
 ## 🔑 Default Logins
 
 | Role | Username | Password |
