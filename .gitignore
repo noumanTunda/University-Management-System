@@ -2,6 +2,7 @@
 /node_modules
 /public/storage
 /screenshots/students
+/storage/installed.lock
 Homestead.yaml
 Homestead.json
 .env
