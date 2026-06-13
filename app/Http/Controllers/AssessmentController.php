@@ -138,22 +138,30 @@ class AssessmentController extends Controller
     public function compute($planId)
     {
         $plan = AssessmentPlan::with('components.marks.student', 'subject', 'semester')->findOrFail($planId);
-        $students = Student::whereHas('registered')->get();
+        $students = Student::has('registered')->get();
         $caWeight = $plan->ca_weight / 100;
         $ueWeight = $plan->ue_weight / 100;
 
+        $missingStudents = [];
         foreach ($students as $student) {
             $caTotal = 0; $caMax = 0;
             $ueTotal = 0; $ueMax = 0;
+            $hasMissing = false;
 
             foreach ($plan->components as $comp) {
                 $mark = AssessmentMark::where('assessment_component_id', $comp->id)
                     ->where('student_id', $student->id)->first();
+                if (!$mark) {
+                    $hasMissing = true;
+                    $missingStudents[] = $student->idNo . ' - ' . $student->firstName . ' ' . $student->lastName . ' (missing: ' . $comp->name . ')';
+                }
                 $score = $mark ? $mark->score : 0;
                 $weighted = ($score / $comp->max_score) * $comp->weight;
                 if ($comp->type === 'CA') { $caTotal += $weighted; $caMax += $comp->weight; }
                 else { $ueTotal += $weighted; $ueMax += $comp->weight; }
             }
+
+            if ($hasMissing) continue;
 
             $caFinal = $caMax > 0 ? ($caTotal / $caMax) * $caWeight * 100 : 0;
             $ueFinal = $ueMax > 0 ? ($ueTotal / $ueMax) * $ueWeight * 100 : 0;
@@ -170,6 +178,11 @@ class AssessmentController extends Controller
                     'status' => $grade['status'],
                 ]
             );
+        }
+        if (!empty($missingStudents)) {
+            $missingList = implode('<br>', array_unique($missingStudents));
+            return redirect()->route('exam.marks.entry', [$plan->subject_id, $plan->semester_id])
+                ->with('error', ['title' => 'Incomplete Marks', 'body' => 'Some students have missing marks:<br><br>' . $missingList . '<br><br>Please fill in the missing marks and re-compute.']);
         }
         return redirect()->route('assessment.index')->with('success', ['title'=>'Computed','body'=>'Grades computed and saved.']);
     }

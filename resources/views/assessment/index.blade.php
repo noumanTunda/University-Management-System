@@ -32,7 +32,7 @@
                     <td>{{$p->subject->name ?? '-'}}</td>
                     <td>{{$p->subject->code ?? '-'}}</td>
                     <td>{{$p->semester->academicYear->name ?? '-'}} - S{{$p->semester->semester_number ?? '-'}}</td>
-                    <td><span class="badge badge-info">{{$p->components->count()}}</span></td>
+                    <td>@foreach($p->components as $c)<span class="label label-{{$c->type=='CA'?'primary':'warning'}}" style="font-size:10px;margin:1px">{{$c->name}}</span> @endforeach</td>
                     <td><span class="label label-primary">CA {{$p->ca_weight}}%</span> <span class="label label-warning">UE {{$p->ue_weight}}%</span></td>
                     <td>
                       <a href="{{URL::route('assessment.components', $p->id)}}" class="btn btn-info btn-xs" title="Components"><i class="fa fa-cog"></i></a>

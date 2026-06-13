@@ -104,8 +104,12 @@ $(document).ready(function() {
         $('#marksContainer').html('<div class="alert alert-info"><i class="fa fa-spinner fa-spin"></i> Fetching students and marks...</div>');
         $.get('/exam-marks/entry/' + subjectId + '/' + semId, function(html) {
             $('#marksContainer').html(html);
-        }).fail(function() {
-            $('#marksContainer').html('<div class="alert alert-danger">Error loading data. Please try again.</div>');
+        }).fail(function(jqXHR) {
+            var msg = 'Error loading data (HTTP ' + jqXHR.status + ')';
+            if (jqXHR.responseText && jqXHR.responseText.length < 500) {
+                msg += '<br><pre>' + jqXHR.responseText + '</pre>';
+            }
+            $('#marksContainer').html('<div class="alert alert-danger">' + msg + '</div>');
         });
     }
 

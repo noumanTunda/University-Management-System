@@ -44,7 +44,7 @@
           <td>{{$s->firstName}} {{$s->lastName}}</td>
           @foreach($components as $comp)
             @php
-              $mark = isset($marks[$s->id]) ? $marks[$s->id]->firstWhere('assessment_component_id', $comp['id']) : null;
+              $mark = isset($marks[$s->id]) ? $marks[$s->id]->where('assessment_component_id', $comp['id'])->first() : null;
               $val = $mark ? $mark->score : '';
             @endphp
             <td>

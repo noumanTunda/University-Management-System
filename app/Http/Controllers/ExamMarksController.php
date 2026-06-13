@@ -92,12 +92,14 @@ class ExamMarksController extends Controller
         // Get the semester's academic year and number to match registrations
         $sem = Semester::with('academicYear')->find($semesterId);
         if (!$sem) {
-            return '<div class="alert alert-danger">Semester not found.</div>';
+            $msg = '<div class="alert alert-danger">Semester not found.</div>';
+            return response()->make($msg);
         }
         $session = $sem->academicYear ? $sem->academicYear->name : '';
         $levelTerm = 'Semester ' . ($sem->semester_number ?? '1');
         if (empty($session)) {
-            return '<div class="alert alert-warning">No academic year linked to this semester.</div>';
+            $msg = '<div class="alert alert-warning">No academic year linked to this semester.</div>';
+            return response()->make($msg);
         }
 
         // Only load students registered for this academic year + semester
