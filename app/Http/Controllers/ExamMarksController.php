@@ -12,6 +12,7 @@ use App\Semester;
 use App\AcademicYear;
 use App\Student;
 use App\Department;
+use App\ExamType;
 use Validator;
 
 class ExamMarksController extends Controller
@@ -106,7 +107,8 @@ class ExamMarksController extends Controller
                 ->groupBy('student_id');
         }
 
-        return view('exam_marks.entry', compact('components', 'planId', 'students', 'marks', 'subjectId', 'semesterId'));
+        $examTypes = ExamType::all();
+        return view('exam_marks.entry', compact('components', 'planId', 'students', 'marks', 'subjectId', 'semesterId', 'examTypes'));
     }
 
     public function store(Request $request)
@@ -165,6 +167,9 @@ class ExamMarksController extends Controller
             }
         }
 
+        // Get exam_type_id from form (default to Regular = 1)
+        $examTypeId = isset($data['exam_type_id']) ? (int)$data['exam_type_id'] : 1;
+
         // Compute and save final grade to course_registrations
         if (isset($data['scores'])) {
             foreach ($data['scores'] as $compId => $studentScores) {
@@ -172,28 +177,27 @@ class ExamMarksController extends Controller
                 $type = $comp ? $comp->type : 'CA';
                 foreach ($studentScores as $studentId => $score) {
                     if ($score === '' || $score === null) continue;
-                    $caField = ($type === 'CA') ? $score : 0;
-                    $ueField = ($type === 'UE') ? $score : 0;
                     // Accumulate by student - get or create registration record
                     $reg = CourseRegistration::firstOrNew(
                         ['student_id' => $studentId, 'subject_id' => $subjectId, 'semester_id' => $semesterId]
                     );
                     if ($type === 'CA') $reg->ca_score = ($reg->ca_score ?? 0) + $score;
                     if ($type === 'UE') $reg->ue_score = ($reg->ue_score ?? 0) + $score;
-                    $grade = CourseRegistration::computeGrade($reg->ca_score ?? 0, $reg->ue_score ?? 0);
+                    $grade = CourseRegistration::computeGrade($reg->ca_score ?? 0, $reg->ue_score ?? 0, $examTypeId);
                     $reg->grade_letter = $grade['letter'];
                     $reg->grade_point = $grade['point'];
-                    $reg->status = $grade['status'];
+                    $reg->status = $examTypeId == 2 ? 'Special' : ($examTypeId == 3 ? 'Supp' : ($examTypeId == 4 ? 'Retake' : $grade['status']));
                     $reg->save();
                 }
             }
         } else {
             foreach ($data['ca'] ?? [] as $studentId => $ca) {
                 $ue = $data['ue'][$studentId] ?? 0;
-                $grade = CourseRegistration::computeGrade($ca, $ue);
+                $grade = CourseRegistration::computeGrade($ca, $ue, $examTypeId);
+                $status = $examTypeId == 2 ? 'Special' : ($examTypeId == 3 ? 'Supp' : ($examTypeId == 4 ? 'Retake' : $grade['status']));
                 CourseRegistration::updateOrCreate(
                     ['student_id' => $studentId, 'subject_id' => $subjectId, 'semester_id' => $semesterId],
-                    ['ca_score' => $ca, 'ue_score' => $ue, 'grade_letter' => $grade['letter'], 'grade_point' => $grade['point'], 'status' => $grade['status']]
+                    ['ca_score' => $ca, 'ue_score' => $ue, 'grade_letter' => $grade['letter'], 'grade_point' => $grade['point'], 'status' => $status]
                 );
             }
         }

@@ -25,7 +25,7 @@
           <div class="x_content">
             <div class="plan-table-wrapper" id="planTableWrapper">
               <table id="planTable" class="table table-striped table-bordered">
-                <thead><tr><th>Subject</th><th>Code</th><th>Semester</th><th>Components</th><th>CA / UE</th><th width="160">Actions</th></tr></thead>
+                <thead><tr><th>Subject</th><th>Code</th><th>Semester</th><th>Sitting</th><th>Components</th><th>CA / UE</th><th width="160">Actions</th></tr></thead>
                 <tbody>
                   @forelse($plans as $p)
                   <tr>

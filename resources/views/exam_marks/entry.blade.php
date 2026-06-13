@@ -7,6 +7,20 @@
   <input type="hidden" name="subject_id" value="{{$subjectId}}">
   <input type="hidden" name="semester_id" value="{{$semesterId}}">
 
+  <div class="row" style="margin-bottom:12px">
+    <div class="col-md-4">
+      <div class="form-group">
+        <label>Exam Sitting <span class="required">*</span></label>
+        <select class="form-control" name="exam_type_id" id="examTypeSelect">
+          @foreach($examTypes as $et)
+            <option value="{{$et->id}}" @if($et->id == 1) selected @endif>{{$et->name}}</option>
+          @endforeach
+        </select>
+        <small class="text-muted">Regular=CA+UE, Special=carry CA+new UE, Supp/Retake=capped at C</small>
+      </div>
+    </div>
+  </div>
+
   <div class="table-responsive">
     <table class="table table-striped table-bordered">
       <thead>

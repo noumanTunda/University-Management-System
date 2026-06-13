@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 class AssessmentMark extends Model
 {
     protected $table = 'assessment_marks';
-    protected $fillable = ['assessment_component_id', 'student_id', 'score'];
+    protected $fillable = ['assessment_component_id', 'student_id', 'exam_type_id', 'score'];
 
     public function component()
     {
@@ -16,5 +16,10 @@ class AssessmentMark extends Model
     public function student()
     {
         return $this->belongsTo('App\Student');
+    }
+
+    public function examType()
+    {
+        return $this->belongsTo('App\ExamType');
     }
 }
