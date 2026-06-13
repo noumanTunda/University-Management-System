@@ -238,5 +238,77 @@ class UserController extends Controller {
 
 	}
 
+    public function missingStudents()
+    {
+        $students = Student::whereNull('deleted_at')->get();
+        $missing = [];
+        foreach ($students as $s) {
+            $exists = User::where('login', $s->idNo)->exists();
+            if (!$exists) {
+                $missing[] = $s;
+            }
+        }
+        return view('user.missing_students', compact('missing'));
+    }
+
+    public function createMissingAccounts(Request $request)
+    {
+        $ids = $request->input('student_ids', []);
+        if (empty($ids)) {
+            return redirect()->route('user.missing.students')->with('error', [
+                'title' => 'No Selection',
+                'body' => 'Please select at least one student.'
+            ]);
+        }
+
+        $created = 0;
+        $skipped = 0;
+        foreach ($ids as $studentId) {
+            $student = Student::find($studentId);
+            if (!$student) continue;
+
+            $exists = User::where('login', $student->idNo)->exists();
+            if ($exists) {
+                $skipped++;
+                continue;
+            }
+
+            User::create([
+                'login'     => $student->idNo,
+                'password'  => $student->lastName,
+                'firstname' => $student->firstName,
+                'lastname'  => $student->lastName,
+                'group'     => 'Student',
+                'email'     => $student->email ?: $student->idNo . '@student.osums.edu',
+            ]);
+            $created++;
+
+            // Send email
+            try {
+                $data = [
+                    'name'     => $student->firstName . ' ' . $student->lastName,
+                    'login'    => $student->idNo,
+                    'password' => $student->lastName,
+                ];
+                $emailTo = $student->email ?: $student->idNo . '@student.osums.edu';
+                Mail::send('emails.account_created', $data, function($message) use ($emailTo, $student) {
+                    $message->to($emailTo, $student->firstName)
+                            ->subject('Your OSUMS Account Has Been Created');
+                });
+            } catch (\Exception $e) {
+                // Email sending failed - silently continue
+            }
+        }
+
+        $msg = "Created {$created} new account(s) successfully.";
+        if ($skipped > 0) {
+            $msg .= " {$skipped} skipped (already exist).";
+        }
+
+        return redirect()->route('user.index')->with('success', [
+            'title' => 'Accounts Created',
+            'body'  => $msg
+        ]);
+    }
 
 }

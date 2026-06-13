@@ -102,13 +102,13 @@ $(document).ready(function() {
     var wrapper = $('#planTableWrapper');
     var toggleBtn = $('#togglePlanTable');
     toggleBtn.on('click', function() {
-        wrapper.toggleClass('collapsed');
-        var isCollapsed = wrapper.hasClass('collapsed');
-        toggleBtn.find('i').toggleClass('fa-chevron-up fa-chevron-down');
-        if (isCollapsed) {
-            wrapper.find('.plan-table-body').slideUp(200);
+        var table = wrapper.find('table');
+        if (table.is(':visible')) {
+            table.slideUp(200);
+            toggleBtn.find('i').removeClass('fa-chevron-up').addClass('fa-chevron-down');
         } else {
-            wrapper.find('.plan-table-body').slideDown(200);
+            table.slideDown(200);
+            toggleBtn.find('i').removeClass('fa-chevron-down').addClass('fa-chevron-up');
         }
     });
 });

@@ -30,6 +30,7 @@
                   <div class="x_title">
                     <h2>User<small> All User information.</small></h2>
                     <a href="{{URL::Route('user.create')}}" class="btn btn-primary pull-right"><i class="fa fa-plus"></i> New User </a>
+                    <a href="{{URL::Route('user.missing.students')}}" class="btn btn-success pull-right" style="margin-right:5px"><i class="fa fa-user-plus"></i> Create Missing Student Accounts</a>
 
                     <div class="clearfix"></div>
                   </div>

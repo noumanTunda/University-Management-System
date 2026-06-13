@@ -32,7 +32,7 @@ class CourseRegistration extends Model
 
     public static function computeGrade($ca, $ue)
     {
-        $total = ($ca ?? 0) + ($ue ?? 0);
+        $total = (float)($ca ?? 0) + (float)($ue ?? 0);
         if ($total >= 70) return ['letter' => 'A',  'point' => 5.0, 'status' => 'Pass'];
         if ($total >= 60) return ['letter' => 'B+', 'point' => 4.0, 'status' => 'Pass'];
         if ($total >= 50) return ['letter' => 'B',  'point' => 3.0, 'status' => 'Pass'];
