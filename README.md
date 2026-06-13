@@ -126,19 +126,19 @@ docker compose exec db mysqldump -u root -psecurePassword databaseName > databas
 
 | | | |
 |:---:|:---:|:---:|
-| ![Dashboard](screenshots/1.png) | ![Login](screenshots/2.png) | ![Student Management](screenshots/3.png) |
+| ![Dashboard](screenshots/1.png) | ![Department Creating](screenshots/2.png) | ![Subject Management](screenshots/3.png) |
 | **Dashboard** | **Department Creating** | **Subject Management** |
-| ![Registration](screenshots/4.png) | ![Course Subjects](screenshots/5.png) | ![Teacher Subjects](screenshots/6.png) |
+| ![Student Registration](screenshots/4.png) | ![Student Managementr](screenshots/5.png) | ![View Student Information](screenshots/6.png) |
 | **Student Registration** | **Student Managementr** | **View Student Information** |
-| ![Assessment Plans](screenshots/7.png) | ![Mark Entry](screenshots/8.png) | ![Bulk Upload](screenshots/9.png) |
+| ![Register Student](screenshots/7.png) | ![Attendance Taking](screenshots/8.png) | ![Fee Allocation](screenshots/9.png) |
 | **Register Student** | **Attendance Taking** | **Fee Allocation** |
-| ![GePG Allocation](screenshots/10.png) | ![GePG Payments](screenshots/11.png) | ![GePG Bills](screenshots/12.png) |
+| ![GAccounting](screenshots/10.png) | ![Student Fee Collection Report](screenshots/11.png) | ![Dormitory](screenshots/12.png) |
 | **Accounting** | **Student Fee Collection Report** | **Dormitory** |
-| ![Accounting](screenshots/13.png) | ![Trial Balance](screenshots/14.png) | ![Library](screenshots/15.png) |
+| ![Library](screenshots/13.png) | ![Book Information](screenshots/14.png) | ![User Account Information](screenshots/15.png) |
 | **Library** | **Book Information** | **User Account Information** |
-| ![Dormitory](screenshots/16.png) | ![Student Portal](screenshots/17.png) | ![Student Results](screenshots/18.png) |
+| ![Student Report](screenshots/16.png) | ![System Initial Setup](screenshots/17.png) | ![System Onboarding](screenshots/18.png) |
 | **Student Report** | **System Initial Setup** | **System Onboarding** |
-| ![Attendance](screenshots/19.png) | ![Setup Wizard](screenshots/20.png) | |
+| ![Dashboard](screenshots/19.png) | ![Student Account Creation](screenshots/20.png) | |
 | **Dashboard** | **Student Account Creation** | |
 
 </div>
