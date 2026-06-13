@@ -35,7 +35,7 @@
                   <div class="col-md-6">
                     <div class="panel panel-default semester-panel" data-year="{{ $year }}" data-semester="{{ $semester }}">
                       <div class="panel-heading">
-                        Semester {{ $semester }} <span class="badge pull-right">Credits: <span class="sem-credit-counter">0</span></span>
+                        Year {{ $year }} - Semester {{ $semester }} <span class="badge pull-right">Credits: <span class="sem-credit-counter">0</span></span>
                       </div>
                       <div class="panel-body" style="max-height: 320px; overflow: auto; background: #fafafa;">
                         <input type="text" class="form-control input-sm semester-search-input" placeholder="Search subjects">

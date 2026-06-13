@@ -174,7 +174,7 @@
                     <ul class="nav child_menu">
                       <li><a href="/dormitory">Dormitory</a></li>
                       <li><a href="/dormitory/assignstd">Assign Student</a></li>
-                      <li><a href="/dormitory/my-room">Student List</a></li>
+                      <li><a href="/dormitory/assignstd/list">Student List</a></li>
                       <li><a href="/dormitory/fee">Fee Collection</a></li>
                       <li><a href="/dormitory/report/std">Dormitory Report</a></li>
                       <li><a href="/dormitory/report/fee">Fee Reports</a></li>

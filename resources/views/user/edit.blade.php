@@ -65,6 +65,7 @@
                                   <option value="Teacher" {{ $user->group == 'Teacher' ? 'selected' : '' }}>Teacher</option>
                                   <option value="HeadOfDepartment" {{ $user->group == 'HeadOfDepartment' ? 'selected' : '' }}>Head of Department</option>
                                   <option value="Account" {{ $user->group == 'Account' ? 'selected' : '' }}>Account</option>
+                                  <option value="Student" {{ $user->group == 'Student' ? 'selected' : '' }}>Student</option>
                                 </select>
                               </div>
                               <span class="text-danger">{{ $errors->first('group') }}</span>

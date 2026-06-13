@@ -562,12 +562,8 @@ class studentController extends Controller {
 	{
 		$student=Registration::findOrFail($id);
 		$student->delete();
-		$notification= array('title' => 'Data Delete', 'body' => 'Cancel student registration.');
-		return Response()->json([
-			'success' => true,
-			'message' => $notification
-		], 200);
-
+		$notification= array("title" => "Data Delete", "body" => "Registration cancelled successfully.");
+		return Redirect::route("student.registration.index")->with("success", $notification);
 	}
 
 	public function assignCourse(Request $request, $id)

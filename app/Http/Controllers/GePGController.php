@@ -243,7 +243,8 @@ class GePGController extends Controller
     // Allocate fee to students (bulk) — generates control numbers
     public function penaltiesForm()
     {
-        return view('gepg.penalties');
+        $years = AcademicYear::orderBy('name', 'desc')->get();
+        return view('gepg.penalties', compact('years'));
     }
 
     public function allocateSpecific(Request $request)
@@ -330,7 +331,7 @@ class GePGController extends Controller
     public function updateBill(Request $request, $id)
     {
         $bill = GePGBill::findOrFail($id);
-        $bill->update($request->only(['amount', 'bill_description', 'status', 'control_number']));
+        $bill->update($request->only(['amount', 'bill_description', 'status']));
         return redirect()->route('gepg.accountant')->with('success', ['title'=>'Updated', 'body'=>'Bill updated.']);
     }
 

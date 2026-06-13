@@ -18,8 +18,18 @@
               <input type="hidden" name="_token" value="{{ csrf_token() }}">
 
               <div class="form-group">
+                <label>Academic Year <span class="required">*</span></label>
+                <select class="form-control no-select2" name="academic_year" required>
+                  <option value="">Select Year</option>
+                  @foreach($years as $y)
+                    <option value="{{$y->name}}">{{$y->name}}</option>
+                  @endforeach
+                </select>
+              </div>
+
+              <div class="form-group">
                 <label>Student</label>
-                <select class="form-control" name="student_id" id="studentSelect" required style="width:100%">
+                <select class="form-control select2" name="student_id" id="studentSelect" required style="width:100%">
                   <option value="">Search and select student</option>
                 </select>
               </div>

@@ -169,4 +169,12 @@ class ExamController extends Controller
 
     }
   }
+
+	public function destroy($id)
+	{
+		$exam=Exam::findOrFail($id);
+		$exam->delete();
+		$notification= array("title" => "Data Delete", "body" => "Exam deleted successfully.");
+		return redirect()->back()->with("success",$notification);
+	}
 }
