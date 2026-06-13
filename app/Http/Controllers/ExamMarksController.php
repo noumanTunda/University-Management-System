@@ -102,9 +102,12 @@ class ExamMarksController extends Controller
 
         $marks = [];
         if ($planId > 0) {
-            $marks = AssessmentMark::whereIn('assessment_component_id', $plan->components->pluck('id'))
-                ->get()
-                ->groupBy('student_id');
+            $compIds = $plan->components->pluck('id')->toArray();
+            if (!empty($compIds)) {
+                $marks = AssessmentMark::whereIn('assessment_component_id', $compIds)
+                    ->get()
+                    ->groupBy('student_id');
+            }
         }
 
         $examTypes = ExamType::all();
