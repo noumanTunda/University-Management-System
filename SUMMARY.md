@@ -176,8 +176,8 @@ APP_URL=http://localhost
 DB_CONNECTION=mysql
 DB_HOST=172.17.0.1
 DB_PORT=3306
-DB_DATABASE=homestead
-DB_USERNAME=root
+DB_DATABASE=databaseName
+DB_USERNAME=databaseUser
 DB_PASSWORD=secure-password
 
 MAIL_DRIVER=smtp

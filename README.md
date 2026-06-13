@@ -64,18 +64,18 @@ If `php artisan migrate` fails (e.g., due to PHP version incompatibility or miss
 
 ```bash
 # 1. Ensure the database exists
-docker compose exec db mysql -u root -p2010 -e "CREATE DATABASE IF NOT EXISTS homestead;"
+docker compose exec db mysql -u root -psecurePassword -e "CREATE DATABASE IF NOT EXISTS databaseName;"
 
 # 2. Import the SQL dump
-docker compose exec -T db mysql -u root -p2010 homestead < database/db_backup.sql
+docker compose exec -T db mysql -u root -psecurePassword databaseName < database/db_backup.sql
 
 # 3. Verify the import
-docker compose exec db mysql -u root -p2010 homestead -e "SHOW TABLES;"
+docker compose exec db mysql -u root -psecurePassword databaseName -e "SHOW TABLES;"
 ```
 
 To generate a fresh backup after modifications:
 ```bash
-docker compose exec db mysqldump -u root -p2010 homestead > database/db_backup.sql
+docker compose exec db mysqldump -u root -psecurePassword databaseName > database/db_backup.sql
 ```
 
 ---
