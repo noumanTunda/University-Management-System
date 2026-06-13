@@ -56,11 +56,6 @@
               </div>
             </div>
             <hr>
-            <div class="row" style="margin-bottom:10px">
-              <div class="col-md-12">
-                <button type="button" id="btnFetchStudents" class="btn btn-success btn-sm"><i class="fa fa-refresh"></i> ⟳ Refresh Data</button>
-              </div>
-            </div>
             <div id="marksContainer">
               <div class="alert alert-info">Select department, year, semester, and subject. Marks load automatically.</div>
             </div>
@@ -114,7 +109,6 @@ $(document).ready(function() {
         });
     }
 
-    $('#btnFetchStudents').on('click', loadMarks);
     $('#subjSelect, #semSelect').on('change', loadMarks);
 });
 </script>

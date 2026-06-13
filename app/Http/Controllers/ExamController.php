@@ -125,7 +125,7 @@ class ExamController extends Controller
             $currentYear = AcademicYear::where('name', 'LIKE', date('Y') . '-%')->orWhere('name', 'LIKE', '%-' . date('Y'))->orderBy('name', 'desc')->first();
         $currentYearName = $currentYear ? $currentYear->name : date('Y') . '-' . (date('Y') + 1);
         $currentYearId = $currentYear ? $currentYear->id : null;
-        $subIds = auth()->user()->subjects()->wherePivot('academic_year_id', $currentYearId)->pluck('subject.id')->toArray();
+        $subIds = auth()->user()->subjects()->pluck('subject.id')->toArray();
             $subjectsQuery->whereIn('id', $subIds);
         }
         $subjects = $subjectsQuery->lists('name', 'id');

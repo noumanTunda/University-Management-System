@@ -1,7 +1,5 @@
 @extends('layouts.master')
-
 @section('title', 'Student Dashboard')
-
 @section('content')
 <div class="right_col" role="main">
   <div class="">
@@ -51,20 +49,58 @@
       </div>
       <div class="col-md-6">
         <div class="x_panel">
-          <div class="x_title"><h2><i class="fa fa-line-chart"></i> Assessment Results</h2><div class="clearfix"></div></div>
+          <div class="x_title"><h2><i class="fa fa-line-chart"></i> Enrolled Subjects & Results</h2><div class="clearfix"></div></div>
           <div class="x_content">
-            <table class="table table-striped">
-              <thead><tr><th>Subject</th><th>CA</th><th>UE</th><th>Grade</th></tr></thead>
-              <tbody>
-                @forelse($courseRegs as $cr)
-                <tr><td>{{$cr->subject->name ?? '-'}}</td><td>{{$cr->ca_score ?? '-'}}</td><td>{{$cr->ue_score ?? '-'}}</td><td><strong>{{$cr->grade_letter ?? '-'}}</strong></td></tr>
-                @empty <tr><td colspan="4">No results yet.</td></tr> @endforelse
-              </tbody>
-            </table>
+            @forelse($grouped as $key => $regs)
+              @php
+                list($year, $sem) = explode('|', $key);
+                $collapseId = 'dash_sem_' . str_replace(['/', ' '], '_', $year) . '_' . $sem;
+              @endphp
+              <div class="panel panel-default" style="margin-bottom:10px">
+                <div class="panel-heading" role="tab" style="cursor:pointer" data-toggle="collapse" data-target="#{{$collapseId}}" aria-expanded="true">
+                  <h4 class="panel-title">
+                    <i class="fa fa-chevron-down"></i> <strong>{{$year}}</strong> — Semester {{$sem}}
+                    <span class="badge pull-right">{{count($regs)}} subject(s)</span>
+                  </h4>
+                </div>
+                <div id="{{$collapseId}}" class="panel-collapse collapse in">
+                  <div class="panel-body" style="padding:0">
+                    <table class="table table-striped" style="margin-bottom:0">
+                      <thead><tr><th>Subject</th><th>Code</th><th>CA</th><th>UE</th><th>Grade</th></tr></thead>
+                      <tbody>
+                        @foreach($regs as $cr)
+                        <tr>
+                          <td>{{$cr->subject->name ?? '-'}}</td>
+                          <td>{{$cr->subject->code ?? '-'}}</td>
+                          <td>{{$cr->ca_score ?? '-'}}</td>
+                          <td>{{$cr->ue_score ?? '-'}}</td>
+                          <td><strong>{{$cr->grade_letter ?? '-'}}</strong> ({{$cr->grade_point ?? '-'}})</td>
+                        </tr>
+                        @endforeach
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            @empty
+              <div class="alert alert-info">No subjects enrolled yet.</div>
+            @endforelse
           </div>
         </div>
       </div>
     </div>
   </div>
 </div>
+@endsection
+
+@section('extrascript')
+<script>
+$(document).ready(function() {
+    // Collapse toggle icon
+    $('.panel-heading').on('click', function() {
+        var icon = $(this).find('i.fa');
+        icon.toggleClass('fa-chevron-down fa-chevron-right');
+    });
+});
+</script>
 @endsection

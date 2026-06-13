@@ -31,9 +31,16 @@ class StudentDashboardController extends Controller
         $bills = GePGBill::where('student_id', $student->id)->orderBy('created_at', 'desc')->limit(10)->get();
         $borrowedBooks = BorrowBook::where('students_id', $student->id)->where('Status', 'Borrowed')->count();
         $attendances = Attendance::where('students_id', $student->id)->count();
-        $courseRegs = CourseRegistration::where('student_id', $student->id)->with('subject')->get();
+        $courseRegs = CourseRegistration::where('student_id', $student->id)
+            ->with('subject', 'semester.academicYear')->get();
+        $grouped = [];
+        foreach ($courseRegs as $cr) {
+            $year = $cr->semester->academicYear->name ?? 'Unknown';
+            $sem = $cr->semester->semester_number ?? '0';
+            $grouped[$year . '|' . $sem][] = $cr;
+        }
 
-        return view('student_portal.dashboard', compact('student', 'registrations', 'bills', 'borrowedBooks', 'attendances', 'courseRegs'));
+        return view('student_portal.dashboard', compact('student', 'registrations', 'bills', 'borrowedBooks', 'attendances', 'courseRegs', 'grouped'));
     }
 
     public function assessments()
