@@ -116,8 +116,6 @@ $(document).ready(function() {
 
     $('#btnFetchStudents').on('click', loadMarks);
     $('#subjSelect, #semSelect').on('change', loadMarks);
-    });
-
 });
 </script>
 @endsection
