@@ -2,10 +2,7 @@
 /**
  * OSUMS Installation Wizard
  * 
- * This script initializes the system: creates the Super Admin account
- * and sets up the initial database state.
- * 
- * Access is blocked after installation via storage/installed.lock
+ * Creates the Super Admin account and locks setup after completion.
  */
 
 // ─── Gatekeeping ───────────────────────────────────────────────
@@ -16,23 +13,28 @@ if (file_exists($lockFile)) {
     die('<h1>403 Forbidden</h1><p>OSUMS is already installed. Remove <code>storage/installed.lock</code> to re-run setup.</p>');
 }
 
-// Bootstrap Laravel to get Eloquent / DB
+// Bootstrap Laravel
 require __DIR__ . '/../bootstrap/autoload.php';
 $app = require_once __DIR__ . '/../bootstrap/app.php';
+
+// Resolve the HTTP kernel to boot the app fully
 $kernel = $app->make('Illuminate\Contracts\Http\Kernel');
-$request = Illuminate\Http\Request::capture();
-$kernel->pushMiddleware('Illuminate\Session\Middleware\StartSession');
+$response = $kernel->handle(
+    Illuminate\Http\Request::capture()
+);
+
+// Now we can use DB facade
+use Illuminate\Support\Facades\DB;
 
 try {
-    // Check if users table has records
     $userCount = DB::table('users')->count();
     if ($userCount > 0) {
-        file_put_contents($lockFile, date('Y-m-d H:i:s') . ' — Users already existed. Locked by setup.php');
-        header('HTTP/1.1 403 Forbidden');
-        die('<h1>403 Forbidden</h1><p>Users already exist in the database. Setup is not available.</p>');
+        file_put_contents($lockFile, date('Y-m-d H:i:s') . ' — Locked (users existed)');
+        $kernel->terminate(request(), response('OSUMS is already installed.', 403));
+        exit;
     }
 } catch (\Exception $e) {
-    // DB not connected or tables missing — let the setup proceed
+    // DB not accessible — allow setup to proceed
 }
 
 // ─── Handle Form Submission ────────────────────────────────────
@@ -45,7 +47,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password = $_POST['password'] ?? '';
     $confirm  = $_POST['password_confirm'] ?? '';
 
-    // Validation
     if (empty($name)) $errors[] = 'Full Name is required.';
     if (empty($email)) $errors[] = 'Email address is required.';
     elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) $errors[] = 'Invalid email format.';
@@ -56,7 +57,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             DB::beginTransaction();
 
-            // Create admin user
             DB::table('users')->insert([
                 'firstname' => $name,
                 'lastname'  => '',
@@ -68,7 +68,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'updated_at' => date('Y-m-d H:i:s'),
             ]);
 
-            // Write lock file
             file_put_contents($lockFile, date('Y-m-d H:i:s') . ' — Installed by setup.php');
 
             DB::commit();
@@ -79,25 +78,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $subject = 'Welcome to OSUMS — Your Admin Account';
                 $body = "Hello $name,\n\n";
                 $body .= "Your OSUMS administrator account has been created successfully.\n\n";
-                $body .= "Login URL: " . rtrim((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . '/login', '/') . "\n";
+                $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+                $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+                $body .= "Login URL: $protocol://$host/login\n";
                 $body .= "Username: $email\n";
                 $body .= "Password: (the password you entered)\n\n";
-                $body .= "Please login and change your password.\n\n";
-                $body .= "— OSUMS Team";
-
-                $headers = 'From: noreply@osums.edu' . "\r\n" .
-                           'Reply-To: noreply@osums.edu' . "\r\n" .
-                           'X-Mailer: PHP/' . phpversion();
-                @mail($email, $subject, $body, $headers);
-            } catch (\Exception $e) {
-                // Email is optional — silently fail
-            }
-
+                $body .= "Please login and change your password.\n\n— OSUMS Team";
+                @mail($email, $subject, $body, "From: noreply@osums.edu\r\nReply-To: noreply@osums.edu");
+            } catch (\Exception $e) {}
         } catch (\Exception $e) {
             DB::rollBack();
             $errors[] = 'Database error: ' . $e->getMessage();
         }
     }
+}
+
+// Terminate the kernel so Laravel cleans up
+if (isset($kernel)) {
+    $kernel->terminate(request(), response(''));
 }
 
 // ─── Render Page ───────────────────────────────────────────────
@@ -112,15 +110,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 body { background:#2A3F54; display:flex; align-items:center; min-height:100vh; }
 .setup-card { background:#fff; border-radius:8px; padding:40px; max-width:560px; margin:0 auto; box-shadow:0 8px 24px rgba(0,0,0,.2); }
 .setup-card h1 { color:#2A3F54; font-size:26px; margin-top:0; border-bottom:2px solid #1ABB9C; padding-bottom:12px; }
-.setup-card .logo { text-align:center; margin-bottom:20px; }
-.setup-card .logo i { font-size:48px; color:#1ABB9C; }
 .help-block { font-size:12px; color:#999; }
 </style>
 </head>
 <body>
 <div class="container">
 <div class="setup-card">
-  <div class="logo"><i class="glyphicon glyphicon-bank"></i></div>
   <h1>OSUMS — Initial Setup</h1>
   <p class="text-muted">Create the Super Administrator account to get started.</p>
 
@@ -167,7 +162,7 @@ body { background:#2A3F54; display:flex; align-items:center; min-height:100vh; }
     </div>
     <hr>
     <button type="submit" class="btn btn-success btn-lg btn-block">
-      <i class="glyphicon glyphicon-ok"></i> Install & Create Admin
+      Install & Create Admin
     </button>
   </form>
   <?php endif; ?>
