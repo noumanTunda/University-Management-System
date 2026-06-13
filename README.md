@@ -153,7 +153,7 @@ docker compose exec db mysqldump -u root -psecurePassword databaseName > databas
 | Teacher | Teacher's login ID | Last name |
 | Accountant | Accountant's login ID | Last name |
 | HeadOfDepartment | HOD's login ID | Last name |
-| Student | Student ID (e.g. `T21-03-12111`) | Last name (e.g. `Doe`) |
+| Student | Student ID (e.g. `T26-04-00000`) | Last name (e.g. `Doe`) |
 
 ---
 
