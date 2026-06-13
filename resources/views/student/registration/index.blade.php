@@ -75,8 +75,8 @@
                                             <td>{{$student->student->firstName}} {{$student->student->middleName}} {{$student->student->lastName}}</td>
                                             <td>{{$student->student->idNo}}</td>
                                             <td>
-                                                <a title='View' target="_blank" class='btn btn-success btn-xs btnUpdate' href='{{URL::route('student.show',$student->students_id)}}'> <i class="glyphicon glyphicon-zoom-out icon-white"></i></a>
-                                                <a href="{{URL::route('student.registration.destroy',$student->students_id)}}" class="btn btn-danger btn-xs" onclick="return confirm('Are you sure to cancel this registration?')"><i class="glyphicon glyphicon-trash icon-white"></i></a>
+                                                <a title='View' target="_blank" class='btn btn-success btn-xs btnUpdate' href='{{URL::route('student.show',$student->id)}}'> <i class="glyphicon glyphicon-zoom-out icon-white"></i></a>
+                                                <a href="{{URL::route('student.registration.destroy',$student->id)}}" class="btn btn-danger btn-xs" onclick="return confirm('Are you sure to cancel this registration?')"><i class="glyphicon glyphicon-trash icon-white"></i></a>
                                             </td>
                                         </tr>
                                         @endforeach

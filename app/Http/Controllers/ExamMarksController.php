@@ -134,34 +134,71 @@ class ExamMarksController extends Controller
         $caComp = $plan->components->where('type', 'CA')->first();
         $ueComp = $plan->components->where('type', 'UE')->first();
 
-        // Save marks to assessment_marks for each component
-        foreach ($data['ca'] ?? [] as $studentId => $ca) {
-            if ($ca === '' || $ca === null) continue;
-            if ($caComp) {
-                AssessmentMark::updateOrCreate(
-                    ['assessment_component_id' => $caComp->id, 'student_id' => $studentId],
-                    ['score' => $ca]
-                );
+        // Support both scores[component_id][student_id] AND ca[]/ue[] formats
+        if (isset($data['scores'])) {
+            // Plan-based format: scores[component_id][student_id]
+            foreach ($data['scores'] as $compId => $studentScores) {
+                foreach ($studentScores as $studentId => $score) {
+                    if ($score === '' || $score === null) continue;
+                    AssessmentMark::updateOrCreate(
+                        ['assessment_component_id' => $compId, 'student_id' => $studentId],
+                        ['score' => $score]
+                    );
+                }
             }
-        }
-        foreach ($data['ue'] ?? [] as $studentId => $ue) {
-            if ($ue === '' || $ue === null) continue;
-            if ($ueComp) {
-                AssessmentMark::updateOrCreate(
-                    ['assessment_component_id' => $ueComp->id, 'student_id' => $studentId],
-                    ['score' => $ue]
-                );
+        } else {
+            // Legacy format: ca[] and ue[]
+            foreach ($data['ca'] ?? [] as $studentId => $ca) {
+                if ($ca === '' || $ca === null) continue;
+                if ($caComp) {
+                    AssessmentMark::updateOrCreate(
+                        ['assessment_component_id' => $caComp->id, 'student_id' => $studentId],
+                        ['score' => $ca]
+                    );
+                }
+            }
+            foreach ($data['ue'] ?? [] as $studentId => $ue) {
+                if ($ue === '' || $ue === null) continue;
+                if ($ueComp) {
+                    AssessmentMark::updateOrCreate(
+                        ['assessment_component_id' => $ueComp->id, 'student_id' => $studentId],
+                        ['score' => $ue]
+                    );
+                }
             }
         }
 
         // Compute and save final grade to course_registrations
-        foreach ($data['ca'] ?? [] as $studentId => $ca) {
-            $ue = $data['ue'][$studentId] ?? 0;
-            $grade = CourseRegistration::computeGrade($ca, $ue);
-            CourseRegistration::updateOrCreate(
-                ['student_id' => $studentId, 'subject_id' => $subjectId, 'semester_id' => $semesterId],
-                ['ca_score' => $ca, 'ue_score' => $ue, 'grade_letter' => $grade['letter'], 'grade_point' => $grade['point'], 'status' => $grade['status']]
-            );
+        if (isset($data['scores'])) {
+            foreach ($data['scores'] as $compId => $studentScores) {
+                $comp = $plan->components->where('id', $compId)->first();
+                $type = $comp ? $comp->type : 'CA';
+                foreach ($studentScores as $studentId => $score) {
+                    if ($score === '' || $score === null) continue;
+                    $caField = ($type === 'CA') ? $score : 0;
+                    $ueField = ($type === 'UE') ? $score : 0;
+                    // Accumulate by student - get or create registration record
+                    $reg = CourseRegistration::firstOrNew(
+                        ['student_id' => $studentId, 'subject_id' => $subjectId, 'semester_id' => $semesterId]
+                    );
+                    if ($type === 'CA') $reg->ca_score = ($reg->ca_score ?? 0) + $score;
+                    if ($type === 'UE') $reg->ue_score = ($reg->ue_score ?? 0) + $score;
+                    $grade = CourseRegistration::computeGrade($reg->ca_score ?? 0, $reg->ue_score ?? 0);
+                    $reg->grade_letter = $grade['letter'];
+                    $reg->grade_point = $grade['point'];
+                    $reg->status = $grade['status'];
+                    $reg->save();
+                }
+            }
+        } else {
+            foreach ($data['ca'] ?? [] as $studentId => $ca) {
+                $ue = $data['ue'][$studentId] ?? 0;
+                $grade = CourseRegistration::computeGrade($ca, $ue);
+                CourseRegistration::updateOrCreate(
+                    ['student_id' => $studentId, 'subject_id' => $subjectId, 'semester_id' => $semesterId],
+                    ['ca_score' => $ca, 'ue_score' => $ue, 'grade_letter' => $grade['letter'], 'grade_point' => $grade['point'], 'status' => $grade['status']]
+                );
+            }
         }
 
         return redirect()->back()->with('success', ['title'=>'Saved', 'body'=>'Marks saved to assessment system.']);

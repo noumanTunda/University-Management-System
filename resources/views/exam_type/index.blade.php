@@ -44,11 +44,7 @@
                   <td>{{$et->name}}</td>
                   <td>{{$et->description}}</td>
                   <td>
-                    <form class="deleteForm" method="POST" action="{{URL::route('exam_type.destroy',$et->id)}}" style="display:inline">
-                      <input name="_method" type="hidden" value="DELETE">
-                      <input type="hidden" name="_token" value="{{ csrf_token() }}">
-                      <button type="submit" class="btn btn-danger btn-xs"><i class="glyphicon glyphicon-trash"></i></button>
-                    </form>
+                    <a href="{{URL::route('exam_type.destroy',$et->id)}}" class="btn btn-danger btn-xs" onclick="return confirm('Delete this exam type?')"><i class="glyphicon glyphicon-trash"></i></a>
                   </td>
                 </tr>
                 @endforeach
