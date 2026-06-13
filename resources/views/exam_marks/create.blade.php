@@ -56,9 +56,13 @@
               </div>
             </div>
             <hr>
+            <div class="row" style="margin-bottom:10px">
+              <div class="col-md-12">
+                <button type="button" id="btnFetchStudents" class="btn btn-success btn-sm"><i class="fa fa-refresh"></i> ⟳ Refresh Data</button>
+              </div>
+            </div>
             <div id="marksContainer">
-              <div class="alert alert-info">Select department, year, semester, and subject, then click <strong>Fetch Students</strong> to load the mark entry form.</div>
-            <button type="button" id="btnFetchStudents" class="btn btn-success" style="margin-bottom:10px"><i class="fa fa-users"></i> Fetch Students</button>
+              <div class="alert alert-info">Select department, year, semester, and subject. Marks load automatically.</div>
             </div>
           </div>
         </div>
@@ -110,17 +114,9 @@ $(document).ready(function() {
         });
     }
 
-    // Manual fetch button
     $('#btnFetchStudents').on('click', loadMarks);
-        var subjectId = $('#subjSelect').val();
-        var semId = $('#semSelect').val();
-        if (subjectId && semId) {
-            $('#marksContainer').html('<div class="alert alert-info">Loading...</div>');
-            $.get('/exam-marks/entry/' + subjectId + '/' + semId, function(html) {
-                $('#marksContainer').html(html);
-            });
-        }
-    }
+    $('#subjSelect, #semSelect').on('change', loadMarks);
+    });
 
 });
 </script>
