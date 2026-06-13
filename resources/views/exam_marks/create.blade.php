@@ -57,7 +57,8 @@
             </div>
             <hr>
             <div id="marksContainer">
-              <div class="alert alert-info">Select department, year, semester, and subject to load the mark entry form.</div>
+              <div class="alert alert-info">Select department, year, semester, and subject, then click <strong>Fetch Students</strong> to load the mark entry form.</div>
+            <button type="button" id="btnFetchStudents" class="btn btn-success" style="margin-bottom:10px"><i class="fa fa-users"></i> Fetch Students</button>
             </div>
           </div>
         </div>
@@ -97,6 +98,22 @@ $(document).ready(function() {
     function loadMarks() {
         var subjectId = $('#subjSelect').val();
         var semId = $('#semSelect').val();
+        if (!subjectId || !semId) {
+            $('#marksContainer').html('<div class="alert alert-warning">Please select both a subject and a semester first.</div>');
+            return;
+        }
+        $('#marksContainer').html('<div class="alert alert-info"><i class="fa fa-spinner fa-spin"></i> Fetching students and marks...</div>');
+        $.get('/exam-marks/entry/' + subjectId + '/' + semId, function(html) {
+            $('#marksContainer').html(html);
+        }).fail(function() {
+            $('#marksContainer').html('<div class="alert alert-danger">Error loading data. Please try again.</div>');
+        });
+    }
+
+    // Manual fetch button
+    $('#btnFetchStudents').on('click', loadMarks);
+        var subjectId = $('#subjSelect').val();
+        var semId = $('#semSelect').val();
         if (subjectId && semId) {
             $('#marksContainer').html('<div class="alert alert-info">Loading...</div>');
             $.get('/exam-marks/entry/' + subjectId + '/' + semId, function(html) {
@@ -105,7 +122,6 @@ $(document).ready(function() {
         }
     }
 
-    $('#subjSelect, #semSelect').on('change', loadMarks);
 });
 </script>
 @endsection
