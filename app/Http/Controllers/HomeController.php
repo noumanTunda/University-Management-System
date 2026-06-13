@@ -29,7 +29,7 @@ class HomeController extends Controller {
 		if(!$institute)
 		{
 			$institute=new Institute;
-			$institute->name="ShanixLab";
+			$institute->name="TundaLabs";
 		}
 		return view('home',compact('error','institute'));
 	}

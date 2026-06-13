@@ -65,6 +65,7 @@
                   <li><a><i class="fa fa-home"></i> Departments <span class="fa fa-chevron-down"></span></a>
                     <ul class="nav child_menu">
                       <li><a href="{{URL::route('department.create')}}">Add New</a></li>
+                  <li><a href="{{URL::route('academic.year.index')}}"><i class="fa fa-calendar"></i> Academic Years</a></li>
                       <li><a href="{{URL::route('department.index')}}">All Departments</a></li>
 
                     </ul>

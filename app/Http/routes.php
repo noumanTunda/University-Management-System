@@ -33,6 +33,12 @@ Route::group(['middleware' => 'auth'], function()
   Route::get('users/missing-students',[ 'as' => 'user.missing.students', 'uses'=>'UserController@missingStudents']);
   Route::post('users/create-missing-accounts',[ 'as' => 'user.create.missing', 'uses'=>'UserController@createMissingAccounts']);
   Route::get('/settings',[ 'as' => 'user.settings','uses'=>'UserController@settings']);
+  Route::get('academic-years',[ 'as' => 'academic.year.index','uses'=>'AcademicYearController@index']);
+  Route::get('academic-years/create',[ 'as' => 'academic.year.create','uses'=>'AcademicYearController@create']);
+  Route::post('academic-years',[ 'as' => 'academic.year.store','uses'=>'AcademicYearController@store']);
+  Route::get('academic-years/{id}/edit',[ 'as' => 'academic.year.edit','uses'=>'AcademicYearController@edit']);
+  Route::put('academic-years/{id}',[ 'as' => 'academic.year.update','uses'=>'AcademicYearController@update']);
+  Route::get('academic-years/{id}/delete',[ 'as' => 'academic.year.destroy','uses'=>'AcademicYearController@destroy']);
  Route::post('/settings',[ 'as' => 'user.settings','uses'=>'UserController@postSettings']);
 
   Route::resource('department','DepartmentController');
