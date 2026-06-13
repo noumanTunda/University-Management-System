@@ -127,19 +127,19 @@ docker compose exec db mysqldump -u root -psecurePassword databaseName > databas
 | | | |
 |:---:|:---:|:---:|
 | ![Dashboard](screenshots/1.png) | ![Login](screenshots/2.png) | ![Student Management](screenshots/3.png) |
-| **Dashboard** | **Login Page** | **Student Management** |
+| **Dashboard** | **Department Creating** | **Subject Management** |
 | ![Registration](screenshots/4.png) | ![Course Subjects](screenshots/5.png) | ![Teacher Subjects](screenshots/6.png) |
-| **Student Registration** | **Course Subject Builder** | **Teacher Subject Assignment** |
+| **Student Registration** | **Student Managementr** | **View Student Information** |
 | ![Assessment Plans](screenshots/7.png) | ![Mark Entry](screenshots/8.png) | ![Bulk Upload](screenshots/9.png) |
-| **Assessment Plans** | **Mark Entry** | **Bulk Upload CSV** |
+| **Register Student** | **Attendance Taking** | **Fee Allocation** |
 | ![GePG Allocation](screenshots/10.png) | ![GePG Payments](screenshots/11.png) | ![GePG Bills](screenshots/12.png) |
-| **Fee Allocation** | **Student Payment** | **GePG Bills** |
+| **Accounting** | **Student Fee Collection Report** | **Dormitory** |
 | ![Accounting](screenshots/13.png) | ![Trial Balance](screenshots/14.png) | ![Library](screenshots/15.png) |
-| **Chart of Accounts** | **Trial Balance** | **Library Management** |
+| **Library** | **Book Information** | **User Account Information** |
 | ![Dormitory](screenshots/16.png) | ![Student Portal](screenshots/17.png) | ![Student Results](screenshots/18.png) |
-| **Dormitory Management** | **Student Portal Dashboard** | **Student Results** |
+| **Student Report** | **System Initial Setup** | **System Onboarding** |
 | ![Attendance](screenshots/19.png) | ![Setup Wizard](screenshots/20.png) | |
-| **Attendance Management** | **Installation Wizard** | |
+| **Dashboard** | **Student Account Creation** | |
 
 </div>
 
