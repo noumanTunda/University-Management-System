@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\Redirect;
 use App\Http\Controllers\Controller;
 use Auth;
 use App\User;
+use App\Student;
+use Mail;
 use Session;
 use App\Institute;
 use Validator;

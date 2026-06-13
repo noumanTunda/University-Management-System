@@ -30,6 +30,8 @@ Route::group(['middleware' => 'auth'], function()
   Route::post('/institute',[ 'as' => 'institute','uses'=>'InstituteController@save']);
 
   Route::resource('user','UserController');
+  Route::get('users/missing-students',[ 'as' => 'user.missing.students', 'uses'=>'UserController@missingStudents']);
+  Route::post('users/create-missing-accounts',[ 'as' => 'user.create.missing', 'uses'=>'UserController@createMissingAccounts']);
   Route::get('/settings',[ 'as' => 'user.settings','uses'=>'UserController@settings']);
  Route::post('/settings',[ 'as' => 'user.settings','uses'=>'UserController@postSettings']);
 
