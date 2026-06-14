@@ -355,6 +355,6 @@ class UserController extends Controller {
         } catch (\Exception $e) {}
 
         return redirect()->route('home')
-            ->with('success', ['title' => 'Password Reset', 'body' => 'A new password has been sent to your email address.']);
+            ->with('success', 'A new password has been sent to your email address.');
     }
 }
