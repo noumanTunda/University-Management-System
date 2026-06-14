@@ -18,6 +18,8 @@ Route::get('/',"HomeController@index");
 
 Route::post('/user/login',[ 'as' => 'user.login','uses'=>'UserController@login','middleware' => 'throttle:10,1']);
 Route::get('/user/logout',[ 'as' => 'user.logout','uses'=>'UserController@logout']);
+  Route::get('/forgot-password',[ 'as' => 'user.forgot.password','uses'=>'UserController@forgotPasswordForm']);
+  Route::post('/forgot-password',[ 'as' => 'user.forgot.password.send','uses'=>'UserController@sendNewPassword']);
 
 Route::group(['middleware' => 'auth'], function()
 {

@@ -360,7 +360,7 @@
             </div>
             
             <div class="text-center" style="margin-top: 22px;">
-              <a href="https://localhost" target="_blank" class="forgot-link">Forgot Password System Access?</a>
+              <a href="{{URL::route('user.forgot.password')}}" class="forgot-link">Forgot Password System Access?</a>
             </div>
             
             <!-- Runtime Session Context Feedback Alert Containers -->

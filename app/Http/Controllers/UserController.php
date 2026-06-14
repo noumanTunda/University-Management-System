@@ -19,7 +19,7 @@ class UserController extends Controller {
 
 	public function __construct()
 	{
-		$this->middleware('admin', ['except' => ['login', 'logout','settings','postSettings']]);
+		$this->middleware('admin', ['except' => ['login', 'logout','settings','postSettings','forgotPasswordForm','sendNewPassword']]);
 	}
 	/**
 	* Make Login
@@ -313,4 +313,48 @@ class UserController extends Controller {
         ]);
     }
 
+
+    public function forgotPasswordForm()
+    {
+        return view('home_forgot_password');
+    }
+
+    public function sendNewPassword(Request $request)
+    {
+        $email = trim($request->input('email', ''));
+        if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return redirect()->route('user.forgot.password')
+                ->with('error', ['title' => 'Invalid Email', 'body' => 'Please enter a valid email address.']);
+        }
+
+        $user = User::where('email', $email)->first();
+        if (!$user) {
+            return redirect()->route('user.forgot.password')
+                ->with('error', ['title' => 'Email Not Found', 'body' => 'No account found with that email address.']);
+        }
+
+        $newPassword = substr(str_shuffle('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%'), 0, 12);
+        $user->password = $newPassword;
+        $user->save();
+
+        try {
+            $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+            $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+            $loginUrl = "$protocol://$host/login";
+            $fullName = trim($user->firstname . ' ' . $user->lastname);
+            $data = [
+                'name' => $fullName,
+                'loginUrl' => $loginUrl,
+                'username' => $user->login,
+                'password' => $newPassword,
+            ];
+            Mail::send('emails.password_reset', $data, function($message) use ($email, $fullName) {
+                $message->to($email, $fullName)
+                        ->subject('OSUMS — Password Reset');
+            });
+        } catch (\Exception $e) {}
+
+        return redirect()->route('home')
+            ->with('success', ['title' => 'Password Reset', 'body' => 'A new password has been sent to your email address.']);
+    }
 }
