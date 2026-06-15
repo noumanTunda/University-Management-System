@@ -51,6 +51,9 @@
                   @unless(Gate::check('Student'))
                   <li><a href="{{URL::route('user.dashboard')}}"><i class="fa fa-dashboard"></i> Dashboard </a></li>
                   @endunless
+                  @if(Gate::check('Admin') || Gate::check('HeadOfDepartment') || Gate::check('Teacher'))
+                  <li><a href="{{URL::route('academic.year.index')}}"><i class="fa fa-calendar"></i> Academic Years </a></li>
+                  @endif
 				  @if(Gate::check('Student'))
 				  <li><a href="{{URL::route('student.dashboard')}}"><i class="fa fa-graduation-cap"></i> My Portal</a></li>
 				  <li><a href="{{URL::route('student.assessments')}}"><i class="fa fa-bar-chart"></i> My Results</a></li>
@@ -65,7 +68,6 @@
                   <li><a><i class="fa fa-home"></i> Departments <span class="fa fa-chevron-down"></span></a>
                     <ul class="nav child_menu">
                       <li><a href="{{URL::route('department.create')}}">Add New</a></li>
-                  <li><a href="{{URL::route('academic.year.index')}}"><i class="fa fa-calendar"></i> Academic Years</a></li>
                       <li><a href="{{URL::route('department.index')}}">All Departments</a></li>
 
                     </ul>
