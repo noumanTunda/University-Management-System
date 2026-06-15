@@ -55,7 +55,7 @@ return [
     |
     */
 
-    'from' => ['address' => 'noreply@osums.edu', 'name' => 'OSUMS System'],
+    'from' => ['address' => env('MAIL_FROM_ADDRESS', 'noreply@osums.edu'), 'name' => env('MAIL_FROM_NAME', 'OSUMS System')],
 
     /*
     |--------------------------------------------------------------------------

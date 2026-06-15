@@ -35,7 +35,7 @@
                 <a href="{{ $loginUrl }}" class="btn">Login to OSUMS</a>
             </p>
 
-            <p style="color:#999; font-size:12px; margin-top:20px;">For security reasons, please change your password after logging in.</p>
+            <p style="color:#999; font-size:14px; margin-top:20px;">For security reasons, please change your password after logging in.</p>
         </div>
         <div class="footer">
             &copy; {{ date('Y') }} OSUMS — Open Source University Management System

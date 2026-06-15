@@ -20,15 +20,14 @@ services:
 
   mysql:
     image: mysql:8.0
+    command: --default-authentication-plugin=mysql_native_password
     container_name: ums_mysql
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: securepassword
+      MYSQL_ROOT_PASSWORD: securePassword
       MYSQL_DATABASE: homestead
-      MYSQL_USER: root
-      MYSQL_PASSWORD: securepassword
     ports:
-      - "3306:3306"
+      - "3307:3306"
     volumes:
       - db_data:/var/lib/mysql
 

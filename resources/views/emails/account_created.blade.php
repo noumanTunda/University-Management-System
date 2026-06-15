@@ -11,7 +11,7 @@
     <tr><td><strong>Username:</strong></td><td><code>{{$login}}</code></td></tr>
     <tr><td><strong>Password:</strong></td><td><code>{{$password}}</code></td></tr>
   </table>
-  <p style="color:#999;font-size:12px;margin-top:20px">Please change your password after first login.</p>
+  <p style="color:#999;font-size:14px;margin-top:20px">Please change your password after first login.</p>
 </div>
 </body>
 </html>
