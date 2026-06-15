@@ -24,8 +24,10 @@ services:
     container_name: ums_mysql
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: securePassword
+      MYSQL_ROOT_PASSWORD: !Password
       MYSQL_DATABASE: homestead
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: '!Password'
     ports:
       - "3307:3306"
     volumes:

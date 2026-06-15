@@ -355,6 +355,6 @@ class UserController extends Controller {
         } catch (\Exception $e) {}
 
         return redirect()->route('home')
-            ->with('success', 'A new password has been sent to your email address.');
+            ->with('success', 'Your password has been reset successfully! Check your inbox for new login credentials.');
     }
 }

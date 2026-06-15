@@ -43,6 +43,23 @@ $app->singleton(
 
 /*
 |--------------------------------------------------------------------------
+| Pre-bind log service
+|--------------------------------------------------------------------------
+|
+| Pre-bind the log service to prevent "Class log does not exist" errors
+| that occur when the Log facade is resolved before ConfigureLogging runs.
+| This is a known compatibility issue with Laravel 5.2 on PHP 7.4+.
+|
+*/
+
+if (! $app->bound('log')) {
+    $app->instance('log', new Illuminate\Log\Writer(
+        new Monolog\Logger('osums')
+    ));
+}
+
+/*
+|--------------------------------------------------------------------------
 | Return The Application
 |--------------------------------------------------------------------------
 |
